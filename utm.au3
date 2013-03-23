@@ -27,7 +27,9 @@ Exit
 ;zone/easting/northing
 
 
-
+Func _UTM_ToGMaps($lat,$lon)
+	Return StringFormat("http://maps.google.com/maps?ll=%s,%s&spn=0.05,0.05&t=m&q=%s,%s",$lat,$lon,$lat,$lon)
+EndFunc
 
 
 Func _UTM_ToLLF($utm)
@@ -38,7 +40,7 @@ Func _UTM_ToLLF($utm)
 	If $x<3 Then Return SetError(1,0,"UTM formatting incorrect.")
 
 	Local $ll=to_latlong($a[2], $a[3], $a[1])
-	Return $ll[0]&', '&$ll[1]
+	Return $ll[0]&', '&$ll[1]&' ( '&_UTM_ToGMaps($ll[0],$ll[1])&' )'
 EndFunc
 
 
