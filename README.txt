@@ -48,7 +48,8 @@ Updated 10:34 PM 3/22/2013
     + Added the `commandchar` INI/configuration variable, so the default command character of "@" can be changed. (prefer you don't in #ARG)
     + Added support for OTPNATO 5gram decoder @5gramfind and @5gram (decode) commands.
 4.1 * Fixed an issue with wikilink conversion crashing the bot
-4.2 * Updated the News data URL to keep working (stopped working in 4.1), and added a "newsurl" configuration variable to the INI for future fixes not requiring an update.
+4.2 * Updated the News data URL to keep working (stopped working in 4.1)
+    + Added "newsurl" configuration variable to the INI for future fixes not requiring an update.
 5.0 + Added Commands: @UTM @LL for coordinate conversions.
 
 
