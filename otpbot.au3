@@ -3,21 +3,28 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.12
+#AutoIt3Wrapper_Res_Fileversion=5.0.1.13
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crash_demons
 #AutoIt3Wrapper_Res_Language=1033
 #AutoIt3Wrapper_Res_requestedExecutionLevel=requireAdministrator
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
+
+;Standard user Libraries
 #include <Array.au3>
 #include <String.au3>
 #include <Process.au3>
+
+;OTP22 utility libraries
+#include <Xor.au3>
 #include <UTM.au3>
-TCPStartup()
+#include <News.au3>
+#include <Dialer.au3>
+
 
 
 #region ;------------CONFIG
-Global $TestMode=0
+Global $TestMode=1
 Global $SERV = Get("server", "irc.freenode.net", "config")
 Global $PORT = Get("port", 6667, "config")
 Global $CHANNEL = Get("channel", "#ARG", "config");persistant channel, will rejoin. can be invited to others (not persistant)
@@ -32,6 +39,7 @@ Global $CommandChar = StringLeft(Get("commandchar", "@", "config"), 1); Command 
 
 Global $AutoDecoderKeyfile = Get("defaultkey", "elpaso.bin")
 Global $NewsInterval = Get("newsinterval", 15 * 60 * 1000); 15 minutes = 900000ms
+
 Global $otp22_sizeMin = Get("dialersizemin", 1);300;kb
 Global $otp22_wavemax = Get("dialercomparemax", 20)
 Global $otp22_timeMax = Get("dialercomparetime", 5 * 60 * 1000);5 minutes
@@ -46,7 +54,7 @@ Global $news_url=Get("newsurl","http://otp22.referata.com/wiki/Special:Ask/-5B-5
 Global Enum $S_UNK = -1, $S_OFF, $S_INIT, $S_ON, $S_CHAT, $S_INVD
 Global Const $PARAM_START = 2
 
-Global Const $VERSION = "5.0"; if you modify the bot, please note so here with "modified" etc
+Global Const $VERSION = "5.0.1"; if you modify the bot, please note so here with "modified" etc
 
 
 Global $HOSTNAME = "xxxxxxxxxxxxxxxxxxx";in-IRC hostname. effects message length - becomes set later
@@ -55,17 +63,17 @@ Global $SOCK = -1
 Global $BUFF = ""
 Global $STATE = $S_OFF
 
-Global $otp22_time = 0
-Global $otp22_timeOld = 0
-Global $otp22_waves[$otp22_wavemax][2];size,filename
-Global $otp22_wavesOld[$otp22_wavemax][2];size,filename
-
+ReDim $otp22_waves[$otp22_wavemax][2]
+$dialer_reportfunc='SendPrimaryChannel'
 #endregion ;------------------INTERNAL VARIABLES
 
 
+
+
 #region ;------------------BOT MAIN
+TCPStartup()
 FileChangeDir(@ScriptDir)
-AdlibRegister("otp22_dialler", $dialer_checktime)
+AdlibRegister("otp22_dialler_report", $dialer_checktime)
 OnAutoItExitRegister("Quit")
 $ADDR = TCPNameToIP($SERV)
 Msg('START')
@@ -82,8 +90,11 @@ While 1
 		If TCheck($ReconnectTime) Then Open()
 	EndIf
 WEnd
+
+AdlibUnRegister()
 Exit;this loop never ends, so we don't need this.
 
+;--------------------FUNCTIONS
 
 Func Process_Message($who, $where, $what); called by Process() which parses IRC commands; if you return a string, Process() will form a reply.
 	Global $PM_Overflow
@@ -130,9 +141,8 @@ Func Process_Message($who, $where, $what); called by Process() which parses IRC 
 			Case "newupdate", "new_update"
 				Return "Updates cannot be set from the bot. Please edit this page: http://otp22.referata.com/wiki/News"
 			Case 'dialer'
-				otp22_dialler(); force recheck for debugging purposes
+				otp22_dialler_report(); force recheck for debugging purposes
 				Return "Dialer mode cannot be toggled in this version."
-
 
 				;xor decoder commands
 			Case 'elpaso', 'blackotp1'
@@ -162,8 +172,10 @@ Func OnStateChange($oldstate, $newstate)
 			Cmd('JOIN ' & $CHANNEL)
 		Case $S_CHAT
 			If $TestMode Then; whatever needs debugging at the moment.
+				Msg('TEST='&Process_Message('who','where','@elpaso http://pastebin.com/9gbyQ8uA'))
 				Msg('TEST='&Process_Message('who','where','@UTM 10/501830/5006349'))
 				Msg('TEST='&Process_Message('who','where','@LL 45.21062621390015, -122.97669561655198'))
+				Msg('TEST='&Process_Message('who','where','@update'))
 				Exit
 			EndIf
 	EndSwitch
@@ -368,290 +380,6 @@ EndFunc   ;==>COMMAND_flipbits
 #endregion ;--------ITA2 and bits
 
 
-#region ;--------@UPDATE
-Func OTP22News_Read()
-	Global $OTPNEWS
-	Global $OTPNEWSTIMER
-	If TimerDiff($OTPNEWSTIMER) > $NewsInterval Or StringLen($OTPNEWS) = 0 Then
-		$OTPNEWS = OTP22News_Retrieve()
-		$OTPNEWSTIMER = TimerInit()
-	EndIf
-	Return $OTPNEWS
-EndFunc   ;==>OTP22News_Read
-
-Func OTP22News_Retrieve()
-	Global $news_url
-	;,\x22OTP22 NI full date\x22,\x22OTP22 NI summary\x22\n
-	;\x22News#Tue,_12_Feb_2013_07:43:00_+0000\x22,
-	;\x2212 February 2013 07:43:00\x22,\x22[[Second Knights of Pythias Cemetery drop]] picked up!\x22\n
-	;\x22News#Mon,_11_Feb_2013_01:52:00_+0000\x22,\x2211 February 2013 01:52:00\x22,\x22Multiple new [[Agent_Systems/Investigation/Black_OTP1_messages#Messages_from_11_February|OTP messages]]. Pictures of drop locations, references to [[Zeus]] and a need for new keys.\x22\n
-	;\x22News#Thu,_07_Feb_2013_23:17:00_+0000\x22,\x227 February 2013 23:17:00\x22,\x22Two new [[Black_OTP1_messages#Messages_from_7_February|OTP messages]].  Used 99985 to request more time picking up drop.\x22\n
-	Local $s = InetRead($news_url, 1)
-	$s = BinaryToString($s)
-	$s = StringReplace($s, @LF, ',')
-	;ConsoleWrite("DLd"&@CRLF)
-
-
-	;ConsoleWrite($s&@CRLF)
-	CSV_PopField($s);Header:Subobject link
-	CSV_PopField($s);Header:Date
-	CSV_PopField($s);Header:Summary
-
-	Local $out = "Last 3 Updates: "
-	For $i = 1 To 3
-		Local $page = CSV_PopField($s)
-		Local $date = CSV_PopField($s)
-		Local $summary = WikiText_Translate(CSV_PopField($s), "http://otp22.referata.com/wiki/")
-		$out &= $i & '. ' & $summary & '  '
-	Next
-	Return $out & ' - Retrieved ' & @MON & '/' & @MDAY & '/' & @YEAR & ' ' & @HOUR & ':' & @MIN
-EndFunc   ;==>OTP22News_Retrieve
-
-Func WikiText_Translate($s, $BaseWikiURL = "http://otp22.referata.com/wiki/")
-	Local $s2 = ""
-	For $i = 1 To StringLen($s)
-		Local $c = StringMid($s, $i, 1)
-		Switch $c
-			Case '['
-				Local $iEnd = _MatchBracket($s, $i)
-				If @error <> 0 Then ContinueCase
-				Local $lenInside = ($iEnd - $i) - 1
-				If $lenInside <= 0 Then ContinueCase
-				Local $strInside = StringMid($s, $i + 1, $lenInside)
-				$s2 &= WikiText_TranslateLink($strInside, $BaseWikiURL)
-				$i = $iEnd
-			Case Else
-				$s2 &= $c
-		EndSwitch
-	Next
-	Return $s2
-EndFunc   ;==>WikiText_Translate
-Func WikiText_TranslateLink($s, $BaseWikiURL = "http://otp22.referata.com/wiki/")
-	Local $url = ""
-	Local $text = ""
-	If StringLeft($s, 1) == '[' Then;internal links [[pagename]] [[pagename|display text]]
-		$s = StringTrimLeft($s, 1)
-		$s = StringTrimRight($s, 1)
-
-
-		Local $iPipe = StringInStr($s, '|')
-		If $iPipe Then
-			$url = $BaseWikiURL & StringReplace(StringLeft($s, $iPipe - 1), ' ', '_')
-			$text = StringTrimLeft($s, $iPipe)
-		Else
-			$url = $BaseWikiURL & StringReplace($s, ' ', '_')
-			$text = $s
-		EndIf
-	Else;external links [http://....]  [http://... displaytext]
-		Local $iSpace = StringInStr($s, ' ')
-		If $iSpace Then
-			$url = StringLeft($s, $iSpace - 1)
-			$text = StringTrimLeft($s, $iSpace)
-		Else
-			$url = $s
-		EndIf
-	EndIf
-	If StringLen($text) Then Return StringFormat("[%s]( %s )", $text, $url)
-	Return $url
-EndFunc   ;==>WikiText_TranslateLink
-
-
-
-Func CSV_PopField(ByRef $s)
-	Local $field = ""
-	Local $terminated = False
-	Local $quoted = False
-	For $i = 1 To StringLen($s)
-		Local $c = StringMid($s, $i, 1)
-		Switch $c
-			Case '"'
-				If $quoted And StringMid($s, $i, 2) = '""' Then
-					$i += 1
-				Else
-					$quoted = Not $quoted
-				EndIf
-				$field &= $c
-			Case ','
-				If $quoted Then ContinueCase
-				$s = StringTrimLeft($s, $i)
-				$terminated = True
-				ExitLoop
-			Case Else
-				$field &= $c
-		EndSwitch
-	Next
-	If Not $terminated Then $s = ""
-
-
-	$field = StringStripWS($field, 1 + 2)
-	If StringLeft($field, 1) == '"' Then $field = StringTrimLeft($field, 1)
-	If StringRight($field, 1) == '"' Then $field = StringTrimRight($field, 1)
-	$field = StringReplace($field, '""', '"')
-
-	Return $field
-EndFunc   ;==>CSV_PopField
-
-Func _MatchBracket($Code, $iStart = 1, $iEnd = 0)
-	;@extended 	Number of open brackets
-	;@error   	0=No error; 1=Unbalanced closing bracket; 2=Unbalanced opening brackets
-	;Return   	0=No brackets in specified range; i=Position of Error or Outer bracket match
-	If $iEnd < 1 Then $iEnd = StringLen($Code)
-	Local $Open = 0
-	For $i = $iStart To $iEnd
-		Switch StringMid($Code, $i, 1)
-			Case '['
-				$Open += 1
-			Case ']'
-				$Open -= 1
-				If $Open = 0 Then Return SetError(0, $Open, $i)
-				If $Open < 0 Then Return SetError(1, $Open, $i);only possible if there is no opening bracket - this function returns on the outer balance
-		EndSwitch
-	Next
-	If $Open > 0 Then Return SetError(2, $Open, $i)
-	Return SetError(0, $Open, 0)
-EndFunc   ;==>_MatchBracket
-
-
-#endregion ;--------@UPDATE
-
-#region ;-----AutoDialer polling
-
-Func otp22_dialler()
-	otp22_getentries()
-	Local $ret = otp22_checknew()
-	If StringLen($ret) Then SendAutoText($CHANNEL, $ret)
-EndFunc   ;==>otp22_dialler
-
-Func otp22_checknew()
-	If TimerDiff($otp22_timeOld) > $otp22_timeMax Then Return ""
-	Local $sNew = "New Entries: "
-	Local $bNew = False
-	For $i = 0 To $otp22_wavemax - 1
-		If $otp22_waves[$i][0] < $otp22_sizeMin Then ContinueLoop
-		If _ArraySearch($otp22_wavesOld, $otp22_waves[$i][1], 0, 0, 0, 0, 1, 1) > -1 Then ContinueLoop
-		$bNew = True
-		$sNew &= StringFormat("%dkb http://dialer.otp22.com/%s | ", $otp22_waves[$i][0], $otp22_waves[$i][1])
-	Next
-	If $bNew = False Then Return ""
-	ConsoleWrite($sNew & @CRLF)
-	Return $sNew
-EndFunc   ;==>otp22_checknew
-
-
-Func otp22_getentries()
-	$otp22_timeOld = $otp22_time
-	$otp22_time = TimerInit()
-	$otp22_wavesOld = $otp22_waves;;;; copy current array so that we can compare later
-
-
-	Local $text
-	Local $aReq = __HTTP_Req('GET', 'http://dialer.otp22.com/')
-	__HTTP_Transfer($aReq, $text, 5000)
-	If StringLen($text) < 2000 Then Return SetError(1, 0, "")
-	$text = StringReplace($text, '&nbsp;', ' ')
-	$text = StringReplace($text, ' ', '')
-	$text = StringReplace($text, ',', '')
-	$text = StringReplace($text, '<br>', @CRLF)
-
-
-	$entries = _StringBetween($text, "<tt>", "</tt>")
-	Local $limit = UBound($entries)
-	If $limit > $otp22_wavemax Then $limit = $otp22_wavemax
-	For $i = 0 To $limit - 1
-		$otp22_waves[$i][0] = Int(StringStripWS(StringLeft($entries[$i], StringInStr($entries[$i], '<a')), 8))
-		$otp22_waves[$i][1] = _StringBetweenFirst($entries[$i], 'href="', '"')
-	Next
-	For $i = $limit To $otp22_wavemax - 1
-		$otp22_waves[$i][0] = 0
-		$otp22_waves[$i][1] = ""
-	Next
-EndFunc   ;==>otp22_getentries
-Func _StringBetweenFirst(ByRef $sInput, $sFirst, $sLast)
-	Local $array = _StringBetween($sInput, $sFirst, $sLast)
-	If UBound($array) > 0 Then Return $array[0]
-	Return ""
-EndFunc   ;==>_StringBetweenFirst
-
-#endregion ;-----AutoDialer polling
-
-#region ;----- autodecoder for  black OTP1
-
-Func Trans2Bytes($trans)
-	$trans = StringStripWS($trans, 1 + 2 + 4)
-	Local $arr = StringSplit($trans, ' ', 2)
-	Local $bytes = ""
-	For $key In $arr
-		$bytes &= Chr(Int($key))
-		If $key = "salt" Then ExitLoop
-		If $key = "offset" Then ExitLoop
-	Next
-	Return $bytes
-EndFunc   ;==>Trans2Bytes
-
-Func getpastebin($message)
-	Msg("getpastebin")
-	Local $id = StringRegExpReplace($message, "(?s)^.*?pastebin.com/([\d\w]+).*$", "\1")
-	If @extended = 0 Then Return SetError(1, 0, "")
-	Return SetError(0, 0, $id)
-EndFunc   ;==>getpastebin
-
-Func pastebindecode($message, $keyfile = "elpaso.bin")
-	Msg("pastebindecode")
-	Local $id = getpastebin($message)
-	If @error <> 0 Then Return SetError(1, 0, "")
-	Local $link = "http://pastebin.com/raw.php?i=" & $id
-	Local $data = BinaryToString(InetRead($link))
-	If Not StringRegExp($data, "(?s)[\d\s]+offset[\d\s]+") Then Return SetError(1, 0, "")
-	Return decodebin($data, $keyfile)
-EndFunc   ;==>pastebindecode
-
-
-Func decodebin($message, $key = "elpaso.bin")
-	Msg("decodebin")
-	$message = StringStripWS($message, 1 + 2 + 4)
-	$bytes = Trans2Bytes($message)
-	$offset = StringRegExpReplace($message, "^(?s).*?\soffset\s(\d+).*$", "\1")
-	If @extended = 0 Then Return "I need an Offset at the end of your message. Like: 11 170 2 offset 50"
-	$offset = Int($offset)
-
-	$key = @ScriptDir & '\' & $key
-	Local $in = @TempDir & "\msgOTP.txt"
-	Local $out = @TempDir & "\outOTP.txt"
-	Local $dbg = @TempDir & "\dbgOTP.txt"
-	Local $exe = @ScriptDir & "\OtpXor.exe"
-	FileDelete($in)
-	FileDelete($out)
-	FileWrite($in, $bytes)
-	;Return StringFormat("C:\Users\Crash\Desktop\otp22\otpdox\OtpXor\Release\OtpXor.exe e %s %s %s %s",$key,$in,$offset,$out)
-
-	Local $run = StringFormat('"%s" e "%s" "%s" %s "%s" > "%s"', $exe, $key, $in, $offset, $out, $dbg)
-	Msg("Run: " & $run)
-	;Msg("CWD: "&@WorkingDir)
-	;_RunDos($run)
-	RunWait($run, @WorkingDir, @SW_HIDE)
-	Return FileRead($out)
-EndFunc   ;==>decodebin
-
-
-
-
-Func scanbin($message, $key = "elpaso.bin");;; not fixed!
-	$message = StringStripWS($message, 1 + 2 + 4)
-	$bytes = Trans2Bytes($message)
-	$offset = Int(StringRegExpReplace($message, "^(?s).*?\soffset\s(\d+).*$", "\1"))
-
-
-	Local $in = @TempDir & "\msgOTP.txt"
-	Local $out = @TempDir & "\outOTP.txt"
-	FileDelete($in)
-	FileDelete($out)
-	FileWrite($in, $bytes)
-	;Return StringFormat("C:\Users\Crash\Desktop\otp22\otpdox\OtpXor\Release\OtpXor.exe e %s %s %s %s",$key,$in,$offset,$out)
-	_RunDos(StringFormat("OtpXor.exe s %s %s > %s", $key, $in, $out))
-	Return FileRead($out)
-EndFunc   ;==>scanbin
-
-#endregion ;----- autodecoder for  black OTP1
 
 #region
 #endregion
@@ -700,9 +428,9 @@ Func TryCommandFunc($who, $where, $what, ByRef $acmd)
 	Return $ret
 EndFunc   ;==>TryCommandFunc
 
-Func SendAutoText($where, $what); bad naming from old bot
-	PRIVMSG($where, $what)
-EndFunc   ;==>SendAutoText
+Func SendPrimaryChannel($what)
+	Return PRIVMSG($CHANNEL,$what)
+EndFunc
 
 Func PRIVMSG($where, $what)
 	Global $PM_Overflow
@@ -913,9 +641,9 @@ EndFunc   ;==>StateGetName
 
 
 Func Cmd($scmd)
+	If $TestMode Then Return Msg('OT=' & $scmd)
 	If $SOCK < 0 Then Return SetError(9999, 0, "")
 	If $STATE < $S_CHAT Then Msg('OT=' & $scmd)
-	If $TestMode Then Return True
 	TCPSend($SOCK, $scmd & @CRLF)
 	If @error Then
 		Msg('Send Error [' & @error & ',' & @extended & ']')
