@@ -121,7 +121,7 @@ Func Process_Message($who, $where, $what); called by Process() which parses IRC 
 						'Pastebin Decoder commands: bluehill elpaso littlemissouri | ' & _
 						'Coordinates: UTM LL | NATO Decoding: 5GramFind 5Gram WORM | Other: ITA2 ITA2S lengthstobits flipbits ztime'
 			Case 'version'
-				Return "OTPBOT v" & $VERSION & " by Crash_Demons | " & $VersionInfoExt
+				Return "OTPBOT v" & $VERSION & " - Crash_Demons | UTM - Nadando | " & $VersionInfoExt
 			Case 'more'
 				Return $PM_Overflow
 			Case 'updatechan', 'update_chan'
