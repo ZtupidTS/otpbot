@@ -1,4 +1,5 @@
 #include <Process.au3>
+#include <String.au3>
 
 
 #region ;----- autodecoder for  black OTP1
@@ -8,22 +9,23 @@ Func Trans2Bytes($trans)
 	Local $arr = StringSplit($trans, ' ', 2)
 	Local $bytes = ""
 	For $key In $arr
-		$bytes &= Chr(Int($key))
+		If StringLen($key)=0 Then ContinueLoop
 		If $key = "salt" Then ExitLoop
 		If $key = "offset" Then ExitLoop
+		$bytes &= Chr(Int($key))
 	Next
 	Return $bytes
 EndFunc   ;==>Trans2Bytes
 
 Func getpastebin($message)
-	Msg("getpastebin")
+	ConsoleWrite("getpastebin"&@CRLF)
 	Local $id = StringRegExpReplace($message, "(?s)^.*?pastebin.com/([\d\w]+).*$", "\1")
 	If @extended = 0 Then Return SetError(1, 0, "")
 	Return SetError(0, 0, $id)
 EndFunc   ;==>getpastebin
 
 Func pastebindecode($message, $keyfile = "elpaso.bin")
-	Msg("pastebindecode")
+	ConsoleWrite("pastebindecode"&@CRLF)
 	Local $id = getpastebin($message)
 	If @error <> 0 Then Return SetError(1, 0, "")
 	Local $link = "http://pastebin.com/raw.php?i=" & $id
@@ -34,7 +36,7 @@ EndFunc   ;==>pastebindecode
 
 
 Func decodebin($message, $key = "elpaso.bin")
-	Msg("decodebin")
+	ConsoleWrite("decodebin"&@CRLF)
 	$message = StringStripWS($message, 1 + 2 + 4)
 	$bytes = Trans2Bytes($message)
 	$offset = StringRegExpReplace($message, "^(?s).*?\soffset\s(\d+).*$", "\1")
@@ -52,8 +54,9 @@ Func decodebin($message, $key = "elpaso.bin")
 	;Return StringFormat("C:\Users\Crash\Desktop\otp22\otpdox\OtpXor\Release\OtpXor.exe e %s %s %s %s",$key,$in,$offset,$out)
 
 	Local $run = StringFormat('"%s" e "%s" "%s" %s "%s" > "%s"', $exe, $key, $in, $offset, $out, $dbg)
-	Msg("Run: " & $run)
-	;Msg("CWD: "&@WorkingDir)
+	ConsoleWrite("Run: " & $run)
+	ConsoleWrite(@CRLF)
+	;ConsoleWrite("CWD: "&@WorkingDir&@CRLF))
 	;_RunDos($run)
 	RunWait($run, @WorkingDir, @SW_HIDE)
 	Return FileRead($out)
