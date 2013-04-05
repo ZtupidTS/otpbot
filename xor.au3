@@ -53,7 +53,7 @@ Func decodebin($message, $key = "elpaso.bin")
 	FileWrite($in, $bytes)
 	;Return StringFormat("C:\Users\Crash\Desktop\otp22\otpdox\OtpXor\Release\OtpXor.exe e %s %s %s %s",$key,$in,$offset,$out)
 
-	Local $run = StringFormat('"%s" e "%s" "%s" %s "%s" > "%s"', $exe, $key, $in, $offset, $out, $dbg)
+	Local $run = StringFormat('"%s" a "%s" "%s" %s "%s" > "%s"', $exe, $key, $in, $offset, $out, $dbg)
 	ConsoleWrite("Run: " & $run)
 	ConsoleWrite(@CRLF)
 	;ConsoleWrite("CWD: "&@WorkingDir&@CRLF))
