@@ -25,7 +25,7 @@ The bot needs permission to run otpxor.exe and otpnato.exe, and permission to re
 
 Further requirements may be necessary with feature additions.
 
-Updated 9:49 PM 3/31/2013
+Updated 12:49 AM 4/5/2013
 
 
 -----Updates------
@@ -51,5 +51,6 @@ Updated 9:49 PM 3/31/2013
 4.2 * Updated the News data URL to keep working (stopped working in 4.1), and added a "newsurl" configuration variable to the INI for future fixes not requiring an update.
 5.0 + Added Commands: @UTM @LL for coordinate conversions.
 5.1 * Fixed XOR Decoding from appending a nonsense character to the end.
+5.2 * Bot now uses OTP Message decoding auto-correction (attempts to fix offset issues from human input error) provided by the newest OTPXOR version.
 
 
