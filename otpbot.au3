@@ -76,14 +76,22 @@ TCPStartup()
 FileChangeDir(@ScriptDir)
 AdlibRegister("otp22_dialler_report", $dialer_checktime)
 OnAutoItExitRegister("Quit")
+
+
+Global $lHost=TCPListen('127.0.0.1',12917); local process communications. for autoupdate support etc.
+If $lHost<1 Then MsgBox(48,'OTPBot','Warning: Could not listen locally for OtpHost commands.'&@CRLF&'This Means the bot will not Quit properly when updated')
+Global $cHost=-1
+Global $sHost=""
+
+
 $ADDR = TCPNameToIP($SERV)
 Msg('START')
 Open()
 If $STATE < $S_INIT Then Msg('FAIL')
 
 
-
 While 1
+	PollHost()
 	Read()
 	Process()
 	Sleep(50)
@@ -96,6 +104,15 @@ AdlibUnRegister()
 Exit;this loop never ends, so we don't need this.
 
 ;--------------------FUNCTIONS
+
+Func Process_HostCmd($cmd,$data); message from the local controlling process. this is mostly just used to automatic updates, etc.
+	Msg($cmd&' : '&$data)
+	Switch $cmd
+		Case 'q','quit'
+			$QuitText="***"&$data
+			Quit()
+	EndSwitch
+EndFunc
 
 Func Process_Message($who, $where, $what); called by Process() which parses IRC commands; if you return a string, Process() will form a reply.
 	Global $PM_Overflow
@@ -388,6 +405,33 @@ EndFunc   ;==>COMMAND_flipbits
 #endregion ;------------------UTILITIES
 
 #region ;------------------BOT INTERNALS
+
+Func PollHost()
+	Global $lHost
+	Global $cHost
+	Global $sHost
+
+	If $cHost>=0 Then
+		$sHost&=TCPRecv($cHost,1000)
+		If StringLen($sHost) Then ConsoleWrite($sHost&@CRLF)
+		Local $pCmd1=StringInStr($sHost,'<!')
+		If $pCmd1 Then
+			$sHost=StringTrimLeft($sHost,$pCmd1+1); exclude trim= p-1   char trim=p    match trim=p+1;  trim the command prefix from the string
+			Local $pCmd2=StringInStr($sHost,'!>')
+			Local $sCmd=StringLeft($sHost,$pCmd2-1);extract command without the prefix.
+			$sHost=StringTrimLeft($sHost,$pCmd2+1);remove this command from the string.
+			Local $aCmd=StringSplit($sCmd&"|","|")
+			Process_HostCmd($aCmd[1],$aCmd[2])
+			TCPCloseSocket($cHost)
+			$cHost=-1
+			$sHost=""
+		EndIf
+	Else
+		$cHost=TCPAccept($lHost)
+		$sHost=""
+		If $cHost>=0 Then Msg("Host Conn: "&$cHost)
+	EndIf
+EndFunc
 
 Func COMMAND_test($a = "default", $b = "default", $c = "default")
 	Return "This is a test command function. Params: a=" & $a & " b=" & $b & " c=" & $c
