@@ -25,7 +25,7 @@ The bot needs permission to run otpxor.exe and otpnato.exe, and permission to re
 
 Further requirements may be necessary with feature additions.
 
-Updated 12:49 AM 4/5/2013
+Updated 6:29 PM 4/7/2013
 
 
 -----Updates------
@@ -53,6 +53,9 @@ Updated 12:49 AM 4/5/2013
 5.1 * Fixed XOR Decoding from appending a nonsense character to the end.
 5.2 * Bot now uses OTP Message decoding auto-correction (attempts to fix offset issues from human input error) provided by the newest OTPXOR version.
 5.3 + @calc command added for simple numerical expressions (eg: 2/3+5-2^6) - note: letters and strings are not allowed for input sanitation reasons.
+6.0 + Added support for a Host program (OtpHost) which can monitor/restart and automatically update OtpBot while it is running.
+         Running OtpHost is completely optional, and running OtpBot alone will function as normal
+         Note: if you use OTPHost, close OTPHost, not OtpBot. Otherwise otphost will just restart the bot.
 
 
 
