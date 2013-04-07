@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_icon=host.ico
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
-#AutoIt3Wrapper_Res_Fileversion=1.0.0.8
+#AutoIt3Wrapper_Res_Fileversion=1.0.0.9
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_Language=1033
 #AutoIt3Wrapper_Res_requestedExecutionLevel=requireAdministrator
@@ -45,7 +45,7 @@ While 1
 		$PID=Run("otpbot.exe",@ScriptDir)
 		Sleep(2000)
 	EndIf
-	Sleep(10*1000)
+	Sleep(10*60*1000)
 WEnd
 ;------------------------------------------
 
