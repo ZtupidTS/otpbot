@@ -52,5 +52,7 @@ Updated 12:49 AM 4/5/2013
 5.0 + Added Commands: @UTM @LL for coordinate conversions.
 5.1 * Fixed XOR Decoding from appending a nonsense character to the end.
 5.2 * Bot now uses OTP Message decoding auto-correction (attempts to fix offset issues from human input error) provided by the newest OTPXOR version.
+5.3 + @calc command added for simple numerical expressions (eg: 2/3+5-2^6) - note: letters and strings are not allowed for input sanitation reasons.
+
 
 

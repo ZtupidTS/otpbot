@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=5.2.0.17
+#AutoIt3Wrapper_Res_Fileversion=5.3.0.17
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crash_demons
 #AutoIt3Wrapper_Res_Language=1033
@@ -19,6 +19,7 @@
 #include <Xor.au3>
 #include <UTM.au3>
 #include <News.au3>
+#include <Calc.au3>
 #include <Dialer.au3>
 
 
@@ -54,7 +55,7 @@ Global $news_url=Get("newsurl","http://otp22.referata.com/wiki/Special:Ask/-5B-5
 Global Enum $S_UNK = -1, $S_OFF, $S_INIT, $S_ON, $S_CHAT, $S_INVD
 Global Const $PARAM_START = 2
 
-Global Const $VERSION = "5.2.0"; if you modify the bot, please note so here with "modified" etc
+Global Const $VERSION = "5.3.0"; if you modify the bot, please note so here with "modified" etc
 
 
 Global $HOSTNAME = "xxxxxxxxxxxxxxxxxxx";in-IRC hostname. effects message length - becomes set later
@@ -119,7 +120,7 @@ Func Process_Message($who, $where, $what); called by Process() which parses IRC 
 			Case 'help'
 				Return 'Commands are: update updatechan more help version debug | ' & _
 						'Pastebin Decoder commands: bluehill elpaso littlemissouri | ' & _
-						'Coordinates: UTM LL | NATO Decoding: 5GramFind 5Gram WORM | Other: ITA2 ITA2S lengthstobits flipbits ztime'
+						'Coordinates: UTM LL | NATO Decoding: 5GramFind 5Gram WORM | Other: ITA2 ITA2S lengthstobits flipbits ztime calc'
 			Case 'version'
 				Return "OTPBOT v" & $VERSION & " - Crash_Demons | UTM - Nadando | " & $VersionInfoExt
 			Case 'more'
