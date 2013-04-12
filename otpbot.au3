@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.0.0.20
+#AutoIt3Wrapper_Res_Fileversion=6.1.0.24
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crash_demons
 #AutoIt3Wrapper_Res_Language=1033
@@ -16,11 +16,12 @@
 #include <Process.au3>
 
 ;OTP22 utility libraries
-#include <Xor.au3>
-#include <UTM.au3>
-#include <News.au3>
-#include <Calc.au3>
-#include <Dialer.au3>
+#include "Xor.au3"
+#include "UTM.au3"
+#include "News.au3"
+#include "Calc.au3"
+#include "Dialer.au3"
+#include "otphostcore.au3"
 
 
 
@@ -55,7 +56,7 @@ Global $news_url=Get("newsurl","http://otp22.referata.com/wiki/Special:Ask/-5B-5
 Global Enum $S_UNK = -1, $S_OFF, $S_INIT, $S_ON, $S_CHAT, $S_INVD
 Global Const $PARAM_START = 2
 
-Global Const $VERSION = "6.0.0"; if you modify the bot, please note so here with "modified" etc
+Global Const $VERSION = "6.1.0"; if you modify the bot, please note so here with "modified" etc
 
 
 Global $HOSTNAME = "xxxxxxxxxxxxxxxxxxx";in-IRC hostname. effects message length - becomes set later
@@ -64,8 +65,11 @@ Global $SOCK = -1
 Global $BUFF = ""
 Global $STATE = $S_OFF
 
+;library configuration variables
 ReDim $otp22_waves[$otp22_wavemax][2]
 $dialer_reportfunc='SendPrimaryChannel'
+$_OtpHost_OnCommand="Process_HostCmd"
+Global $_OtpHost_Info=""
 #endregion ;------------------INTERNAL VARIABLES
 
 
@@ -78,10 +82,9 @@ AdlibRegister("otp22_dialler_report", $dialer_checktime)
 OnAutoItExitRegister("Quit")
 
 
-Global $lHost=TCPListen('127.0.0.1',12917); local process communications. for autoupdate support etc.
-If $lHost<1 Then MsgBox(48,'OTPBot','Warning: Could not listen locally for OtpHost commands.'&@CRLF&'This Means the bot will not Quit properly when updated')
-Global $cHost=-1
-Global $sHost=""
+
+Global $_OtpHost_Listener=_OtpHost_CreateListener()
+If $_OtpHost_Listener<1 Then MsgBox(48,'OTPBot','Warning: Could not listen locally for OtpHost commands.'&@CRLF&'This Means the bot will not Quit properly when updated')
 
 
 $ADDR = TCPNameToIP($SERV)
@@ -91,7 +94,7 @@ If $STATE < $S_INIT Then Msg('FAIL')
 
 
 While 1
-	PollHost()
+	_OtpHost_Listen($_OtpHost_Listener,False);poll the local listening socket, and do not automatically close after receiving a command - so we can reply back.
 	Read()
 	Process()
 	Sleep(50)
@@ -105,13 +108,18 @@ Exit;this loop never ends, so we don't need this.
 
 ;--------------------FUNCTIONS
 
-Func Process_HostCmd($cmd,$data); message from the local controlling process. this is mostly just used to automatic updates, etc.
-	Msg($cmd&' : '&$data)
+Func Process_HostCmd($cmd,$data,$socket); message from the local controlling process. this is mostly just used to automatic updates, etc.
+	Global $_OtpHost_Info
+	Msg($socket&' - '&$cmd&' : '&$data)
 	Switch $cmd
 		Case 'q','quit'
 			$QuitText="***"&$data
 			Quit()
+		Case 'p','ping'
+			$_OtpHost_Info=FileGetVersion('otphost-session.exe')&"_"&$data
+			_OtpHost_ccmd('pong', $data, $socket)
 	EndSwitch
+	TCPCloseSocket($socket)
 EndFunc
 
 Func Process_Message($who, $where, $what); called by Process() which parses IRC commands; if you return a string, Process() will form a reply.
@@ -148,7 +156,7 @@ Func Process_Message($who, $where, $what); called by Process() which parses IRC 
 				Reply_Message($who, $who, OTP22News_Read());redirect reply to PM
 				Return '';disable any automatic reply
 			Case 'debug'
-				Return StringFormat("DBG: WHO=%s WHERE=%s WHAT=%s Compiled=%s data.bin=%s elpaso.bin=%s littlemissouri=%s p1.txt=%s p2.txt=%s p3.txt=%s p4.txt=%s", $who, $where, $what, @Compiled, _
+				Return StringFormat("DBG: WHO=%s WHERE=%s WHAT=%s Compiled=%s OTPHOST=%s data.bin=%s elpaso.bin=%s littlemissouri=%s p1.txt=%s p2.txt=%s p3.txt=%s p4.txt=%s", $who, $where, $what, @Compiled,$_OtpHost_Info, _
     				FileGetSize('data.bin'), FileGetSize('elpaso.bin'), FileGetSize('littlemissouri.bin'), _
 					FileGetSize('p1.txt'), FileGetSize('p2.txt'), FileGetSize('p3.txt'), FileGetSize('p4.txt'))
 
@@ -190,11 +198,11 @@ Func OnStateChange($oldstate, $newstate)
 			Cmd('JOIN ' & $CHANNEL)
 		Case $S_CHAT
 			If $TestMode Then; whatever needs debugging at the moment.
-				Msg('TEST='&Process_Message('who','where','@elpaso http://pastebin.com/9gbyQ8uA'))
-				Msg('TEST='&Process_Message('who','where','@UTM 10/501830/5006349'))
-				Msg('TEST='&Process_Message('who','where','@LL 45.21062621390015, -122.97669561655198'))
-				Msg('TEST='&Process_Message('who','where','@update'))
-				Exit
+				;Msg('TEST='&Process_Message('who','where','@elpaso http://pastebin.com/9gbyQ8uA'))
+				;Msg('TEST='&Process_Message('who','where','@UTM 10/501830/5006349'))
+				;Msg('TEST='&Process_Message('who','where','@LL 45.21062621390015, -122.97669561655198'))
+				;Msg('TEST='&Process_Message('who','where','@update'))
+				;Exit
 			EndIf
 	EndSwitch
 EndFunc   ;==>OnStateChange
@@ -406,33 +414,6 @@ EndFunc   ;==>COMMAND_flipbits
 
 #region ;------------------BOT INTERNALS
 
-Func PollHost()
-	Global $lHost
-	Global $cHost
-	Global $sHost
-
-	If $cHost>=0 Then
-		$sHost&=TCPRecv($cHost,1000)
-		If StringLen($sHost) Then ConsoleWrite($sHost&@CRLF)
-		Local $pCmd1=StringInStr($sHost,'<!')
-		If $pCmd1 Then
-			$sHost=StringTrimLeft($sHost,$pCmd1+1); exclude trim= p-1   char trim=p    match trim=p+1;  trim the command prefix from the string
-			Local $pCmd2=StringInStr($sHost,'!>')
-			Local $sCmd=StringLeft($sHost,$pCmd2-1);extract command without the prefix.
-			$sHost=StringTrimLeft($sHost,$pCmd2+1);remove this command from the string.
-			Local $aCmd=StringSplit($sCmd&"|","|")
-			Process_HostCmd($aCmd[1],$aCmd[2])
-			TCPCloseSocket($cHost)
-			$cHost=-1
-			$sHost=""
-		EndIf
-	Else
-		$cHost=TCPAccept($lHost)
-		$sHost=""
-		If $cHost>=0 Then Msg("Host Conn: "&$cHost)
-	EndIf
-EndFunc
-
 Func COMMAND_test($a = "default", $b = "default", $c = "default")
 	Return "This is a test command function. Params: a=" & $a & " b=" & $b & " c=" & $c
 EndFunc   ;==>COMMAND_test
@@ -531,6 +512,7 @@ Func Quit()
 	Msg('QUITTING')
 	Cmd('QUIT :' & $QuitText)
 	;Sleep(1000);having issues with socket closing before message arrives.
+	TCPCloseSocket($_OtpHost_Listener)
 	Close()
 	Exit
 EndFunc   ;==>Quit

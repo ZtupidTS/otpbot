@@ -25,7 +25,7 @@ The bot needs permission to run otpxor.exe and otpnato.exe, and permission to re
 
 Further requirements may be necessary with feature additions.
 
-Updated 6:29 PM 4/7/2013
+Updated 11:36 PM 4/11/2013
 
 
 -----Updates------
@@ -56,6 +56,7 @@ Updated 6:29 PM 4/7/2013
 6.0 + Added support for a Host program (OtpHost) which can monitor/restart and automatically update OtpBot while it is running.
          Running OtpHost is completely optional, and running OtpBot alone will function as normal
          Note: if you use OTPHost, close OTPHost, not OtpBot. Otherwise otphost will just restart the bot.
+6.1 + OtpHost now detects if OtpBot hangs up. (note: requires updated otpbot that can respond to localhost pings)
 
 
 
