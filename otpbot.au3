@@ -1,4 +1,4 @@
-#Region ;**** Directives created by AutoIt3Wrapper_GUI ****
+#region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_icon=bot.ico
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
@@ -8,7 +8,7 @@
 #AutoIt3Wrapper_Res_LegalCopyright=Crash_demons
 #AutoIt3Wrapper_Res_Language=1033
 #AutoIt3Wrapper_Res_requestedExecutionLevel=requireAdministrator
-#EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
+#endregion ;**** Directives created by AutoIt3Wrapper_GUI ****
 
 ;Standard user Libraries
 #include <Array.au3>
@@ -26,7 +26,7 @@
 
 
 #region ;------------CONFIG
-Global $TestMode=0
+Global $TestMode = 0
 Global $SERV = Get("server", "irc.freenode.net", "config")
 Global $PORT = Get("port", 6667, "config")
 Global $CHANNEL = Get("channel", "#ARG", "config");persistant channel, will rejoin. can be invited to others (not persistant)
@@ -47,7 +47,7 @@ Global $otp22_wavemax = Get("dialercomparemax", 20)
 Global $otp22_timeMax = Get("dialercomparetime", 5 * 60 * 1000);5 minutes
 Global $dialer_checktime = Get("dialerchecktime", 2 * 60 * 1000);5 minutes
 
-Global $news_url=Get("newsurl","http://otp22.referata.com/wiki/Special:Ask/-5B-5BDisplay-20tag::News-20page-20entry-5D-5D/-3FOTP22-20NI-20full-20date/-3FSummary/format%3Dcsv/limit%3D3/sort%3DOTP22-20NI-20full-20date/order%3Ddescending/offset%3D0")
+Global $news_url = Get("newsurl", "http://otp22.referata.com/wiki/Special:Ask/-5B-5BDisplay-20tag::News-20page-20entry-5D-5D/-3FOTP22-20NI-20full-20date/-3FSummary/format%3Dcsv/limit%3D3/sort%3DOTP22-20NI-20full-20date/order%3Ddescending/offset%3D0")
 
 
 #endregion ;------------CONFIG
@@ -67,9 +67,9 @@ Global $STATE = $S_OFF
 
 ;library configuration variables
 ReDim $otp22_waves[$otp22_wavemax][2]
-$dialer_reportfunc='SendPrimaryChannel'
-$_OtpHost_OnCommand="Process_HostCmd"
-Global $_OtpHost_Info=""
+$dialer_reportfunc = 'SendPrimaryChannel'
+$_OtpHost_OnCommand = "Process_HostCmd"
+Global $_OtpHost_Info = ""
 #endregion ;------------------INTERNAL VARIABLES
 
 
@@ -83,8 +83,8 @@ OnAutoItExitRegister("Quit")
 
 
 
-Global $_OtpHost_Listener=_OtpHost_CreateListener()
-If $_OtpHost_Listener<1 Then MsgBox(48,'OTPBot','Warning: Could not listen locally for OtpHost commands.'&@CRLF&'This Means the bot will not Quit properly when updated')
+Global $_OtpHost_Listener = _OtpHost_CreateListener()
+If $_OtpHost_Listener < 1 Then MsgBox(48, 'OTPBot', 'Warning: Could not listen locally for OtpHost commands.' & @CRLF & 'This Means the bot will not Quit properly when updated')
 
 
 $ADDR = TCPNameToIP($SERV)
@@ -94,7 +94,7 @@ If $STATE < $S_INIT Then Msg('FAIL')
 
 
 While 1
-	_OtpHost_Listen($_OtpHost_Listener,False);poll the local listening socket, and do not automatically close after receiving a command - so we can reply back.
+	_OtpHost_Listen($_OtpHost_Listener, False);poll the local listening socket, and do not automatically close after receiving a command - so we can reply back.
 	Read()
 	Process()
 	Sleep(50)
@@ -108,19 +108,19 @@ Exit;this loop never ends, so we don't need this.
 
 ;--------------------FUNCTIONS
 
-Func Process_HostCmd($cmd,$data,$socket); message from the local controlling process. this is mostly just used to automatic updates, etc.
+Func Process_HostCmd($cmd, $data, $socket); message from the local controlling process. this is mostly just used to automatic updates, etc.
 	Global $_OtpHost_Info
-	Msg($socket&' - '&$cmd&' : '&$data)
+	Msg($socket & ' - ' & $cmd & ' : ' & $data)
 	Switch $cmd
-		Case 'q','quit'
-			$QuitText="***"&$data
+		Case 'q', 'quit'
+			$QuitText = "***" & $data
 			Quit()
-		Case 'p','ping'
-			$_OtpHost_Info=FileGetVersion('otphost-session.exe')&"_"&$data
+		Case 'p', 'ping'
+			$_OtpHost_Info = FileGetVersion('otphost-session.exe') & "_" & $data
 			_OtpHost_ccmd('pong', $data, $socket)
 	EndSwitch
 	TCPCloseSocket($socket)
-EndFunc
+EndFunc   ;==>Process_HostCmd
 
 Func Process_Message($who, $where, $what); called by Process() which parses IRC commands; if you return a string, Process() will form a reply.
 	Global $PM_Overflow
@@ -130,7 +130,7 @@ Func Process_Message($who, $where, $what); called by Process() which parses IRC 
 
 	If Not $isCommand Then;automatic responses to non-commands
 		If StringInStr($what, "pastebin", 2) Then Return pastebindecode($what, $AutoDecoderKeyfile)
-		If $what="any news?" Then
+		If $what = "any news?" Then
 			Reply_Message($who, $who, OTP22News_Read())
 			Return ''
 		EndIf
@@ -156,9 +156,9 @@ Func Process_Message($who, $where, $what); called by Process() which parses IRC 
 				Reply_Message($who, $who, OTP22News_Read());redirect reply to PM
 				Return '';disable any automatic reply
 			Case 'debug'
-				Return StringFormat("DBG: WHO=%s WHERE=%s WHAT=%s Compiled=%s OTPHOST=%s data.bin=%s elpaso.bin=%s littlemissouri=%s p1.txt=%s p2.txt=%s p3.txt=%s p4.txt=%s", $who, $where, $what, @Compiled,$_OtpHost_Info, _
-    				FileGetSize('data.bin'), FileGetSize('elpaso.bin'), FileGetSize('littlemissouri.bin'), _
-					FileGetSize('p1.txt'), FileGetSize('p2.txt'), FileGetSize('p3.txt'), FileGetSize('p4.txt'))
+				Return StringFormat("DBG: WHO=%s WHERE=%s WHAT=%s Compiled=%s OTPHOST=%s data.bin=%s elpaso.bin=%s littlemissouri=%s p1.txt=%s p2.txt=%s p3.txt=%s p4.txt=%s", $who, $where, $what, @Compiled, $_OtpHost_Info, _
+						FileGetSize('data.bin'), FileGetSize('elpaso.bin'), FileGetSize('littlemissouri.bin'), _
+						FileGetSize('p1.txt'), FileGetSize('p2.txt'), FileGetSize('p3.txt'), FileGetSize('p4.txt'))
 
 
 				;commands that aren't servicable.
@@ -217,22 +217,22 @@ EndFunc   ;==>OnStateChange
 #region ;-----misc
 
 Func COMMANDX_UTM($who, $where, $what, $acmd)
-	Local $x=UBound($acmd) - 1
-	If $x=$PARAM_START Then
+	Local $x = UBound($acmd) - 1
+	If $x = $PARAM_START Then
 		Return _UTM_ToLLF($acmd[$PARAM_START])
-	ElseIf $x=($PARAM_START+2) Then
-		Return _UTM_ToLLF($acmd[$PARAM_START+0]&'/'&$acmd[$PARAM_START+1]&'/'&$acmd[$PARAM_START+2]);lazy!
+	ElseIf $x = ($PARAM_START + 2) Then
+		Return _UTM_ToLLF($acmd[$PARAM_START + 0] & '/' & $acmd[$PARAM_START + 1] & '/' & $acmd[$PARAM_START + 2]);lazy!
 	Else
 		Return "Returns the Latitude and Longitude for a UTM coordinate.  Usage: UTM zone/easting/northing   or   UTM zone easting northing "
 	EndIf
-EndFunc
-Func COMMAND_LL($lat,$lon)
-	Local $result=to_utm($lat,$lon);
-	For $i=0 To UBound($result)-1
-		$result[$i]=Round($result[$i],0)
+EndFunc   ;==>COMMANDX_UTM
+Func COMMAND_LL($lat, $lon)
+	Local $result = to_utm($lat, $lon);
+	For $i = 0 To UBound($result) - 1
+		$result[$i] = Round($result[$i], 0)
 	Next
-	Return $result[2]&'/'&$result[0]&'/'&$result[1]
-EndFunc
+	Return $result[2] & '/' & $result[0] & '/' & $result[1]
+EndFunc   ;==>COMMAND_LL
 
 
 
@@ -251,39 +251,39 @@ EndFunc   ;==>COMMAND_ztime
 
 
 #region ;---NATO 5gram Decoding
-Func COMMAND_5gramfind($num,$in)
-	Local $key=FileGetShortName(@ScriptDir&"\p"&Int($num)&".txt")
-	Local $prg=FileGetShortName(@ScriptDir&"\otpnato.exe")
-	If Not FileExists($key) Then Return "p"&Int($num)&".txt Not Found"
+Func COMMAND_5gramfind($num, $in)
+	Local $key = FileGetShortName(@ScriptDir & "\p" & Int($num) & ".txt")
+	Local $prg = FileGetShortName(@ScriptDir & "\otpnato.exe")
+	If Not FileExists($key) Then Return "p" & Int($num) & ".txt Not Found"
 	If Not FileExists($prg) Then Return "otpnato.exe Not Found"
 
-	$in=StringRegExpReplace($in,"(?s)[^a-zA-Z]","")
+	$in = StringRegExpReplace($in, "(?s)[^a-zA-Z]", "")
 
-	Local $out=@ScriptDir&'\outOTP.txt'
+	Local $out = @ScriptDir & '\outOTP.txt'
 	FileDelete($out)
-	_RunDos(StringFormat($prg&' f %s %s > "%s"',$key,$in,$out)); I was skeptical, but this seems to work fine.
+	_RunDos(StringFormat($prg & ' f %s %s > "%s"', $key, $in, $out)); I was skeptical, but this seems to work fine.
 	Return FileRead($out)
-EndFunc
+EndFunc   ;==>COMMAND_5gramfind
 Func COMMANDX_5gram($who, $where, $what, $acmd);;;;$num,$message)
-	If (UBound($acmd)-1)<3 Then Return "5gram: not enough parameters: filenumber 5grams"
-	$num=$acmd[2]
-	Local $message=CommandToString($acmd,3,-1)
+	If (UBound($acmd) - 1) < 3 Then Return "5gram: not enough parameters: filenumber 5grams"
+	$num = $acmd[2]
+	Local $message = CommandToString($acmd, 3, -1)
 
 
-	Local $key=FileGetShortName(@ScriptDir&"\p"&Int($num)&".txt")
-	Local $prg=FileGetShortName(@ScriptDir&"\otpnato.exe")
-	If Not FileExists($key) Then Return "p"&Int($num)&".txt Not Found"
+	Local $key = FileGetShortName(@ScriptDir & "\p" & Int($num) & ".txt")
+	Local $prg = FileGetShortName(@ScriptDir & "\otpnato.exe")
+	If Not FileExists($key) Then Return "p" & Int($num) & ".txt Not Found"
 	If Not FileExists($prg) Then Return "otpnato.exe Not Found"
 
-	Local $in=@ScriptDir&'\msgOTP.txt'
-	Local $out=@ScriptDir&'\outOTP.txt'
+	Local $in = @ScriptDir & '\msgOTP.txt'
+	Local $out = @ScriptDir & '\outOTP.txt'
 	FileDelete($in)
 	FileDelete($out)
-	FileWrite($in,$message)
-	_RunDos(StringFormat($prg&' d %s %s > "%s"',$key,$in,$out))
+	FileWrite($in, $message)
+	_RunDos(StringFormat($prg & ' d %s %s > "%s"', $key, $in, $out))
 	Return FileRead($out)
-EndFunc
-#endregion
+EndFunc   ;==>COMMANDX_5gram
+#endregion ;---NATO 5gram Decoding
 
 #region ;--------ITA2 and bits
 
@@ -455,8 +455,8 @@ Func TryCommandFunc($who, $where, $what, ByRef $acmd)
 EndFunc   ;==>TryCommandFunc
 
 Func SendPrimaryChannel($what)
-	Return PRIVMSG($CHANNEL,$what)
-EndFunc
+	Return PRIVMSG($CHANNEL, $what)
+EndFunc   ;==>SendPrimaryChannel
 
 Func PRIVMSG($where, $what)
 	Global $PM_Overflow
@@ -534,8 +534,8 @@ Func Process()
 	; this is a very cut-down IRC message parser, it is not RFC-compliant or even efficient, but it's much slimmer than the original bot core.
 	If $STATE < $S_INIT Then Return False
 
-	If $TestMode And $STATE<$S_CHAT Then
-		State($STATE+1)
+	If $TestMode And $STATE < $S_CHAT Then
+		State($STATE + 1)
 		Return True
 	EndIf
 
@@ -609,7 +609,7 @@ EndFunc   ;==>Process
 
 Func Open()
 	If $TestMode Then
-		$SOCK=65536
+		$SOCK = 65536
 		State($S_INIT)
 		Return True
 	EndIf
@@ -678,15 +678,15 @@ Func Cmd($scmd)
 	EndIf
 EndFunc   ;==>Cmd
 
-Func CommandToString($acmd,$start=1,$end=-1)
-	If $end=-1 Then $end=UBound($acmd)-1
-	Local $out=""
-	For $i=$start To $end
-		If StringLen($out) Then $out&=' '
-		$out&=$acmd[$i]
+Func CommandToString($acmd, $start = 1, $end = -1)
+	If $end = -1 Then $end = UBound($acmd) - 1
+	Local $out = ""
+	For $i = $start To $end
+		If StringLen($out) Then $out &= ' '
+		$out &= $acmd[$i]
 	Next
 	Return $out
-EndFunc
+EndFunc   ;==>CommandToString
 
 Func Split($scmd)
 	$scmd = StringStripWS($scmd, 1 + 2)

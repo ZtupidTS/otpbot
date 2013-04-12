@@ -1,11 +1,11 @@
 #cs ----------------------------------------------------------------------------
-
+	
 	AutoIt Version: 3.3.6.1
 	Author:         Nadando
-
+	
 	Script Function:
-	 - Provides UTM coordinate library functions.
-
+	- Provides UTM coordinate library functions.
+	
 #ce ----------------------------------------------------------------------------
 
 ; Script Start - Add your code below here
@@ -14,42 +14,42 @@ Global Const $pi = 3.14159265358979323846264338327950288419716939937510
 Global Const $e = 2.71828182845904523536028747135266249775724709369995
 
 #cs
-#include <Array.au3>
-Dim $in[3]=[501830, 5006349, 10]
-$out=to_latlong($in[0],$in[1],$in[2]); expect 45.21062621390015, -122.97669561655198;  success!
-_ArrayDisplay($out)
-$out2=to_utm($out[0],$out[1]); expect the input or close to; we get something different.
-_ArrayDisplay($out2)
-
-Exit
+	#include <Array.au3>
+	Dim $in[3]=[501830, 5006349, 10]
+	$out=to_latlong($in[0],$in[1],$in[2]); expect 45.21062621390015, -122.97669561655198;  success!
+	_ArrayDisplay($out)
+	$out2=to_utm($out[0],$out[1]); expect the input or close to; we get something different.
+	_ArrayDisplay($out2)
+	
+	Exit
 #ce
 
 ;zone/easting/northing
 
 
-Func _UTM_ToGMaps($lat,$lon)
-	Return StringFormat("http://maps.google.com/maps?ll=%s,%s&spn=0.05,0.05&t=m&q=%s,%s",$lat,$lon,$lat,$lon)
-EndFunc
+Func _UTM_ToGMaps($lat, $lon)
+	Return StringFormat("http://maps.google.com/maps?ll=%s,%s&spn=0.05,0.05&t=m&q=%s,%s", $lat, $lon, $lat, $lon)
+EndFunc   ;==>_UTM_ToGMaps
 
 
 Func _UTM_ToLLF($utm)
-	Local $a=StringSplit($utm,'/')
-	Local $x=UBound($a)-1;last element
+	Local $a = StringSplit($utm, '/')
+	Local $x = UBound($a) - 1;last element
 	; count zone east north
 	; 0     1    2    3
-	If $x<3 Then Return SetError(1,0,"UTM formatting incorrect.")
+	If $x < 3 Then Return SetError(1, 0, "UTM formatting incorrect.")
 
-	Local $ll=to_latlong($a[2], $a[3], $a[1])
-	Return $ll[0]&', '&$ll[1]&' ( '&_UTM_ToGMaps($ll[0],$ll[1])&' )'
-EndFunc
+	Local $ll = to_latlong($a[2], $a[3], $a[1])
+	Return $ll[0] & ', ' & $ll[1] & ' ( ' & _UTM_ToGMaps($ll[0], $ll[1]) & ' )'
+EndFunc   ;==>_UTM_ToLLF
 
 
 ;-----------------------------------------------------------------------
 
-Func PyMod($n,$d);python-compatible mod
+Func PyMod($n, $d);python-compatible mod
 	If $n < 0 Then Return $d + Mod($n, $d)
-	return Mod($n, $d)
-EndFunc
+	Return Mod($n, $d)
+EndFunc   ;==>PyMod
 
 Func sinh($x)
 	return ($e ^ (2 * $x) - 1) / (2 * $e ^ $x)
@@ -193,7 +193,7 @@ Func utm_parameters()
 	$result[8] = $delta
 
 	Return $result
-EndFunc   ;==>parameters
+EndFunc   ;==>utm_parameters
 
 Func to_utm($lat, $long)
 	$result = utm_parameters()

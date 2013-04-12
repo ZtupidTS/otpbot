@@ -9,7 +9,7 @@ Func Trans2Bytes($trans)
 	Local $arr = StringSplit($trans, ' ', 2)
 	Local $bytes = ""
 	For $key In $arr
-		If StringLen($key)=0 Then ContinueLoop
+		If StringLen($key) = 0 Then ContinueLoop
 		If $key = "salt" Then ExitLoop
 		If $key = "offset" Then ExitLoop
 		$bytes &= Chr(Int($key))
@@ -18,14 +18,14 @@ Func Trans2Bytes($trans)
 EndFunc   ;==>Trans2Bytes
 
 Func getpastebin($message)
-	ConsoleWrite("getpastebin"&@CRLF)
+	ConsoleWrite("getpastebin" & @CRLF)
 	Local $id = StringRegExpReplace($message, "(?s)^.*?pastebin.com/([\d\w]+).*$", "\1")
 	If @extended = 0 Then Return SetError(1, 0, "")
 	Return SetError(0, 0, $id)
 EndFunc   ;==>getpastebin
 
 Func pastebindecode($message, $keyfile = "elpaso.bin")
-	ConsoleWrite("pastebindecode"&@CRLF)
+	ConsoleWrite("pastebindecode" & @CRLF)
 	Local $id = getpastebin($message)
 	If @error <> 0 Then Return SetError(1, 0, "")
 	Local $link = "http://pastebin.com/raw.php?i=" & $id
@@ -36,7 +36,7 @@ EndFunc   ;==>pastebindecode
 
 
 Func decodebin($message, $key = "elpaso.bin")
-	ConsoleWrite("decodebin"&@CRLF)
+	ConsoleWrite("decodebin" & @CRLF)
 	$message = StringStripWS($message, 1 + 2 + 4)
 	$bytes = Trans2Bytes($message)
 	$offset = StringRegExpReplace($message, "^(?s).*?\soffset\s(\d+).*$", "\1")

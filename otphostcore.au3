@@ -8,7 +8,7 @@ EndFunc   ;==>_OtpHost_CreateListener
 
 
 Func _OtpHost_OnCommand($cmd, $data, $socket)
-	ConsoleWrite("ONCMD: "&$cmd&" "&$socket&@CRLF)
+	ConsoleWrite("ONCMD: " & $cmd & " " & $socket & @CRLF)
 	If StringLen($_OtpHost_OnCommand) Then Call($_OtpHost_OnCommand, $cmd, $data, $socket)
 EndFunc   ;==>_OtpHost_OnCommand
 
@@ -44,7 +44,7 @@ Func _OtpHost_GetReply($skOutgoing)
 EndFunc   ;==>_OtpHost_GetReply
 
 
-Func _OtpHost_Listen($skListener,$closeSocket=True)
+Func _OtpHost_Listen($skListener, $closeSocket = True)
 	Local Static $skIncoming = -1
 	Local Static $buffer = ""
 	If $skIncoming >= 0 Then
@@ -52,7 +52,7 @@ Func _OtpHost_Listen($skListener,$closeSocket=True)
 		If StringLen($buffer) Then ConsoleWrite($buffer & @CRLF)
 		Local $cmd, $data
 		If _OtpHost_bufsplit($buffer, $cmd, $data) Then
-			_OtpHost_OnCommand($cmd, $data,$skIncoming)
+			_OtpHost_OnCommand($cmd, $data, $skIncoming)
 			If $closeSocket Then TCPCloseSocket($skIncoming)
 			$skIncoming = -1
 			$buffer = ""
@@ -87,14 +87,14 @@ Func _OtpHost_bufsplit(ByRef $buffer, ByRef $cmd_out, ByRef $data_out)
 EndFunc   ;==>_OtpHost_bufsplit
 
 
-Func _OtpHost_scmd($cmd, $data,$closeSocket=True)
+Func _OtpHost_scmd($cmd, $data, $closeSocket = True)
 	Local $sk = TCPConnect('127.0.0.1', 12917)
-	Local $r=_OtpHost_ccmd($cmd, $data, $sk)
+	Local $r = _OtpHost_ccmd($cmd, $data, $sk)
 	If $closeSocket Then
 		TCPCloseSocket($sk)
-		$sk=-1
+		$sk = -1
 	EndIf
-	Return SetError(0,$sk,$r)
+	Return SetError(0, $sk, $r)
 EndFunc   ;==>_OtpHost_scmd
 Func _OtpHost_ccmd($cmd, $data, $sk)
 	Local $bSuccess = ($sk >= 0)

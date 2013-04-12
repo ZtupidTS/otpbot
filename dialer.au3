@@ -1,5 +1,5 @@
 Global $otp22_sizeMin
-Global $otp22_wavemax=20
+Global $otp22_wavemax = 20
 Global $otp22_timeMax
 Global $dialer_checktime
 
@@ -8,7 +8,7 @@ Global $otp22_timeOld = 0
 Global $otp22_waves[$otp22_wavemax][2];size,filename
 Global $otp22_wavesOld[$otp22_wavemax][2];size,filename
 
-Global $dialer_reportfunc=''
+Global $dialer_reportfunc = ''
 
 
 
@@ -17,8 +17,8 @@ Global $dialer_reportfunc=''
 Func otp22_dialler_report()
 	otp22_getentries()
 	Local $ret = otp22_checknew()
-	If StringLen($ret) Then Call($dialer_reportfunc,$ret)
-EndFunc   ;==>otp22_dialler
+	If StringLen($ret) Then Call($dialer_reportfunc, $ret)
+EndFunc   ;==>otp22_dialler_report
 
 Func otp22_checknew()
 	If TimerDiff($otp22_timeOld) > $otp22_timeMax Then Return ""
