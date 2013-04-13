@@ -1,14 +1,14 @@
-#region ;**** Directives created by AutoIt3Wrapper_GUI ****
+#Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_icon=bot.ico
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.1.0.24
+#AutoIt3Wrapper_Res_Fileversion=6.1.1.27
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crash_demons
 #AutoIt3Wrapper_Res_Language=1033
 #AutoIt3Wrapper_Res_requestedExecutionLevel=requireAdministrator
-#endregion ;**** Directives created by AutoIt3Wrapper_GUI ****
+#EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 
 ;Standard user Libraries
 #include <Array.au3>
@@ -21,6 +21,7 @@
 #include "News.au3"
 #include "Calc.au3"
 #include "Dialer.au3"
+#include "shorturl.au3"
 #include "otphostcore.au3"
 
 
@@ -56,7 +57,7 @@ Global $news_url = Get("newsurl", "http://otp22.referata.com/wiki/Special:Ask/-5
 Global Enum $S_UNK = -1, $S_OFF, $S_INIT, $S_ON, $S_CHAT, $S_INVD
 Global Const $PARAM_START = 2
 
-Global Const $VERSION = "6.1.0"; if you modify the bot, please note so here with "modified" etc
+Global Const $VERSION = "6.1.1"; if you modify the bot, please note so here with "modified" etc
 
 
 Global $HOSTNAME = "xxxxxxxxxxxxxxxxxxx";in-IRC hostname. effects message length - becomes set later
@@ -77,6 +78,7 @@ Global $_OtpHost_Info = ""
 
 #region ;------------------BOT MAIN
 TCPStartup()
+_ShortUrl_Startup()
 FileChangeDir(@ScriptDir)
 AdlibRegister("otp22_dialler_report", $dialer_checktime)
 OnAutoItExitRegister("Quit")
@@ -198,11 +200,10 @@ Func OnStateChange($oldstate, $newstate)
 			Cmd('JOIN ' & $CHANNEL)
 		Case $S_CHAT
 			If $TestMode Then; whatever needs debugging at the moment.
-				;Msg('TEST='&Process_Message('who','where','@elpaso http://pastebin.com/9gbyQ8uA'))
-				;Msg('TEST='&Process_Message('who','where','@UTM 10/501830/5006349'))
-				;Msg('TEST='&Process_Message('who','where','@LL 45.21062621390015, -122.97669561655198'))
-				;Msg('TEST='&Process_Message('who','where','@update'))
-				;Exit
+				;COMMAND_tinyurl('http://google.com/y4')
+				;COMMAND_tinyurl('http://google.com/y5')
+				;COMMAND_tinyurl('http://google.com/y6')
+				Exit
 			EndIf
 	EndSwitch
 EndFunc   ;==>OnStateChange

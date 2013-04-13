@@ -1,3 +1,5 @@
+#include "shorturl.au3"
+
 Global $NewsInterval
 Global $OTPNEWS
 Global $OTPNEWSTIMER
@@ -89,6 +91,7 @@ Func WikiText_TranslateLink($s, $BaseWikiURL = "http://otp22.referata.com/wiki/"
 			$url = $s
 		EndIf
 	EndIf
+	$url=_ShortUrl_Retrieve($url)
 	If StringLen($text) Then Return StringFormat("[%s]( %s )", $text, $url)
 	Return $url
 EndFunc   ;==>WikiText_TranslateLink
