@@ -59,6 +59,9 @@ Updated 8:28 PM 4/12/2013
 6.1 + OtpHost now detects if OtpBot hangs up. (note: requires updated otpbot that can respond to localhost pings)
     + @tinyurl command which shorterns URLs
     + @update/news URL's are now automatically shortened when possible.
+    * @Calc now uses a different sanitization method which allows string literals and whitelisted functions to be used.
+         This uses per-character string processing to detect references and literals. Expressions composed of numbers and symbols will continue to work like normal.
+    + @cstr command added to show the sanitized version of the expression.
 
 
 

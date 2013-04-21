@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.1.1.27
+#AutoIt3Wrapper_Res_Fileversion=6.1.2.29
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crash_demons
 #AutoIt3Wrapper_Res_Language=1033
@@ -57,7 +57,7 @@ Global $news_url = Get("newsurl", "http://otp22.referata.com/wiki/Special:Ask/-5
 Global Enum $S_UNK = -1, $S_OFF, $S_INIT, $S_ON, $S_CHAT, $S_INVD
 Global Const $PARAM_START = 2
 
-Global Const $VERSION = "6.1.1"; if you modify the bot, please note so here with "modified" etc
+Global Const $VERSION = "6.1.2"; if you modify the bot, please note so here with "modified" etc
 
 
 Global $HOSTNAME = "xxxxxxxxxxxxxxxxxxx";in-IRC hostname. effects message length - becomes set later
@@ -119,7 +119,7 @@ Func Process_HostCmd($cmd, $data, $socket); message from the local controlling p
 			Quit()
 		Case 'p', 'ping'
 			$_OtpHost_Info = FileGetVersion('otphost-session.exe') & "_" & $data
-			_OtpHost_ccmd('pong', $data, $socket)
+			_OtpHost_ccmd('pong', $data, $socket);critical so the host does not consider the bot frozen.
 	EndSwitch
 	TCPCloseSocket($socket)
 EndFunc   ;==>Process_HostCmd
@@ -200,6 +200,8 @@ Func OnStateChange($oldstate, $newstate)
 			Cmd('JOIN ' & $CHANNEL)
 		Case $S_CHAT
 			If $TestMode Then; whatever needs debugging at the moment.
+				Msg(Process_Message('who', 'where', '@cstr mod $yab z'))
+				Msg(Process_Message('who', 'where', '@calc mod $yab z'))
 				;COMMAND_tinyurl('http://google.com/y4')
 				;COMMAND_tinyurl('http://google.com/y5')
 				;COMMAND_tinyurl('http://google.com/y6')
