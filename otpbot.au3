@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.1.2.29
+#AutoIt3Wrapper_Res_Fileversion=6.2.0.32
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crash_demons
 #AutoIt3Wrapper_Res_Language=1033
@@ -27,7 +27,7 @@
 
 
 #region ;------------CONFIG
-Global $TestMode = 0
+Global $TestMode = 1
 Global $SERV = Get("server", "irc.freenode.net", "config")
 Global $PORT = Get("port", 6667, "config")
 Global $CHANNEL = Get("channel", "#ARG", "config");persistant channel, will rejoin. can be invited to others (not persistant)
@@ -57,7 +57,7 @@ Global $news_url = Get("newsurl", "http://otp22.referata.com/wiki/Special:Ask/-5
 Global Enum $S_UNK = -1, $S_OFF, $S_INIT, $S_ON, $S_CHAT, $S_INVD
 Global Const $PARAM_START = 2
 
-Global Const $VERSION = "6.1.2"; if you modify the bot, please note so here with "modified" etc
+Global Const $VERSION = "6.2.0"; if you modify the bot, please note so here with "modified" etc
 
 
 Global $HOSTNAME = "xxxxxxxxxxxxxxxxxxx";in-IRC hostname. effects message length - becomes set later
@@ -201,7 +201,8 @@ Func OnStateChange($oldstate, $newstate)
 		Case $S_CHAT
 			If $TestMode Then; whatever needs debugging at the moment.
 				Msg(Process_Message('who', 'where', '@cstr mod $yab z'))
-				Msg(Process_Message('who', 'where', '@calc mod $yab z'))
+				Msg(Process_Message('who', 'where', '@mod 1 2'))
+				Msg(Process_Message('who', 'where', '@modx 1) 2<"'))
 				;COMMAND_tinyurl('http://google.com/y4')
 				;COMMAND_tinyurl('http://google.com/y5')
 				;COMMAND_tinyurl('http://google.com/y6')
@@ -254,6 +255,43 @@ EndFunc   ;==>COMMAND_ztime
 
 
 #region ;---NATO 5gram Decoding
+
+#cs
+Func COMMANDX_5gramall($who, $where, $what, $acmd);;;;$num,$message)
+	If (UBound($acmd) - 1) < 3 Then Return "5gram: not enough parameters: filenumber 5grams"
+	$nums = $acmd[2]
+	Local $message = CommandToString($acmd, 3, -1)
+
+Global $atimer
+
+
+	Local $o=""
+	For $a=0 To 4
+		If $a=0 Then $a=''
+		For $b=0 To 4
+			If $a>0 And $b=0 Then ContinueLoop
+			If $b=0 Then $b=''
+			For $c=0 To 4
+				If $b>0 And $c=0 Then ContinueLoop
+				If $c=0 Then $c=''
+				For $d=1 To 4
+					Local $i=$a&$b&$c&$d
+					$acmd=StringSplit("5gram "&$i&" "&$message, ' ')
+					$o&=$i&': '&COMMANDX_5gram($who, $where, $what, $acmd)&"| "
+					If TimerDiff($atimer)>1000 Then
+						ConsoleWrite($i&@CRLF)
+						$atimer=TimerInit()
+					EndIf
+
+				Next
+			Next
+		Next
+	Next
+	ConsoleWrite(@CRLF&$o&@CRLF)
+	Return $o
+EndFunc
+#ce
+
 Func COMMAND_5gramfind($num, $in)
 	Local $key = FileGetShortName(@ScriptDir & "\p" & Int($num) & ".txt")
 	Local $prg = FileGetShortName(@ScriptDir & "\otpnato.exe")
@@ -269,22 +307,44 @@ Func COMMAND_5gramfind($num, $in)
 EndFunc   ;==>COMMAND_5gramfind
 Func COMMANDX_5gram($who, $where, $what, $acmd);;;;$num,$message)
 	If (UBound($acmd) - 1) < 3 Then Return "5gram: not enough parameters: filenumber 5grams"
-	$num = $acmd[2]
+	$nums = $acmd[2]
 	Local $message = CommandToString($acmd, 3, -1)
 
+	Local $mode='d'
+	If StringLeft($nums,1)='d' Or StringLeft($nums,1)='e' Then
+		$mode=StringLeft($nums,1)
+		$nums=StringTrimLeft($nums,1)
+	EndIf
 
-	Local $key = FileGetShortName(@ScriptDir & "\p" & Int($num) & ".txt")
-	Local $prg = FileGetShortName(@ScriptDir & "\otpnato.exe")
-	If Not FileExists($key) Then Return "p" & Int($num) & ".txt Not Found"
-	If Not FileExists($prg) Then Return "otpnato.exe Not Found"
+	If StringLen($nums)>6 Then Return "Error: too many decoding parameters. Please use less decoding options"
 
 	Local $in = @ScriptDir & '\msgOTP.txt'
 	Local $out = @ScriptDir & '\outOTP.txt'
-	FileDelete($in)
-	FileDelete($out)
-	FileWrite($in, $message)
-	_RunDos(StringFormat($prg & ' d %s %s > "%s"', $key, $in, $out))
-	Return FileRead($out)
+	Local $prg = FileGetShortName(@ScriptDir & "\otpnato.exe")
+	Local $ret="ERROR"
+	For $i=1 To StringLen($nums)
+		Local $num=StringMid($nums,$i,1)
+		If $num="*" Then
+			$ret=""
+			For $i=1 To 4
+				$acmd=StringSplit("5gram "&$mode&$i&" "&$message, ' ')
+				$ret&=$i&": "&COMMANDX_5gram($who, $where, $what, $acmd)&" | "
+			Next
+			Return $ret
+		Else
+			Local $key = FileGetShortName(@ScriptDir & "\p" & Int($num) & ".txt")
+			If Not FileExists($key) Then Return "p" & Int($num) & ".txt Not Found"
+			If Not FileExists($prg) Then Return "otpnato.exe Not Found"
+
+			FileDelete($in)
+			FileDelete($out)
+			FileWrite($in, $message)
+			_RunDos(StringFormat($prg & ' %s %s %s > "%s"', $mode, $key, $in, $out))
+			$ret=FileRead($out)
+		EndIf
+		$message=$ret
+	Next
+	Return $ret
 EndFunc   ;==>COMMANDX_5gram
 #endregion ;---NATO 5gram Decoding
 
@@ -432,7 +492,7 @@ Func TryCommandFunc($who, $where, $what, ByRef $acmd)
 	Local $ext = 0xBEEF
 	Local $info = ""
 	$acmd[1] = StringTrimLeft($acmd[1], 1)
-	Switch $paramn; this way sucks, but there's no way to
+	Switch $paramn; this way sucks, but there's no way to... (what was I thinking?)
 		Case 0
 			$ret = Call('COMMAND_' & $acmd[1])
 			$err = @error
@@ -453,7 +513,20 @@ Func TryCommandFunc($who, $where, $what, ByRef $acmd)
 		$err = @error
 		$ext = @extended
 	EndIf
-	If $err = 0xDEAD And $ext = 0xBEEF Then Return "Command `" & $acmd[1] & "` (with " & $paramn & " parameters) not found."
+	If $err = 0xDEAD And $ext = 0xBEEF Then; no simple command exists, try a Whitelisted Calculate function! - had to put it here to reuse the CallArgArray
+		$err=0
+		$ext=0
+		Local $expression=$acmd[1]&'('
+		For $i = 1 To $paramn
+			If $i>1 Then $expression&=','
+			$expression&=_Calc_MakeLiteral($acmd[$i + 1])
+		Next
+		$expression&=')'
+		$ret = _Calc_Evaluate($expression)
+		$err = @error
+		$ext = @extended
+	EndIf
+	If $err<>0 Then Return "Command `" & $acmd[1] & "` (with " & $paramn & " parameters) not found."
 	Return $ret
 EndFunc   ;==>TryCommandFunc
 
@@ -464,7 +537,7 @@ EndFunc   ;==>SendPrimaryChannel
 Func PRIVMSG($where, $what)
 	Global $PM_Overflow
 
-	$what = StringReplace(StringStripCR($what), @LF, ' ')
+	$what = StringReplace(StringStripCR(FilterText($what)), @LF, ' ')
 	$what = StringStripWS($what, 1 + 2);leading/trailing whitespace
 	If StringLen($what) = 0 Then $what = "ERROR: I tried to send a blank message. Report this to crash_demons along with the input used."
 
@@ -481,6 +554,16 @@ Func PRIVMSG($where, $what)
 
 	Cmd("PRIVMSG " & $where & " :" & $what)
 EndFunc   ;==>PRIVMSG
+
+Func FilterText($s)
+	Local $o=''
+	For $i=1 To StringLen($s)
+		Local $c=StringMid($s,$i,1)
+		If Asc($c)<0x09 Then $c=' '
+		$o&=$c
+	Next
+	Return $o
+EndFunc
 
 Func Reply_Message($who, $where, $what);called by Process() based on conditions around Process_Message() calls
 	If $where = $NICK Then $where = $who;send reply PM's to the original sender; their PM's were addressed to us.

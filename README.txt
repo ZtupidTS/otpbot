@@ -59,9 +59,14 @@ Updated 8:28 PM 4/12/2013
 6.1 + OtpHost now detects if OtpBot hangs up. (note: requires updated otpbot that can respond to localhost pings)
     + @tinyurl command which shorterns URLs
     + @update/news URL's are now automatically shortened when possible.
+6.2
     * @Calc now uses a different sanitization method which allows string literals and whitelisted functions to be used.
          This uses per-character string processing to detect references and literals. Expressions composed of numbers and symbols will continue to work like normal.
     + @cstr command added to show the sanitized version of the expression.
+    + @5gram can now decode or encode messages using the 'e' prefix and against multiple files using their numbers in order. using the * suffix outputs all decodes 1-4.
+         Eg: using e123* will print the encoded versions using p1.txt,p2,3,1; 1,2,3,2; 1233; and 1234 inline.  Order does matter using these functions.
+         Decode order will be the reverse of encode order. eg: using e4321 to encode, one must use d1234 (or just 1234) to decode.
+    + unknown @commands will now default also to whitelisted Calculate functions, enabling use of math and string functions as commands outside of @calc
 
 
 

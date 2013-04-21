@@ -111,6 +111,14 @@ Func _Calc_IsLetter(ByRef $c)
 	Return StringRegExp($c, '^[a-zA-Z]$')
 EndFunc   ;==>_Calc_IsLetter
 
+Func _Calc_MakeLiteral($s)
+	If StringRegExp($s,"^-?[0-9]+(\.[0-9]+)?$") Then Return $s
+	$s='"'&StringReplace($s, '"',  '"&Chr(34)&"')&'"'
+	$s=StringReplace($s,@CR,'"&Chr(13)&"')
+	$s=StringReplace($s,@LF,'"&Chr(10)&"')
+	Return $s
+EndFunc
+
 ;------------------------------
 
 
