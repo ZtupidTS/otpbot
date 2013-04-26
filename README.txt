@@ -67,6 +67,9 @@ Updated 8:28 PM 4/12/2013
          Eg: using e123* will print the encoded versions using p1.txt,p2,3,1; 1,2,3,2; 1233; and 1234 inline.  Order does matter using these functions.
          Decode order will be the reverse of encode order. eg: using e4321 to encode, one must use d1234 (or just 1234) to decode.
     + unknown @commands will now default also to whitelisted Calculate functions, enabling use of math and string functions as commands outside of @calc
+    * xor decoding of pastebins will now not autocorrect for offset errors unless you say "correct" in your post.
+    * Shortened dialer recording list and added information.
+
 
 
 
