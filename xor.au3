@@ -12,7 +12,7 @@ Func Trans2Bytes($trans)
 		If StringLen($key) = 0 Then ContinueLoop
 		If $key = "salt" Then ExitLoop
 		If $key = "offset" Then ExitLoop
-		$bytes &= Chr(Int($key))
+		If StringRegExp($key,"^[0-9]+$") Then $bytes &= Chr(Int($key))
 	Next
 	Return $bytes
 EndFunc   ;==>Trans2Bytes
@@ -31,17 +31,23 @@ Func pastebindecode($message, $keyfile = "elpaso.bin")
 	Local $link = "http://pastebin.com/raw.php?i=" & $id
 	Local $data = BinaryToString(InetRead($link))
 	If Not StringRegExp($data, "(?s)[\d\s]+offset[\d\s]+") Then Return SetError(1, 0, "")
-	Return decodebin($data, $keyfile)
+
+	Local $autocorrect=StringInStr($message,'correct')
+	Return decodebin($data, $keyfile,$autocorrect)
 EndFunc   ;==>pastebindecode
 
 
-Func decodebin($message, $key = "elpaso.bin")
+Func decodebin($message, $key = "elpaso.bin", $autocorrect=1)
 	ConsoleWrite("decodebin" & @CRLF)
 	$message = StringStripWS($message, 1 + 2 + 4)
 	$bytes = Trans2Bytes($message)
 	$offset = StringRegExpReplace($message, "^(?s).*?\soffset\s(\d+).*$", "\1")
 	If @extended = 0 Then Return "I need an Offset at the end of your message. Like: 11 170 2 offset 50"
 	$offset = Int($offset)
+
+
+	Local $mode='e'
+	If $autocorrect Then $mode='a'
 
 	$key = @ScriptDir & '\' & $key
 	Local $in = @TempDir & "\msgOTP.txt"
@@ -53,7 +59,7 @@ Func decodebin($message, $key = "elpaso.bin")
 	FileWrite($in, $bytes)
 	;Return StringFormat("C:\Users\Crash\Desktop\otp22\otpdox\OtpXor\Release\OtpXor.exe e %s %s %s %s",$key,$in,$offset,$out)
 
-	Local $run = StringFormat('"%s" a "%s" "%s" %s "%s" > "%s"', $exe, $key, $in, $offset, $out, $dbg)
+	Local $run = StringFormat('"%s" %s "%s" "%s" %s "%s" > "%s"', $exe, $mode, $key, $in, $offset, $out, $dbg)
 	ConsoleWrite("Run: " & $run)
 	ConsoleWrite(@CRLF)
 	;ConsoleWrite("CWD: "&@WorkingDir&@CRLF))
