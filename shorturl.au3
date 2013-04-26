@@ -25,7 +25,7 @@ Func _ShortUrl_Cache($url,$short)
 	$_ShortUrl_Idx=Mod($_ShortUrl_Idx+1,$_ShortUrl_Max)
 	IniWrite("shorturl.ini","info","idx",$_ShortUrl_Idx)
 EndFunc
-Func _ShortUrl_Retrieve($url)
+Func _ShortUrl_Retrieve($url,$docache=1)
 	$UE_url=__SU_URIEncode($url)
 	Local $short=""
 	For $i=0 To $_ShortUrl_Max-1
@@ -40,7 +40,7 @@ Func _ShortUrl_Retrieve($url)
 		$short=_ShortUrl_Generate($url)
 		ConsoleWrite("MIS: "&$short&' '&$url&@CRLF)
 		If @error<>0 Or $short="" Then Return SetError(1,0,$url)
-		_ShortUrl_Cache($url,$short)
+		If $docache Then _ShortUrl_Cache($url,$short)
 		If StringLen($short)>=StringLen($url) Then Return SetError(2,0,$url)
 		Return $short
 	EndIf

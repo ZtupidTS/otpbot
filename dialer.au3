@@ -1,3 +1,5 @@
+#include "shorturl.au3"
+
 Global $otp22_sizeMin
 Global $otp22_wavemax = 20
 Global $otp22_timeMax
@@ -21,14 +23,24 @@ Func otp22_dialler_report()
 EndFunc   ;==>otp22_dialler_report
 
 Func otp22_checknew()
-	If TimerDiff($otp22_timeOld) > $otp22_timeMax Then Return ""
+	If TimerDiff($otp22_timeOld) > $otp22_timeMax Then Return "";;;
 	Local $sNew = "New Entries: "
 	Local $bNew = False
 	For $i = 0 To $otp22_wavemax - 1
 		If $otp22_waves[$i][0] < $otp22_sizeMin Then ContinueLoop
-		If _ArraySearch($otp22_wavesOld, $otp22_waves[$i][1], 0, 0, 0, 0, 1, 1) > -1 Then ContinueLoop
+		If _ArraySearch($otp22_wavesOld, $otp22_waves[$i][1], 0, 0, 0, 0, 1, 1) > -1 Then ContinueLoop;;;
 		$bNew = True
-		$sNew &= StringFormat("%dkb http://dialer.otp22.com/%s | ", $otp22_waves[$i][0], $otp22_waves[$i][1])
+		Local $url=StringFormat("http://dialer.otp22.com/%s", $otp22_waves[$i][1])
+		Local $uri=__URIDecode($otp22_waves[$i][1])
+		$uri=StringReplace($uri,'.wav','')
+		Local $auri=StringSplit($uri&' - ? - ?',' - ',1)
+		;_ArrayDisplay($auri)
+
+		Local $time=$auri[1]
+		Local $phone=StringLeft($auri[2],3);202, 709, 303
+		Local $agent=$auri[3]
+
+		$sNew &= StringFormat("%dkb (%s on %s) %s | ", $otp22_waves[$i][0], $agent,$phone, _ShortUrl_Retrieve($url,0)); 0->do not cache shorturl
 	Next
 	If $bNew = False Then Return ""
 	ConsoleWrite($sNew & @CRLF)
@@ -69,5 +81,27 @@ Func _StringBetweenFirst(ByRef $sInput, $sFirst, $sLast)
 	If UBound($array) > 0 Then Return $array[0]
 	Return ""
 EndFunc   ;==>_StringBetweenFirst
+
+
+Func __URIDecode($s)
+	Local $o=''
+	For $i=1 To StringLen($s)
+		Local $c=StringMid($s,$i,1)
+		If $c="%" Then
+			Local $sH=StringMid($s,$i+1,1)&StringMid($s,$i+2,1)
+			If StringRegExp($sH,"^[0-9abcdefABCDEF]+$") Then
+				$o&=Chr(Dec($sH))
+				;%20_
+				;+012
+				$i+=2
+			Else
+				$o&=$c
+			EndIf
+		Else
+			$o&=$c
+		EndIf
+	Next
+	Return $o
+EndFunc
 
 #endregion ;-----AutoDialer polling
