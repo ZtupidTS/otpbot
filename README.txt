@@ -25,7 +25,7 @@ The bot needs permission to run otpxor.exe and otpnato.exe, and permission to re
 
 Further requirements may be necessary with feature additions.
 
-Updated 8:28 PM 4/12/2013
+Updated 8:00 PM 5/1/2013
 
 
 -----Updates------
@@ -69,6 +69,7 @@ Updated 8:28 PM 4/12/2013
     + unknown @commands will now default also to whitelisted Calculate functions, enabling use of math and string functions as commands outside of @calc
     * xor decoding of pastebins will now not autocorrect for offset errors unless you say "correct" in your post.
     * Shortened dialer recording list and added information.
+    * Recording listings now list all tracks, including 0-byte files.
 
 
 

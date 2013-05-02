@@ -1,5 +1,8 @@
 #include "shorturl.au3"
 
+; Note to reviewers: this only lists information from a website hosting recordings.
+
+
 Global $otp22_sizeMin
 Global $otp22_wavemax = 20
 Global $otp22_timeMax
@@ -27,7 +30,7 @@ Func otp22_checknew()
 	Local $sNew = "New Entries: "
 	Local $bNew = False
 	For $i = 0 To $otp22_wavemax - 1
-		If $otp22_waves[$i][0] < $otp22_sizeMin Then ContinueLoop
+		If ($otp22_sizeMin>0) And ($otp22_waves[$i][0] < $otp22_sizeMin) Then ContinueLoop
 		If _ArraySearch($otp22_wavesOld, $otp22_waves[$i][1], 0, 0, 0, 0, 1, 1) > -1 Then ContinueLoop;;;
 		$bNew = True
 		Local $url=StringFormat("http://dialer.otp22.com/%s", $otp22_waves[$i][1])

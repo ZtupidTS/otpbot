@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.2.1.35
+#AutoIt3Wrapper_Res_Fileversion=6.2.2.36
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crash_demons
 #AutoIt3Wrapper_Res_Language=1033
@@ -43,7 +43,7 @@ Global $CommandChar = StringLeft(Get("commandchar", "@", "config"), 1); Command 
 Global $AutoDecoderKeyfile = Get("defaultkey", "elpaso.bin")
 Global $NewsInterval = Get("newsinterval", 15 * 60 * 1000); 15 minutes = 900000ms
 
-Global $otp22_sizeMin = Get("dialersizemin", 1);300;kb
+Global $otp22_sizeMin = Get("dialersizemin", 0);300;kb
 Global $otp22_wavemax = Get("dialercomparemax", 20)
 Global $otp22_timeMax = Get("dialercomparetime", 5 * 60 * 1000);5 minutes
 Global $dialer_checktime = Get("dialerchecktime", 2 * 60 * 1000);5 minutes
@@ -57,7 +57,7 @@ Global $news_url = Get("newsurl", "http://otp22.referata.com/wiki/Special:Ask/-5
 Global Enum $S_UNK = -1, $S_OFF, $S_INIT, $S_ON, $S_CHAT, $S_INVD
 Global Const $PARAM_START = 2
 
-Global Const $VERSION = "6.2.1"; if you modify the bot, please note so here with "modified" etc
+Global Const $VERSION = "6.2.2"; if you modify the bot, please note so here with "modified" etc
 
 
 Global $HOSTNAME = "xxxxxxxxxxxxxxxxxxx";in-IRC hostname. effects message length - becomes set later

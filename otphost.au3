@@ -106,6 +106,7 @@ Func update()
 
 	updatefile('Readme.txt')
 	updatefile('otpbot.exe')
+	updatefile('otpbot.ini')
 	updatefile('otphost.exe')
 	updatefile('otpxor.exe')
 	updatefile('otpnato.exe')
