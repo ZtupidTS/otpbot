@@ -211,6 +211,8 @@ Func utm_parameters()
 EndFunc   ;==>utm_parameters
 
 Func to_utm($lat, $long)
+	$lat=Number($lat)
+	$long=Number($long)
 	$result = utm_parameters()
 
 	$a = $result[0]
@@ -224,6 +226,7 @@ Func to_utm($lat, $long)
 	$delta = $result[8]
 
 	$z_lat = lat_zone($lat)
+	ConsoleWrite("to_utm(): $z_lat="&$z_lat&@CRLF)
 	$z_long = long_zone($z_lat, $long)
 	$long0 = radians(central_meridian($z_lat, $z_long))
 
@@ -272,6 +275,9 @@ Func to_utm($lat, $long)
 EndFunc   ;==>to_utm
 
 Func to_latlong($e, $n, $Z)
+	$e=Number($e)
+	$n=Number($n)
+	$Z=Number($Z)
 	; sign of Z indicates hemisphere
 	$result = utm_parameters()
 
@@ -289,6 +295,7 @@ Func to_latlong($e, $n, $Z)
 
 	;;DEBUG;;MsgBox(0, "E", $e)
 	;;DEBUG;;MsgBox(0, "N", $n)
+	ConsoleWrite("to_latlong(): $Z="&$Z&@CRLF)
 	Local $N0; variable wasn't declared, the case below should be forcing it to have one of two values. -crash, 5-22-13
 
 	Select
