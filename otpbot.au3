@@ -535,7 +535,7 @@ Func PRIVMSG($where, $what)
 	Local $lenMsg = StringLen($what)
 
 	If $lenMsg > $lenMax Then
-		Local $notifier = " [type @more]"
+		Local $notifier = " [type "&$CommandChar&"more]"
 		Local $lenOver = ($lenMsg - $lenMax) + StringLen($notifier) + 1; the +1 shouldn't be necessary but for unexplained reasons the text cut off by 1 char
 		$PM_Overflow = StringRight($what, $lenOver)
 		$what = StringTrimRight($what, $lenOver) & $notifier
