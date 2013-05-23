@@ -1,11 +1,11 @@
 #cs ----------------------------------------------------------------------------
-	
+
 	AutoIt Version: 3.3.6.1
 	Author:         Nadando
-	
+
 	Script Function:
 	- Provides UTM coordinate library functions.
-	
+
 #ce ----------------------------------------------------------------------------
 
 ; Script Start - Add your code below here
@@ -20,11 +20,26 @@ Global Const $e = 2.71828182845904523536028747135266249775724709369995
 	_ArrayDisplay($out)
 	$out2=to_utm($out[0],$out[1]); expect the input or close to; we get something different.
 	_ArrayDisplay($out2)
-	
+
 	Exit
 #ce
 
 ;zone/easting/northing
+
+
+
+Func COMMAND_LL($lat, $lon)
+	Local $result = to_utm($lat, $lon);
+	For $i = 0 To UBound($result) - 1
+		$result[$i] = Round($result[$i], 0)
+	Next
+	Return $result[2] & '/' & $result[0] & '/' & $result[1]
+EndFunc   ;==>COMMAND_LL
+
+
+Func COMMAND_coord($lat, $lon)
+	Return _UTM_ToGMaps($lat, $lon)
+EndFunc
 
 
 Func _UTM_ToGMaps($lat, $lon)
@@ -211,6 +226,7 @@ Func to_utm($lat, $long)
 	$z_lat = lat_zone($lat)
 	$z_long = long_zone($z_lat, $long)
 	$long0 = radians(central_meridian($z_lat, $z_long))
+
 
 	Select
 		Case $z_lat == Abs($z_lat)

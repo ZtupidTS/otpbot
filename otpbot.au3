@@ -27,7 +27,7 @@
 
 
 #region ;------------CONFIG
-Global $TestMode = 0
+Global $TestMode = 1
 Global $SERV = Get("server", "irc.freenode.net", "config")
 Global $PORT = Get("port", 6667, "config")
 Global $CHANNEL = Get("channel", "#ARG", "config");persistant channel, will rejoin. can be invited to others (not persistant)
@@ -200,10 +200,7 @@ Func OnStateChange($oldstate, $newstate)
 			Cmd('JOIN ' & $CHANNEL)
 		Case $S_CHAT
 			If $TestMode Then; whatever needs debugging at the moment.
-				otp22_dialler_report()
-				Msg(otp22_checknew())
-				Msg(Process_Message('who', 'where', '@cstr mod $yab z'))
-				Msg(Process_Message('who', 'where', '@mod 1 2'))
+				Msg(Process_Message('who', 'where', '@utm @utm 40.20738 -77.20097'))
 				;COMMAND_tinyurl('http://google.com/y4')
 				;COMMAND_tinyurl('http://google.com/y5')
 				;COMMAND_tinyurl('http://google.com/y6')
@@ -231,15 +228,6 @@ Func COMMANDX_UTM($who, $where, $what, $acmd)
 		Return "Returns the Latitude and Longitude for a UTM coordinate.  Usage: UTM zone/easting/northing   or   UTM zone easting northing "
 	EndIf
 EndFunc   ;==>COMMANDX_UTM
-Func COMMAND_LL($lat, $lon)
-	Local $result = to_utm($lat, $lon);
-	For $i = 0 To UBound($result) - 1
-		$result[$i] = Round($result[$i], 0)
-	Next
-	Return $result[2] & '/' & $result[0] & '/' & $result[1]
-EndFunc   ;==>COMMAND_LL
-
-
 
 Func COMMANDX_Worm($who, $where, $what, $acmd)
 	Local $o = ""
