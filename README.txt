@@ -70,6 +70,7 @@ Updated 9:35 PM 5/22/2013
     * xor decoding of pastebins will now not autocorrect for offset errors unless you say "correct" in your post.
     * Shortened dialer recording list and added information.
     * Recording listings now list all tracks, including 0-byte files.
+    * Fixed error that crashes the bot when providing an invalid UTM command.
     + Added command @coord that outputs a Google Maps link to a given coordinate
 
 
