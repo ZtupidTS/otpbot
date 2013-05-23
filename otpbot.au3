@@ -25,7 +25,6 @@
 #include "otphostcore.au3"
 
 
-
 #region ;------------CONFIG
 Global $TestMode = 0
 Global $SERV = Get("server", "irc.freenode.net", "config")
