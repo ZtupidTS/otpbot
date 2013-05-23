@@ -146,7 +146,7 @@ Func Process_Message($who, $where, $what); called by Process() which parses IRC 
 			Case 'help'
 				Return 'Commands are: update updatechan more help version debug | ' & _
 						'Pastebin Decoder commands: bluehill elpaso littlemissouri | ' & _
-						'Coordinates: UTM LL | NATO Decoding: 5GramFind 5Gram WORM | Other: ITA2 ITA2S lengthstobits flipbits ztime calc'
+						'Coordinates: UTM LL coord | NATO Decoding: 5GramFind 5Gram WORM | Other: ITA2 ITA2S lengthstobits flipbits ztime calc'
 			Case 'version'
 				Return "OTPBOT v" & $VERSION & " - Crash_Demons | UTM - Nadando | " & $VersionInfoExt
 			Case 'more'
