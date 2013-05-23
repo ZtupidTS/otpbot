@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.2.2.36
+#AutoIt3Wrapper_Res_Fileversion=6.2.2.37
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crash_demons
 #AutoIt3Wrapper_Res_Language=1033
@@ -27,7 +27,7 @@
 
 
 #region ;------------CONFIG
-Global $TestMode = 1
+Global $TestMode = 0
 Global $SERV = Get("server", "irc.freenode.net", "config")
 Global $PORT = Get("port", 6667, "config")
 Global $CHANNEL = Get("channel", "#ARG", "config");persistant channel, will rejoin. can be invited to others (not persistant)
@@ -200,7 +200,8 @@ Func OnStateChange($oldstate, $newstate)
 			Cmd('JOIN ' & $CHANNEL)
 		Case $S_CHAT
 			If $TestMode Then; whatever needs debugging at the moment.
-				Msg(Process_Message('who', 'where', '@utm @utm 40.20738 -77.20097'))
+				Msg(Process_Message('who', 'where', "@utm invaliddata/s/dasdas/das/dasd/as"))
+				Msg(Process_Message('who', 'where', "@utm invaliddatax"))
 				;COMMAND_tinyurl('http://google.com/y4')
 				;COMMAND_tinyurl('http://google.com/y5')
 				;COMMAND_tinyurl('http://google.com/y6')

@@ -227,6 +227,7 @@ Func to_utm($lat, $long)
 	$z_long = long_zone($z_lat, $long)
 	$long0 = radians(central_meridian($z_lat, $z_long))
 
+	Local $N0; variable wasn't declared, the case below should be forcing it to have one of two values. -crash, 5-22-13
 
 	Select
 		Case $z_lat == Abs($z_lat)
@@ -288,6 +289,7 @@ Func to_latlong($e, $n, $Z)
 
 	;;DEBUG;;MsgBox(0, "E", $e)
 	;;DEBUG;;MsgBox(0, "N", $n)
+	Local $N0; variable wasn't declared, the case below should be forcing it to have one of two values. -crash, 5-22-13
 
 	Select
 		Case $Z == Abs($Z)
