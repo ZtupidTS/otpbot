@@ -63,7 +63,7 @@ EndFunc
 
 
 Func __SU_URIEncode($sData)
-    ; Prog@ndy
+    ; courtesy Prog@ndy
     Local $aData = StringSplit(BinaryToString(StringToBinary($sData,4),1),"")
     Local $nChar
     $sData=""

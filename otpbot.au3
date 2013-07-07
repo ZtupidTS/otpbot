@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.2.2.39
+#AutoIt3Wrapper_Res_Fileversion=6.3.0.39
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crash_demons
 #AutoIt3Wrapper_Res_Language=1033
@@ -20,6 +20,7 @@
 #include "UTM.au3"
 #include "News.au3"
 #include "Calc.au3"
+#include "Wiki.au3"
 #include "Dialer.au3"
 #include "shorturl.au3"
 #include "otphostcore.au3"
@@ -56,7 +57,7 @@ Global $news_url = Get("newsurl", "http://otp22.referata.com/wiki/Special:Ask/-5
 Global Enum $S_UNK = -1, $S_OFF, $S_INIT, $S_ON, $S_CHAT, $S_INVD
 Global Const $PARAM_START = 2
 
-Global Const $VERSION = "6.2.2"; if you modify the bot, please note so here with "modified" etc
+Global Const $VERSION = "6.3.0"; if you modify the bot, please note so here with "modified" etc
 
 
 Global $HOSTNAME = "xxxxxxxxxxxxxxxxxxx";in-IRC hostname. effects message length - becomes set later
@@ -199,8 +200,8 @@ Func OnStateChange($oldstate, $newstate)
 			Cmd('JOIN ' & $CHANNEL)
 		Case $S_CHAT
 			If $TestMode Then; whatever needs debugging at the moment.
-				Msg(Process_Message('who', 'where', "@utm invaliddata/s/dasdas/das/dasd/as"))
-				Msg(Process_Message('who', 'where', "@ll invalid invalidB"))
+				Msg(Process_Message('who', 'where', "@wiki abc d"))
+				Msg(Process_Message('who', 'where', "@wiki agent system"))
 				;COMMAND_tinyurl('http://google.com/y4')
 				;COMMAND_tinyurl('http://google.com/y5')
 				;COMMAND_tinyurl('http://google.com/y6')
