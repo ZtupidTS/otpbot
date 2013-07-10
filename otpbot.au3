@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.3.0.41
+#AutoIt3Wrapper_Res_Fileversion=6.3.0.46
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crash_demons
 #AutoIt3Wrapper_Res_Language=1033
@@ -24,7 +24,6 @@
 #include "Dialer.au3"
 #include "shorturl.au3"
 #include "otphostcore.au3"
-
 
 #region ;------------CONFIG
 Global $TestMode = 0
@@ -75,8 +74,8 @@ Global $_OtpHost_Info = ""
 
 
 
-
 #region ;------------------BOT MAIN
+_OtpHost_flog('Starting')
 TCPStartup()
 _ShortUrl_Startup()
 FileChangeDir(@ScriptDir)
@@ -106,7 +105,10 @@ While 1
 WEnd
 
 AdlibUnRegister()
+_OtpHost_flog('Quitting OtpBot')
 Exit;this loop never ends, so we don't need this.
+
+
 
 ;--------------------FUNCTIONS
 
@@ -120,6 +122,7 @@ Func Process_HostCmd($cmd, $data, $socket); message from the local controlling p
 		Case 'p', 'ping'
 			$_OtpHost_Info = FileGetVersion('otphost-session.exe') & "_" & $data
 			_OtpHost_ccmd('pong', $data, $socket);critical so the host does not consider the bot frozen.
+			Sleep(250)
 	EndSwitch
 	TCPCloseSocket($socket)
 EndFunc   ;==>Process_HostCmd
@@ -205,6 +208,7 @@ Func OnStateChange($oldstate, $newstate)
 				;COMMAND_tinyurl('http://google.com/y4')
 				;COMMAND_tinyurl('http://google.com/y5')
 				;COMMAND_tinyurl('http://google.com/y6')
+				_OtpHost_flog('Quitting OtpBot Testmode')
 				Exit
 			EndIf
 	EndSwitch
@@ -590,6 +594,7 @@ Func Quit()
 	;Sleep(1000);having issues with socket closing before message arrives.
 	TCPCloseSocket($_OtpHost_Listener)
 	Close()
+	_OtpHost_flog('Quitting OtpBot')
 	Exit
 EndFunc   ;==>Quit
 
@@ -600,7 +605,7 @@ Func Read()
 	If $SOCK < 0 Then Return SetError(9999, 0, "")
 	$BUFF &= TCPRecv($SOCK, 10000)
 	If @error Then
-		Msg('Recv Error [' & @error & ',' & @extended & ']')
+		Msg('Recv Error [' & @error & ',' & @extended & ']',1)
 		Close()
 	EndIf
 EndFunc   ;==>Read
@@ -693,7 +698,7 @@ Func Open()
 	$BUFF = ''
 	$SOCK = TCPConnect($ADDR, 6667)
 	If @error Then
-		Msg("Conn Error " & @error)
+		Msg("Conn Error " & @error,1)
 		State($S_OFF)
 		Return False
 	Else
@@ -706,10 +711,11 @@ Func Close()
 	$SOCK = -1
 	State($S_OFF)
 EndFunc   ;==>Close
-Func Msg($s)
+Func Msg($s,$iserror=0)
 	$s = StringStripWS($s, 1 + 2)
-	$s = StringFormat("%15s %15s %6s %6s", $SERV, $ADDR, $SOCK, StateGetName($STATE)) & ' : ' & $s & @CRLF
-	ConsoleWrite($s)
+	$s = StringFormat("%15s %15s %6s %6s", $SERV, $ADDR, $SOCK, StateGetName($STATE)) & ' : ' & $s
+	If $iserror Then _OtpHost_flog($s)
+	ConsoleWrite($s& @CRLF)
 EndFunc   ;==>Msg
 
 
@@ -749,7 +755,7 @@ Func Cmd($scmd)
 	If $STATE < $S_CHAT Then Msg('OT=' & $scmd)
 	TCPSend($SOCK, $scmd & @CRLF)
 	If @error Then
-		Msg('Send Error [' & @error & ',' & @extended & ']')
+		Msg('Send Error [' & @error & ',' & @extended & ']',1)
 		Close()
 	EndIf
 EndFunc   ;==>Cmd
@@ -885,6 +891,5 @@ Func _URIEncode($sData)
 	Next
 	Return $sData
 EndFunc   ;==>_URIEncode
-
 
 #endregion ;------------------BOT INTERNALS

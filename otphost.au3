@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_icon=host.ico
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
-#AutoIt3Wrapper_Res_Fileversion=1.0.0.15
+#AutoIt3Wrapper_Res_Fileversion=1.0.0.23
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_Language=1033
 #AutoIt3Wrapper_Res_requestedExecutionLevel=requireAdministrator
@@ -14,6 +14,8 @@ Global $_OtpHost_OnCommand = "OnClientReply";configure library to use this funct
 
 Global $TestMode = 0
 
+
+_OtpHost_flog('Starting')
 TCPStartup();to connect to otpbot local command socket.
 FileChangeDir(@ScriptDir)
 
@@ -32,10 +34,12 @@ If StringInStr(@ScriptName, '-session') Or $TestMode Then
 	If Not (StringInStr($CmdLineRaw, "CHILD-5A881D") Or $TestMode) Then Exit (MsgBox(16, 'otphost-session', 'This program is not meant to be ran directly. Run otphost.exe instead.'))
 Else
 	If StringInStr($CmdLineRaw, "UPDATE-5A881D") Then
+		_OtpHost_flog('Received update command from OtpHost-Session')
 		ProcessWaitClose("otphost-session.exe", 3000)
 		ProcessClose("otphost-session.exe")
 		Sleep(500)
 	EndIf
+	_OtpHost_flog('Spawning Session')
 	FileDelete('otphost-session.exe')
 	FileCopy(@ScriptFullPath, 'otphost-session.exe')
 	Run('otphost-session.exe CHILD-5A881D', @ScriptDir)
@@ -76,6 +80,7 @@ EndFunc   ;==>TimeElapsed
 Func restart()
 	Global $PID
 	Global $KeepAliveTimer
+	_OtpHost_flog('Restarting bot process')
 	$PID = Run("otpbot.exe", @ScriptDir)
 	Sleep(2000)
 	$KeepAliveTimer = 0
@@ -84,6 +89,7 @@ EndFunc   ;==>restart
 Func kill($reason = "Killed by OtpHost")
 	Global $PID
 	Global $KeepAliveTimer
+	_OtpHost_flog('Killing bot process - '&$reason)
 	Cmd('quit', $reason)
 	Sleep(2000)
 	ProcessClose($PID)
@@ -99,6 +105,7 @@ EndFunc   ;==>OnClientReply
 
 
 Func update()
+	_OtpHost_flog('Updating...')
 	l("UPDATING")
 	kill('Updating to r' & $RemoteVer & '...')
 	If $TestMode Then Return
@@ -137,7 +144,7 @@ EndFunc   ;==>get
 Func Cmd($cmd, $data = "")
 	Local $r = _OtpHost_scmd($cmd, $data, False); send command and keep socket open for reuse
 	Local $s = @extended
-	_OtpHost_PollReply($s, 2000)
+	_OtpHost_PollReply($s, 2000);we don't need a successful reply, just a successful send.
 	TCPCloseSocket($s)
 	Return $r
 EndFunc   ;==>cmd
@@ -148,6 +155,7 @@ Func Quit()
 	TCPShutdown()
 	Sleep(1000)
 	ProcessClose($PID)
+	_OtpHost_flog('Closed')
 	Exit
 EndFunc   ;==>quit
 
