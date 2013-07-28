@@ -25,7 +25,7 @@ Local $_Calc_Whitelist[97] = [ _
 		'_stringtohex', '_hextostring', '_stringreverse', '_stringencrypt', _
 		'StringSplit', 'stringinstr', 'stringformat', 'Stringlower', 'stringupper', _
 		'stringlen', 'stringlower', 'stringleft', 'stringright', 'stringtrimleft', _
-		'stringtrimright', 'stringmid', 'stringregexp', 'stringreplace', 'stringregexpreplace', _
+		'stringtrimright', 'stringmid', 'stringregexp', 'stringreplace', 'stringregexpreplace','stringreverse', _
 		'binary', 'string', 'float', 'while', 'return', 'fraction', _
 		'bitand', 'bitnot', 'bitor', 'bitrotate', 'bitshift', 'bitxor', _
 		'srandom', 'string', 'number', 'random', 'round', 'floor', 'ceiling', 'false', 'Default', _

@@ -148,7 +148,7 @@ Func Process_Message($who, $where, $what); called by Process() which parses IRC 
 
 		Switch $pfx
 			Case 'help'
-				Return 'Commands are: more help version debug | Wiki/News commands: update updatechan wiki | ' & _
+				Return 'Commands are: more help version debug | Site commands: dial update updatechan query wiki | ' & _
 						'Pastebin Decoder commands: bluehill elpaso littlemissouri | ' & _
 						'Coordinates: UTM LL coord | NATO Decoding: 5GramFind 5Gram WORM | Other: ITA2 ITA2S lengthstobits flipbits ztime calc'
 			Case 'version'

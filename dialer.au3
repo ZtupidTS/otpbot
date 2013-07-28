@@ -16,6 +16,24 @@ Global $otp22_wavesOld[$otp22_wavemax][2];size,filename
 Global $dialer_reportfunc = ''
 
 
+Func COMMAND_dial($agent, $pass, $number=1)
+	Local $headers='Referer: http://dialer.otp22.com/live/'&@CRLF&'Content-Type: application/x-www-form-urlencoded'&@CRLF
+	Local $text='error'
+
+	If StringRegexp($agent,"^[0-9ABCD]+$") Then $agent&='#'
+
+	;element_2=1&element_1=18004%23&element_3=melter3&form_id=486303&submit=Submit
+	;element_2 == 1(+1 202-999-3335) 2(+1 303-309-0004) 3(+1 709-700-0122) 4(+48 22-307-1061)
+	Local $aReq=__HTTP_Req('POST','http://dialer.otp22.com/live/call.php', StringFormat("element_2=%s&element_1=%s&element_3=%s&form_id=486303&submit=Submit",_URIEncode($number),_URIEncode($agent),_URIEncode($pass)),$headers)
+	__HTTP_Transfer($aReq,$text,5000)
+	$text=StringReplace($text,Chr(0),'')
+	If StringLen($text)=0 Then Return "Error Submitting"
+	Return "Queued "&$agent
+EndFunc
+
+
+
+
 
 #region ;-----AutoDialer polling
 

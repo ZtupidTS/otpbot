@@ -6,6 +6,17 @@ Global $NewsInterval
 Global $OTPNEWS
 Global $OTPNEWSTIMER
 Global $news_url = "http://otp22.referata.com/wiki/Special:Ask/-5B-5BDisplay-20tag::News-20page-20entry-5D-5D/-3FOTP22-20NI-20full-20date/-3FSummary/format%3Dcsv/limit%3D3/sort%3DOTP22-20NI-20full-20date/order%3Ddescending/offset%3D0"
+Global $query_url = "http://otp22.referata.com/wiki/Special:Ask/%s/format%3Dcsv/offset%3D0"
+
+
+
+Func COMMANDX_query($who, $where, $what, $acmd)
+	$query=StringMid($what,1+StringLen("@query "))
+	$query=StringReplace(StringReplace(StringReplace(__SU_URIEncode($query),"+","%20"),"-","-2D"),"%","-")
+	$url=StringFormat($query_url,$query)
+	Return BinaryToString(InetRead($url, 1))& ' -- '&COMMAND_tinyurl($url);
+EndFunc
+
 
 Func COMMANDX_wiki($who, $where, $what, $acmd)
 	$page=StringMid($what,1+StringLen("@wiki "))
