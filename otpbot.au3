@@ -56,7 +56,7 @@ Global $news_url = Get("newsurl", "http://otp22.referata.com/wiki/Special:Ask/-5
 Global Enum $S_UNK = -1, $S_OFF, $S_INIT, $S_ON, $S_CHAT, $S_INVD
 Global Const $PARAM_START = 2
 
-Global Const $VERSION = "6.3.0"; if you modify the bot, please note so here with "modified" etc
+Global Const $VERSION = "6.3.1"; if you modify the bot, please note so here with "modified" etc
 
 
 Global $HOSTNAME = "xxxxxxxxxxxxxxxxxxx";in-IRC hostname. effects message length - becomes set later

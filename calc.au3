@@ -16,23 +16,23 @@ Global Const $srNQuote = '[^"' & "']"
 Global Const $srNSlash = '[^\\/]'
 
 Local $_Calc_Whitelist[97] = [ _
-		'factor', 'StringToBinary', 'TCPNameToIP', '_TCPIpToName', _
-		'BaseToBase', _
-		'_Degree', '_Radian', _
-		'vargettype', 'timerinit', 'timerdiff', _
-		'binarytostring', 'binarylen', 'binarymid', 'UBound', _
-		'_ArrayToString', '_ArrayAdd', '_ArrayDelete', '_ArraySearch', '_ArraySort', '_ArrayPop', '_ArrayPush', _
-		'_stringtohex', '_hextostring', '_stringreverse', '_stringencrypt', _
-		'StringSplit', 'stringinstr', 'stringformat', 'Stringlower', 'stringupper', _
-		'stringlen', 'stringlower', 'stringleft', 'stringright', 'stringtrimleft', _
-		'stringtrimright', 'stringmid', 'stringregexp', 'stringreplace', 'stringregexpreplace','stringreverse', _
-		'binary', 'string', 'float', 'while', 'return', 'fraction', _
-		'bitand', 'bitnot', 'bitor', 'bitrotate', 'bitshift', 'bitxor', _
-		'srandom', 'string', 'number', 'random', 'round', 'floor', 'ceiling', 'false', 'Default', _
-		'reduce', 'frac', 'comb', 'perm', 'fact', 'void', 'asin', 'acos', 'atan', 'sqrtV', 'sqrt', 'true', _
-		'int', 'gcf', 'chrw', 'chr', 'asc', 'dec', 'hex', 'mod', 'abs', 'exp', 'log', _
-		'sin', 'cos', 'tan', '_min', '_max', _
-		'not', 'and', 'or', '' _
+		'factor', 'StringToBinary', 'TCPNameToIP', 'TCPIpToName',
+		'BaseToBase',
+		'Degree', 'Radian',
+		'vargettype', 'timerinit', 'timerdiff',
+		'binarytostring', 'binarylen', 'binarymid', 'UBound',
+		'ArrayToString', 'ArrayAdd', 'ArrayDelete', 'ArraySearch', 'ArraySort', 'ArrayPop', 'ArrayPush',
+		'stringtohex', 'hextostring', 'stringreverse', 'stringencrypt',
+		'StringSplit', 'stringinstr', 'stringformat', 'Stringlower', 'stringupper',
+		'stringlen', 'stringlower', 'stringleft', 'stringright', 'stringtrimleft',
+		'stringtrimright', 'stringmid', 'stringregexp', 'stringreplace', 'stringregexpreplace','stringreverse',
+		'binary', 'string', 'float', 'while', 'return', 'fraction',
+		'bitand', 'bitnot', 'bitor', 'bitrotate', 'bitshift', 'bitxor',
+		'srandom', 'string', 'number', 'random', 'round', 'floor', 'ceiling', 'false', 'Default',
+		'reduce', 'frac', 'comb', 'perm', 'fact', 'void', 'asin', 'acos', 'atan', 'sqrtV', 'sqrt', 'true',
+		'int', 'gcf', 'chrw', 'chr', 'asc', 'dec', 'hex', 'mod', 'abs', 'exp', 'log',
+		'sin', 'cos', 'tan', 'min', 'max',
+		'not', 'and', 'or', ''
 		]
 
 
