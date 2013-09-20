@@ -5,7 +5,8 @@
 Global $NewsInterval
 Global $OTPNEWS
 Global $OTPNEWSTIMER
-Global $news_url = "http://otp22.referata.com/wiki/Special:Ask/-5B-5BDisplay-20tag::News-20page-20entry-5D-5D/-3FOTP22-20NI-20full-20date/-3FSummary/format%3Dcsv/limit%3D3/sort%3DOTP22-20NI-20full-20date/order%3Ddescending/offset%3D0"
+Global $news_url = "http://otp22.referata.com/wiki/Special:Ask/-5B-5BDisplay-20tag::News-20page-20entry-5D-5D/-3FOTP22-20NI-20full-20date/-3FSummary/format%3Dcsv/limit%3D5/sort%3DOTP22-20NI-20full-20date/order%3Ddescending/offset%3D0"
+Global $news_entries = 5
 Global $query_url = "http://otp22.referata.com/wiki/Special:Ask/%s/format%3Dcsv/offset%3D0"
 
 
@@ -64,8 +65,8 @@ Func OTP22News_Retrieve()
 	CSV_PopField($s);Header:Date
 	CSV_PopField($s);Header:Summary
 
-	Local $out = "Last 3 Updates: "
-	For $i = 1 To 3
+	Local $out = "Last "&$news_entries&" Updates: "
+	For $i = 1 To $news_entries
 		Local $page = CSV_PopField($s)
 		Local $date = CSV_PopField($s)
 		Local $summary = WikiText_Translate(CSV_PopField($s), "http://otp22.referata.com/wiki/")

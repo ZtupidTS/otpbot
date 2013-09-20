@@ -100,7 +100,15 @@ EndFunc   ;==>kill
 
 Func OnClientReply($cmd, $data, $socket)
 	Global $KeepAliveTimer
-	If $cmd = 'pong' Then $KeepAliveTimer = TimerInit()
+
+	If $cmd = 'pong'   Then
+		$KeepAliveTimer = TimerInit()
+	EndIf
+	If $cmd = 'update' Then
+		check()
+		$UpdateTimer=0
+		$KeepAliveTimer = TimerInit()
+	EndIf
 EndFunc   ;==>OnClientReply
 
 

@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.3.0.48
+#AutoIt3Wrapper_Res_Fileversion=6.3.2.50
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crash_demons
 #AutoIt3Wrapper_Res_Language=1033
@@ -48,7 +48,7 @@ Global $otp22_timeMax = Get("dialercomparetime", 5 * 60 * 1000);5 minutes
 Global $dialer_checktime = Get("dialerchecktime", 2 * 60 * 1000);5 minutes
 
 Global $news_url = Get("newsurl", "http://otp22.referata.com/wiki/Special:Ask/-5B-5BDisplay-20tag::News-20page-20entry-5D-5D/-3FOTP22-20NI-20full-20date/-3FSummary/format%3Dcsv/limit%3D3/sort%3DOTP22-20NI-20full-20date/order%3Ddescending/offset%3D0")
-
+Global $news_entries=Get("newsentries",5);last 5 updates from News wiki page.
 
 #endregion ;------------CONFIG
 
@@ -56,7 +56,7 @@ Global $news_url = Get("newsurl", "http://otp22.referata.com/wiki/Special:Ask/-5
 Global Enum $S_UNK = -1, $S_OFF, $S_INIT, $S_ON, $S_CHAT, $S_INVD
 Global Const $PARAM_START = 2
 
-Global Const $VERSION = "6.3.1"; if you modify the bot, please note so here with "modified" etc
+Global Const $VERSION = "6.3.2"; if you modify the bot, please note so here with "modified" etc
 
 
 Global $HOSTNAME = "xxxxxxxxxxxxxxxxxxx";in-IRC hostname. effects message length - becomes set later
@@ -148,7 +148,7 @@ Func Process_Message($who, $where, $what); called by Process() which parses IRC 
 
 		Switch $pfx
 			Case 'help'
-				Return 'Commands are: more help version debug | Site commands: dial update updatechan query wiki | ' & _
+				Return 'Commands are: more help version debug check | Site commands: dial update updatechan query wiki | ' & _
 						'Pastebin Decoder commands: bluehill elpaso littlemissouri | ' & _
 						'Coordinates: UTM LL coord | NATO Decoding: 5GramFind 5Gram WORM | Other: ITA2 ITA2S lengthstobits flipbits ztime calc'
 			Case 'version'
