@@ -1,4 +1,5 @@
 Global $_OtpHost_OnCommand = ""
+Global $_OtpHost_OnLogWrite=""
 Global Const $_OtpHost_Port = 12917
 Global Enum $_OtpHost_Instance_Bot, $_OtpHost_Instance_Host
 
@@ -31,11 +32,12 @@ Func _OtpHost_CreateListener($instance=0); user index is the
 	Return $ret
 EndFunc   ;==>_OtpHost_CreateListener
 Func _OtpHost_OnCommand($cmd, $data, $socket)
-	ConsoleWrite("ONCMD: " & $cmd & " " & $socket & @CRLF)
+	_OtpHost_hlog("ONCMD: " & $cmd & " " & $socket & @CRLF)
 	If StringLen($_OtpHost_OnCommand) Then Call($_OtpHost_OnCommand, $cmd, $data, $socket)
 EndFunc   ;==>_OtpHost_OnCommand
 
 Func _OtpHost_Listen($hOtphost, $closeSocket = True)
+	If Not IsArray($hOtphost) Then Return -1
 	Local $skListener=$hOtphost[1]
 	Local $buffer = ""
 	$skIncoming = TCPAccept($skListener)
@@ -43,7 +45,7 @@ Func _OtpHost_Listen($hOtphost, $closeSocket = True)
 		_OtpHost_hlog("Host Conn: " & $skIncoming)
 		$buffer = TCPRecv($skIncoming, 4096)
 		If @error<>0 Then _OtpHost_flog('_OtpHost_Listen RECV ERROR '&@error)
-		If StringLen($buffer) Then ConsoleWrite($buffer & @CRLF)
+		;If StringLen($buffer) Then _OtpHost_hlog($buffer & @CRLF)
 		Local $cmd, $data
 		If _OtpHost_bufsplit($buffer, $cmd, $data) Then
 			_OtpHost_OnCommand($cmd, $data, $skIncoming)
@@ -56,6 +58,7 @@ Func _OtpHost_Listen($hOtphost, $closeSocket = True)
 	EndIf
 EndFunc   ;==>_OtpHost_Listen
 Func _OtpHost_SendCompanion($hOtphost, $cmd, $data="")
+	If Not IsArray($hOtphost) Then Return False
 	Local $instance=$hOtphost[0]
 	Local $port=_OtpHost_GetCompanionPort($instance)
 
@@ -71,7 +74,7 @@ Func _OtpHost_SendCompanion($hOtphost, $cmd, $data="")
 		If $err<>0 Then _OtpHost_flog('_OtpHost_SendCompanion SEND ERROR '&@error)
 		$bSuccess = ($err = 0)
 		TCPCloseSocket($sk)
-		_OtpHost_hlog("CMD " & $cmd & " " & $sk & ' ' & $bSuccess)
+		;_OtpHost_hlog("CMD " & $cmd & " " & $sk & ' ' & $bSuccess)
 	EndIf
 	Return $bSuccess
 EndFunc
@@ -103,12 +106,15 @@ Func _OtpHost_cmd($cmd, $data)
 EndFunc   ;==>_OtpHost_cmd
 
 Func _OtpHost_hlog($s)
-	ConsoleWrite(StringFormat("%02d:%02d %02d-%02d-%04d %s", @HOUR, @MIN, @MDAY, @MON, @YEAR, $s) & @CRLF)
+	$s=StringFormat("%02d:%02d %02d-%02d-%04d %s", @HOUR, @MIN, @MDAY, @MON, @YEAR, $s)
+	If StringLen($_OtpHost_OnLogWrite) Then Call($_OtpHost_OnLogWrite,$s)
+	ConsoleWrite($s & @CRLF)
 EndFunc   ;==>_OtpHost_hlog
 Func _OtpHost_flog($s)
 	If Not IsDeclared('OTPLOG') Then
 		Global $OTPLOG=Int(IniRead('otpbot.ini','config','debuglog','0'))
 	EndIf
+	_OtpHost_hlog($s)
 	If Not $OTPLOG Then Return
 	FileWriteLine('otplog.txt',StringFormat("%02d:%02d %02d-%02d-%04d %s %s", @HOUR, @MIN, @MDAY, @MON, @YEAR, @ScriptName, $s) & @CRLF)
 EndFunc

@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.3.2.57
+#AutoIt3Wrapper_Res_Fileversion=6.4.0.65
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crash_demons
 #AutoIt3Wrapper_Res_Language=1033
@@ -14,6 +14,8 @@
 #include <Array.au3>
 #include <String.au3>
 #include <Process.au3>
+#include <Constants.au3>
+
 
 ;OTP22 utility libraries
 #include "Xor.au3"
@@ -26,6 +28,11 @@
 #include "shorturl.au3"
 #include "otphostcore.au3"
 #include "MiscFunctions.au3"
+
+Opt('TrayAutoPause',0)
+Opt('TrayMenuMode',1+2)
+Opt('TrayOnEventMode',1)
+
 
 #region ;------------CONFIG
 Global $TestMode = 0
@@ -58,7 +65,8 @@ Global $news_entries=Get("newsentries",5);last 5 updates from News wiki page.
 Global Enum $S_UNK = -1, $S_OFF, $S_INIT, $S_ON, $S_CHAT, $S_INVD
 Global Const $PARAM_START = 2
 
-Global Const $VERSION = "6.3.2"; if you modify the bot, please note so here with "modified" etc
+Global Const $VERSION = FileGetVersion(@ScriptFullPath); if you modify the bot, please note so here with "modified" etc
+
 
 
 Global $HOSTNAME = "xxxxxxxxxxxxxxxxxxx";in-IRC hostname. effects message length - becomes set later
@@ -76,6 +84,19 @@ Global $_OtpHost_Info = ""
 
 
 
+#region ;------------------BOT UI
+TraySetToolTip("OtpBot v"&$VERSION)
+TrayCreateItem("OtpBot v"&$VERSION)
+TrayCreateItem("")
+TrayCreateItem("")
+Global $Tray_Exit=TrayCreateItem("&Quit program")
+TrayItemSetOnEvent(-1,"Quit")
+TraySetState()
+#endregion ;------------------BOT UI
+
+
+
+
 #region ;------------------BOT MAIN
 _OtpHost_flog('Starting')
 ;TCPStartup()
@@ -85,13 +106,15 @@ AdlibRegister("otp22_dialler_report", $dialer_checktime)
 OnAutoItExitRegister("Quit")
 
 
-
+$_OtpHost_OnLogWrite=""
 Global $_OtpHost = _OtpHost_Create($_OtpHost_Instance_Bot)
 If $_OtpHost < 1 Then
 	MsgBox(48, 'OTPBot', 'Warning: Could not listen locally for OtpHost commands.' & @CRLF & 'This Means the bot will not Quit properly when updated')
 Else
 	_OtpHost_SendCompanion($_OtpHost,"info_request"); request version comparison information from OtpHost right off the bat.
 EndIf
+
+
 
 $ADDR = TCPNameToIP($SERV)
 Msg('START')
@@ -121,6 +144,17 @@ Func Process_HostCmd($cmd, $data, $socket); message from the local controlling p
 	Global $_OtpHost_Info
 	Msg($socket & ' - ' & $cmd & ' : ' & $data)
 	Switch $cmd
+		Case 'log'
+			If $data='start' Then
+				$_OtpHost_OnLogWrite="OnBotConsole"
+				_OtpHost_hlog("Bot Console logging attaching...")
+				_OtpHost_SendCompanion($_OtpHost,"log","started")
+			EndIf
+			If $data='stop' Then
+				_OtpHost_hlog("Bot Console logging detaching...")
+				$_OtpHost_OnLogWrite=""
+				_OtpHost_SendCompanion($_OtpHost,"log","stopped")
+			EndIf
 		Case 'info_response'
 			$_OtpHost_Info = FileGetVersion('otphost-session.exe') & "_" & $data
 		Case 'message'
@@ -223,6 +257,11 @@ Func OnStateChange($oldstate, $newstate)
 			EndIf
 	EndSwitch
 EndFunc   ;==>OnStateChange
+
+Func OnBotConsole($s); forwarding of console log to OtpHost - disabled by default.  controlled by $_OtpHost_OnLogWrite
+	_OtpHost_SendCompanion($_OtpHost,"log_entry",$s)
+EndFunc
+
 
 #endregion ;------------------BOT MAIN
 
@@ -372,12 +411,14 @@ EndFunc   ;==>Get
 
 
 Func Quit()
+	Opt('TrayIconHide',1)
 	Msg('QUITTING')
 	Cmd('QUIT :' & $QuitText)
 	;Sleep(1000);having issues with socket closing before message arrives.
 	Close()
 	_OtpHost_Destroy($_OtpHost)
 	_OtpHost_flog('Quitting OtpBot')
+	OnAutoItExitUnRegister("Quit"); no repeat events.
 	Exit
 EndFunc   ;==>Quit
 
@@ -497,8 +538,11 @@ EndFunc   ;==>Close
 Func Msg($s,$iserror=0)
 	$s = StringStripWS($s, 1 + 2)
 	$s = StringFormat("%15s %15s %6s %6s", $SERV, $ADDR, $SOCK, StateGetName($STATE)) & ' : ' & $s
-	If $iserror Then _OtpHost_flog($s)
-	ConsoleWrite($s& @CRLF)
+	If $iserror Then
+		_OtpHost_flog($s)
+	Else
+		_OtpHost_hlog($s)
+	EndIf
 EndFunc   ;==>Msg
 
 
