@@ -55,7 +55,7 @@ Func _OtpHost_Listen($hOtphost, $closeSocket = True)
 		Return -1
 	EndIf
 EndFunc   ;==>_OtpHost_Listen
-Func _OtpHost_SendCompanion($hOtphost, $cmd, $data)
+Func _OtpHost_SendCompanion($hOtphost, $cmd, $data="")
 	Local $instance=$hOtphost[0]
 	Local $port=_OtpHost_GetCompanionPort($instance)
 

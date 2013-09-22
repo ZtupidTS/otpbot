@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.3.2.56
+#AutoIt3Wrapper_Res_Fileversion=6.3.2.57
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crash_demons
 #AutoIt3Wrapper_Res_Language=1033
@@ -20,10 +20,12 @@
 #include "UTM.au3"
 #include "Calc.au3"
 #include "Wiki.au3"
+#include "5gram.au3"
 #include "Stats.au3"
 #include "Dialer.au3"
 #include "shorturl.au3"
 #include "otphostcore.au3"
+#include "MiscFunctions.au3"
 
 #region ;------------CONFIG
 Global $TestMode = 0
@@ -85,8 +87,11 @@ OnAutoItExitRegister("Quit")
 
 
 Global $_OtpHost = _OtpHost_Create($_OtpHost_Instance_Bot)
-If $_OtpHost < 1 Then MsgBox(48, 'OTPBot', 'Warning: Could not listen locally for OtpHost commands.' & @CRLF & 'This Means the bot will not Quit properly when updated')
-
+If $_OtpHost < 1 Then
+	MsgBox(48, 'OTPBot', 'Warning: Could not listen locally for OtpHost commands.' & @CRLF & 'This Means the bot will not Quit properly when updated')
+Else
+	_OtpHost_SendCompanion($_OtpHost,"info_request"); request version comparison information from OtpHost right off the bat.
+EndIf
 
 $ADDR = TCPNameToIP($SERV)
 Msg('START')
@@ -116,18 +121,18 @@ Func Process_HostCmd($cmd, $data, $socket); message from the local controlling p
 	Global $_OtpHost_Info
 	Msg($socket & ' - ' & $cmd & ' : ' & $data)
 	Switch $cmd
+		Case 'info_response'
+			$_OtpHost_Info = FileGetVersion('otphost-session.exe') & "_" & $data
 		Case 'message'
 			SendPrimaryChannel("***OtpHost: "&$data)
-		Case 'update'
-			MsgBox(0,'bot','update command send to wrong port')
 		Case 'quit'
 			$QuitText = "***" & $data
 			Quit()
 		Case 'ping'
-			$_OtpHost_Info = FileGetVersion('otphost-session.exe') & "_" & $data
 			_OtpHost_SendCompanion($_OtpHost,"pong",$data)
-			;Sleep(250)
+			_OtpHost_SendCompanion($_OtpHost,"info_request"); we're just going to request info on the same host timer as the incoming pings.
 		Case 'pong'
+			PRIVMSG($data, "Pong received from OtpHost.")
 	EndSwitch
 	TCPCloseSocket($socket)
 EndFunc   ;==>Process_HostCmd
@@ -153,7 +158,7 @@ Func Process_Message($who, $where, $what); called by Process() which parses IRC 
 
 		Switch $pfx
 			Case 'help'
-				Return 'Commands are: more help version debug botupdate | Site commands: dial update updatechan query wiki | ' & _
+				Return 'Commands are: more help version debug botping botupdate | Site commands: dial update updatechan query wiki | ' & _
 						'Pastebin Decoder commands: bluehill elpaso littlemissouri | ' & _
 						'Coordinates: UTM LL coord | NATO Decoding: 5GramFind 5Gram WORM | Other: ITA2 ITA2S lengthstobits flipbits ztime calc'
 			Case 'version'
@@ -225,8 +230,15 @@ EndFunc   ;==>OnStateChange
 #region ;------------------UTILITIES
 
 
-
-#region ;-----misc
+Func COMMANDX_botping($who, $where, $what, $acmd)
+	If $where=$NICK Then $where=$who;reply to the sender of a PM.
+	Local $b=_OtpHost_SendCompanion($_OtpHost,"ping",$CHANNEL)
+	If $b Then
+		Return ""; the OtpHost onCommand event will trigger a reply message
+	Else
+		Return "Error: Could not connect to OtpHost."
+	EndIf
+EndFunc
 
 Func COMMAND_botupdate()
 	Local $b=_OtpHost_SendCompanion($_OtpHost,"update",'dummydata')
@@ -237,249 +249,6 @@ Func COMMAND_botupdate()
 	EndIf
 EndFunc
 
-Func COMMANDX_UTM($who, $where, $what, $acmd)
-	Local $x = UBound($acmd) - 1
-	If $x = $PARAM_START Then
-		Return _UTM_ToLLF($acmd[$PARAM_START])
-	ElseIf $x = ($PARAM_START + 2) Then
-		Return _UTM_ToLLF($acmd[$PARAM_START + 0] & '/' & $acmd[$PARAM_START + 1] & '/' & $acmd[$PARAM_START + 2]);lazy!
-	Else
-		Return "Returns the Latitude and Longitude for a UTM coordinate.  Usage: UTM zone/easting/northing   or   UTM zone easting northing "
-	EndIf
-EndFunc   ;==>COMMANDX_UTM
-
-Func COMMANDX_Worm($who, $where, $what, $acmd)
-	Local $o = ""
-	For $i = $PARAM_START To UBound($acmd) - 1
-		$o &= IniRead(@ScriptDir & "\worm.ini", "worm", $acmd[$i], "?")
-	Next
-	Return $o
-EndFunc   ;==>COMMANDX_Worm
-
-Func COMMAND_ztime($s)
-	Return StringRegExpReplace($s, "Z?([0-9]{2})([0-9]{2})([0-9]{2})([0-9]{0,2})Z?", "Zulu time: \2:\3:\4, day \1")
-EndFunc   ;==>COMMAND_ztime
-#endregion ;-----misc
-
-
-#region ;---NATO 5gram Decoding
-
-#cs
-Func COMMANDX_5gramall($who, $where, $what, $acmd);;;;$num,$message)
-	If (UBound($acmd) - 1) < 3 Then Return "5gram: not enough parameters: filenumber 5grams"
-	$nums = $acmd[2]
-	Local $message = CommandToString($acmd, 3, -1)
-
-Global $atimer
-
-
-	Local $o=""
-	For $a=0 To 4
-		If $a=0 Then $a=''
-		For $b=0 To 4
-			If $a>0 And $b=0 Then ContinueLoop
-			If $b=0 Then $b=''
-			For $c=0 To 4
-				If $b>0 And $c=0 Then ContinueLoop
-				If $c=0 Then $c=''
-				For $d=1 To 4
-					Local $i=$a&$b&$c&$d
-					$acmd=StringSplit("5gram "&$i&" "&$message, ' ')
-					$o&=$i&': '&COMMANDX_5gram($who, $where, $what, $acmd)&"| "
-					If TimerDiff($atimer)>1000 Then
-						ConsoleWrite($i&@CRLF)
-						$atimer=TimerInit()
-					EndIf
-
-				Next
-			Next
-		Next
-	Next
-	ConsoleWrite(@CRLF&$o&@CRLF)
-	Return $o
-EndFunc
-#ce
-
-Func COMMAND_5gramfind($num, $in)
-	Local $key = FileGetShortName(@ScriptDir & "\p" & Int($num) & ".txt")
-	Local $prg = FileGetShortName(@ScriptDir & "\otpnato.exe")
-	If Not FileExists($key) Then Return "p" & Int($num) & ".txt Not Found"
-	If Not FileExists($prg) Then Return "otpnato.exe Not Found"
-
-	$in = StringRegExpReplace($in, "(?s)[^a-zA-Z]", "")
-
-	Local $out = @ScriptDir & '\outOTP.txt'
-	FileDelete($out)
-	_RunDos(StringFormat($prg & ' f %s %s > "%s"', $key, $in, $out)); I was skeptical, but this seems to work fine.
-	Return FileRead($out)
-EndFunc   ;==>COMMAND_5gramfind
-Func COMMANDX_5gram($who, $where, $what, $acmd);;;;$num,$message)
-	If (UBound($acmd) - 1) < 3 Then Return "5gram: not enough parameters: filenumber 5grams"
-	$nums = $acmd[2]
-	Local $message = CommandToString($acmd, 3, -1)
-
-	Local $mode='d'
-	If StringLeft($nums,1)='d' Or StringLeft($nums,1)='e' Then
-		$mode=StringLeft($nums,1)
-		$nums=StringTrimLeft($nums,1)
-	EndIf
-
-	If StringLen($nums)>6 Then Return "Error: too many decoding parameters. Please use less decoding options"
-
-	Local $in = @ScriptDir & '\msgOTP.txt'
-	Local $out = @ScriptDir & '\outOTP.txt'
-	Local $prg = FileGetShortName(@ScriptDir & "\otpnato.exe")
-	Local $ret="ERROR"
-	For $i=1 To StringLen($nums)
-		Local $num=StringMid($nums,$i,1)
-		If $num="*" Then
-			$ret=""
-			For $i=1 To 4
-				$acmd=StringSplit("5gram "&$mode&$i&" "&$message, ' ')
-				$ret&=$i&": "&COMMANDX_5gram($who, $where, $what, $acmd)&" | "
-			Next
-			Return $ret
-		Else
-			Local $key = FileGetShortName(@ScriptDir & "\p" & Int($num) & ".txt")
-			If Not FileExists($key) Then Return "p" & Int($num) & ".txt Not Found"
-			If Not FileExists($prg) Then Return "otpnato.exe Not Found"
-
-			FileDelete($in)
-			FileDelete($out)
-			FileWrite($in, $message)
-			_RunDos(StringFormat($prg & ' %s %s %s > "%s"', $mode, $key, $in, $out))
-			$ret=FileRead($out)
-		EndIf
-		$message=$ret
-	Next
-	Return $ret
-EndFunc   ;==>COMMANDX_5gram
-#endregion ;---NATO 5gram Decoding
-
-#region ;--------ITA2 and bits
-
-Func COMMAND_ITA2S($bits)
-	Local $o = ""
-	For $i = 0 To 4
-		$o &= "Shift " & $i & ' ' & COMMAND_ITA2(_StringRepeat('0', $i) & $bits) & ' | '
-	Next
-	Return $o
-EndFunc   ;==>COMMAND_ITA2S
-
-Func COMMAND_ITA2($bits, $printmodes = 0)
-	Local $figures = False
-	Local $o = ""
-	For $i = 1 To StringLen($bits) Step 5
-		$o &= ITA2_Byte(StringMid($bits, $i, 5), $figures, $printmodes)
-	Next
-	Return $o
-EndFunc   ;==>COMMAND_ITA2
-
-Func ITA2_Byte($5bits, ByRef $figures, $printmodes = 0)
-	Switch $5bits
-		Case '00000'
-			Return '[NULL]'
-		Case '00100'
-			Return '_'
-		Case '10111'
-			Return COMMAND_Ternary(Not $figures, 'Q', '1')
-		Case '10011'
-			Return COMMAND_Ternary(Not $figures, 'W', '2')
-		Case '00001'
-			Return COMMAND_Ternary(Not $figures, 'E', '3')
-		Case '01010'
-			Return COMMAND_Ternary(Not $figures, 'R', '4')
-		Case '10000'
-			Return COMMAND_Ternary(Not $figures, 'T', '5')
-		Case '10101'
-			Return COMMAND_Ternary(Not $figures, 'Y', '6')
-		Case '00111'
-			Return COMMAND_Ternary(Not $figures, 'U', '7')
-		Case '00110'
-			Return COMMAND_Ternary(Not $figures, 'I', '8')
-		Case '11000'
-			Return COMMAND_Ternary(Not $figures, 'O', '9')
-		Case '10110'
-			Return COMMAND_Ternary(Not $figures, 'P', '0')
-		Case '00011'
-			Return COMMAND_Ternary(Not $figures, 'A', '-')
-		Case '00101'
-			Return COMMAND_Ternary(Not $figures, 'S', '[BELL]')
-		Case '01001'
-			Return COMMAND_Ternary(Not $figures, 'D', '$')
-		Case '01101'
-			Return COMMAND_Ternary(Not $figures, 'F', '!')
-		Case '11010'
-			Return COMMAND_Ternary(Not $figures, 'G', '&')
-		Case '10100'
-			Return COMMAND_Ternary(Not $figures, 'H', '#')
-		Case '01011'
-			Return COMMAND_Ternary(Not $figures, 'J', "'")
-		Case '01111'
-			Return COMMAND_Ternary(Not $figures, 'K', '(')
-		Case '10010'
-			Return COMMAND_Ternary(Not $figures, 'L', ')')
-		Case '10001'
-			Return COMMAND_Ternary(Not $figures, 'Z', '"')
-		Case '11101'
-			Return COMMAND_Ternary(Not $figures, 'X', '/')
-		Case '01110'
-			Return COMMAND_Ternary(Not $figures, 'C', ':')
-		Case '11110'
-			Return COMMAND_Ternary(Not $figures, 'V', ';')
-		Case '11001'
-			Return COMMAND_Ternary(Not $figures, 'B', '?')
-		Case '01100'
-			Return COMMAND_Ternary(Not $figures, 'N', ',')
-		Case '11100'
-			Return COMMAND_Ternary(Not $figures, 'M', '.')
-		Case '01000'
-			Return COMMAND_Ternary(Not $figures, '[CR]', '[CR]')
-		Case '00010'
-			Return COMMAND_Ternary(Not $figures, '[LF]', '[LF]')
-		Case '11011'
-			$figures = True
-			If Int($printmodes) Then Return '[FIGS]'
-		Case '11111'
-			$figures = False
-			If Int($printmodes) Then Return '[LTRS]'
-		Case Else
-			Return " [Fragment bits=" & $5bits & "]"
-	EndSwitch
-	Return ''
-EndFunc   ;==>ITA2_Byte
-
-Func COMMAND_Ternary($cond, $a, $b)
-	If $cond Then Return $a
-	Return $b
-EndFunc   ;==>COMMAND_Ternary
-
-Func COMMAND_lengthstobits($l, $flip = 0)
-	Local $b = ""
-	For $i = 1 To StringLen($l)
-		For $j = 1 To Int(StringMid($l, $i, 1))
-			$b &= Mod($i, 2)
-		Next
-	Next
-	If $flip Then Return COMMAND_flipbits($b)
-	Return $b
-EndFunc   ;==>COMMAND_lengthstobits
-Func COMMAND_flipbits($b)
-	Local $o = ""
-	For $i = 1 To StringLen($b)
-		$o &= Mod(StringMid($b, $i, 1) + 1, 2)
-	Next
-	Return $o
-EndFunc   ;==>COMMAND_flipbits
-
-
-
-#endregion ;--------ITA2 and bits
-
-
-
-#region
-#endregion
 
 #endregion ;------------------UTILITIES
 

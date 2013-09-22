@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_icon=host.ico
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
-#AutoIt3Wrapper_Res_Fileversion=1.0.0.33
+#AutoIt3Wrapper_Res_Fileversion=1.0.0.34
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_Language=1033
 #AutoIt3Wrapper_Res_requestedExecutionLevel=requireAdministrator
@@ -63,7 +63,7 @@ While 1
 	EndIf
 	If TimeElapsed($KeepAliveTimer, 4 * 60 * 1000, True) Then kill('Bot Not Responding')
 	If TimeElapsed($PingTimer, 1 * 60 * 1000, False) Then
-		If Not (_OtpHost_SendCompanion($_OtpHost, 'ping', $LastVerCmp) Or ProcessExists($PID)) Then restart()
+		If Not (_OtpHost_SendCompanion($_OtpHost, 'ping', Random()) Or ProcessExists($PID)) Then restart()
 	EndIf
 	Sleep(250)
 WEnd
@@ -103,22 +103,29 @@ EndFunc   ;==>kill
 
 Func Process_HostCommand($cmd, $data, $socket)
 	Global $KeepAliveTimer
-
-	If $cmd = 'ping' Then
-		_OtpHost_SendCompanion($_OtpHost,"pong",$data)
-	EndIf
-	If $cmd = 'pong'   Then
-		$KeepAliveTimer = TimerInit()
-	EndIf
-	If $cmd = 'update' Or $cmd = "check" Then
-		If	check() Then
-			_OtpHost_SendCompanion($_OtpHost,"message","New version available - program update will occur shortly. ("&$LastVerCmp&")")
-			$UpdateTimer=0
-		Else
-			_OtpHost_SendCompanion($_OtpHost,"message","Program appears to be up-to-date. ("&$LastVerCmp&")")
-		EndIf
-		$KeepAliveTimer = TimerInit()
-	EndIf
+	Local $resp_cmd=""
+	Local $resp=""
+	Switch $cmd
+		Case 'info_request'
+			If $LastVerCmp=="" Then check()
+			$resp_cmd="info_response"
+			$resp=$LastVerCmp
+		Case 'ping'
+			$resp_cmd="pong"
+			$resp=$data
+		Case 'pong'
+			;just as below, update keepalive timer
+		Case 'update','check'
+			$resp_cmd="message"
+			If	check() Then
+				$resp="New version available - program update will occur shortly. ("&$LastVerCmp&")"
+				$UpdateTimer=0; force the timer to time-out on the next check and trigger full update-check
+			Else
+				$resp="Program appears to be up-to-date. ("&$LastVerCmp&")"
+			EndIf
+	EndSwitch
+	$KeepAliveTimer = TimerInit()
+	If StringLen($resp_cmd)>0 Then _OtpHost_SendCompanion($_OtpHost,$resp_cmd,$resp)
 EndFunc   ;==>OnClientReply
 
 

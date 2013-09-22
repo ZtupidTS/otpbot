@@ -26,7 +26,17 @@ Global Const $e = 2.71828182845904523536028747135266249775724709369995
 
 ;zone/easting/northing
 
-
+Func COMMANDX_UTM($who, $where, $what, $acmd)
+	Local $x = UBound($acmd) - 1
+	Local $PARAM_START=2; we're not transcluding this
+	If $x = $PARAM_START Then
+		Return _UTM_ToLLF($acmd[$PARAM_START])
+	ElseIf $x = ($PARAM_START + 2) Then
+		Return _UTM_ToLLF($acmd[$PARAM_START + 0] & '/' & $acmd[$PARAM_START + 1] & '/' & $acmd[$PARAM_START + 2]);lazy!
+	Else
+		Return "Returns the Latitude and Longitude for a UTM coordinate.  Usage: UTM zone/easting/northing   or   UTM zone easting northing "
+	EndIf
+EndFunc   ;==>COMMANDX_UTM
 
 Func COMMAND_LL($lat, $lon)
 	Local $result = to_utm($lat, $lon);
