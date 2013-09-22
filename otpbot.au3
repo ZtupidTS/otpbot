@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.3.2.50
+#AutoIt3Wrapper_Res_Fileversion=6.3.2.56
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crash_demons
 #AutoIt3Wrapper_Res_Language=1033
@@ -76,7 +76,7 @@ Global $_OtpHost_Info = ""
 
 #region ;------------------BOT MAIN
 _OtpHost_flog('Starting')
-TCPStartup()
+;TCPStartup()
 _ShortUrl_Startup()
 FileChangeDir(@ScriptDir)
 AdlibRegister("otp22_dialler_report", $dialer_checktime)
@@ -84,8 +84,8 @@ OnAutoItExitRegister("Quit")
 
 
 
-Global $_OtpHost_Listener = _OtpHost_CreateListener()
-If $_OtpHost_Listener < 1 Then MsgBox(48, 'OTPBot', 'Warning: Could not listen locally for OtpHost commands.' & @CRLF & 'This Means the bot will not Quit properly when updated')
+Global $_OtpHost = _OtpHost_Create($_OtpHost_Instance_Bot)
+If $_OtpHost < 1 Then MsgBox(48, 'OTPBot', 'Warning: Could not listen locally for OtpHost commands.' & @CRLF & 'This Means the bot will not Quit properly when updated')
 
 
 $ADDR = TCPNameToIP($SERV)
@@ -95,7 +95,7 @@ If $STATE < $S_INIT Then Msg('FAIL')
 
 
 While 1
-	_OtpHost_Listen($_OtpHost_Listener, False);poll the local listening socket, and do not automatically close after receiving a command - so we can reply back.
+	_OtpHost_Listen($_OtpHost);poll the local listening socket
 	Read()
 	Process()
 	Sleep(50)
@@ -116,13 +116,18 @@ Func Process_HostCmd($cmd, $data, $socket); message from the local controlling p
 	Global $_OtpHost_Info
 	Msg($socket & ' - ' & $cmd & ' : ' & $data)
 	Switch $cmd
-		Case 'q', 'quit'
+		Case 'message'
+			SendPrimaryChannel("***OtpHost: "&$data)
+		Case 'update'
+			MsgBox(0,'bot','update command send to wrong port')
+		Case 'quit'
 			$QuitText = "***" & $data
 			Quit()
-		Case 'p', 'ping'
+		Case 'ping'
 			$_OtpHost_Info = FileGetVersion('otphost-session.exe') & "_" & $data
-			_OtpHost_ccmd('pong', $data, $socket);critical so the host does not consider the bot frozen.
-			Sleep(250)
+			_OtpHost_SendCompanion($_OtpHost,"pong",$data)
+			;Sleep(250)
+		Case 'pong'
 	EndSwitch
 	TCPCloseSocket($socket)
 EndFunc   ;==>Process_HostCmd
@@ -148,7 +153,7 @@ Func Process_Message($who, $where, $what); called by Process() which parses IRC 
 
 		Switch $pfx
 			Case 'help'
-				Return 'Commands are: more help version debug check | Site commands: dial update updatechan query wiki | ' & _
+				Return 'Commands are: more help version debug botupdate | Site commands: dial update updatechan query wiki | ' & _
 						'Pastebin Decoder commands: bluehill elpaso littlemissouri | ' & _
 						'Coordinates: UTM LL coord | NATO Decoding: 5GramFind 5Gram WORM | Other: ITA2 ITA2S lengthstobits flipbits ztime calc'
 			Case 'version'
@@ -222,6 +227,15 @@ EndFunc   ;==>OnStateChange
 
 
 #region ;-----misc
+
+Func COMMAND_botupdate()
+	Local $b=_OtpHost_SendCompanion($_OtpHost,"update",'dummydata')
+	If $b Then
+		Return "Checking for OtpBot Updates..."
+	Else
+		Return "Error: Could not connect to OtpHost to request bot update check."
+	EndIf
+EndFunc
 
 Func COMMANDX_UTM($who, $where, $what, $acmd)
 	Local $x = UBound($acmd) - 1
@@ -592,8 +606,8 @@ Func Quit()
 	Msg('QUITTING')
 	Cmd('QUIT :' & $QuitText)
 	;Sleep(1000);having issues with socket closing before message arrives.
-	TCPCloseSocket($_OtpHost_Listener)
 	Close()
+	_OtpHost_Destroy($_OtpHost)
 	_OtpHost_flog('Quitting OtpBot')
 	Exit
 EndFunc   ;==>Quit

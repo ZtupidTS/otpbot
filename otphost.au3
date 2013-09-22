@@ -2,22 +2,17 @@
 #AutoIt3Wrapper_icon=host.ico
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
-#AutoIt3Wrapper_Res_Fileversion=1.0.0.23
+#AutoIt3Wrapper_Res_Fileversion=1.0.0.33
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_Language=1033
 #AutoIt3Wrapper_Res_requestedExecutionLevel=requireAdministrator
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 
 #include "otphostcore.au3"
-
-Global $_OtpHost_OnCommand = "OnClientReply";configure library to use this function
-
-Global $TestMode = 0
-
-
 _OtpHost_flog('Starting')
-TCPStartup();to connect to otpbot local command socket.
+Global $TestMode = 0
 FileChangeDir(@ScriptDir)
+
 
 If @Compiled = 0 And $TestMode = 0 Then Exit (MsgBox(16, 'otphost', 'This program must be compiled to work properly.'))
 
@@ -26,8 +21,6 @@ If @Compiled = 0 And $TestMode = 0 Then Exit (MsgBox(16, 'otphost', 'This progra
 
 ; otphost-session will detect its filename and run as desired.
 ; when updating, otphost-session will run otphost with a command-line parameter to tell it it has just been updated, and to wait for otphost-session to close.
-
-
 
 
 If StringInStr(@ScriptName, '-session') Or $TestMode Then
@@ -53,16 +46,26 @@ OnAutoItExitRegister("Quit")
 Global $RemoteVer = 0
 Global $PID = 0
 Global $KeepAliveTimer = 0
+Global $PingTimer=0
 Global $UpdateTimer = 0
 Global $LastVerCmp = ""
 
+Global $_OtpHost_OnCommand = "Process_HostCommand";configure library to use this function
+Global $_OtpHost = _OtpHost_Create($_OtpHost_Instance_Host)
+If $_OtpHost < 1 Then MsgBox(48, 'OTPHost', 'Warning: Could not listen locally for OtpBot-origin commands.' & @CRLF & 'This Means the host will not respond to on-demand commands from the bot.')
+
+
+
 While 1
+	_OtpHost_Listen($_OtpHost)
 	If TimeElapsed($UpdateTimer, 15 * 60 * 1000) Then
 		If check() Then update()
 	EndIf
 	If TimeElapsed($KeepAliveTimer, 4 * 60 * 1000, True) Then kill('Bot Not Responding')
-	If Not (Cmd('ping', $LastVerCmp) Or ProcessExists($PID)) Then restart()
-	Sleep(1 * 60 * 1000)
+	If TimeElapsed($PingTimer, 1 * 60 * 1000, False) Then
+		If Not (_OtpHost_SendCompanion($_OtpHost, 'ping', $LastVerCmp) Or ProcessExists($PID)) Then restart()
+	EndIf
+	Sleep(250)
 WEnd
 ;------------------------------------------
 
@@ -90,7 +93,7 @@ Func kill($reason = "Killed by OtpHost")
 	Global $PID
 	Global $KeepAliveTimer
 	_OtpHost_flog('Killing bot process - '&$reason)
-	Cmd('quit', $reason)
+	_OtpHost_SendCompanion($_OtpHost,'quit', $reason)
 	Sleep(2000)
 	ProcessClose($PID)
 	ProcessClose('otpbot.exe')
@@ -98,15 +101,22 @@ Func kill($reason = "Killed by OtpHost")
 EndFunc   ;==>kill
 
 
-Func OnClientReply($cmd, $data, $socket)
+Func Process_HostCommand($cmd, $data, $socket)
 	Global $KeepAliveTimer
 
+	If $cmd = 'ping' Then
+		_OtpHost_SendCompanion($_OtpHost,"pong",$data)
+	EndIf
 	If $cmd = 'pong'   Then
 		$KeepAliveTimer = TimerInit()
 	EndIf
-	If $cmd = 'update' Then
-		check()
-		$UpdateTimer=0
+	If $cmd = 'update' Or $cmd = "check" Then
+		If	check() Then
+			_OtpHost_SendCompanion($_OtpHost,"message","New version available - program update will occur shortly. ("&$LastVerCmp&")")
+			$UpdateTimer=0
+		Else
+			_OtpHost_SendCompanion($_OtpHost,"message","Program appears to be up-to-date. ("&$LastVerCmp&")")
+		EndIf
 		$KeepAliveTimer = TimerInit()
 	EndIf
 EndFunc   ;==>OnClientReply
@@ -129,6 +139,8 @@ Func update()
 	FileDelete("Release.ver")
 	FileWrite("Release.ver", $RemoteVer)
 
+
+	_OtpHost_Destroy($_OtpHost)
 	Run("otphost.exe UPDATE-5A881D", @ScriptDir)
 	Exit
 EndFunc   ;==>update
@@ -149,14 +161,6 @@ Func Get($file, $revision)
 	Local $r = InetGet("http://otpbot.googlecode.com/svn/trunk/" & $file & "?r=" & Int($revision), @ScriptDir & '\' & $file)
 EndFunc   ;==>get
 
-Func Cmd($cmd, $data = "")
-	Local $r = _OtpHost_scmd($cmd, $data, False); send command and keep socket open for reuse
-	Local $s = @extended
-	_OtpHost_PollReply($s, 2000);we don't need a successful reply, just a successful send.
-	TCPCloseSocket($s)
-	Return $r
-EndFunc   ;==>cmd
-
 
 Func Quit()
 	kill('OtpHost closed.')
@@ -164,6 +168,7 @@ Func Quit()
 	Sleep(1000)
 	ProcessClose($PID)
 	_OtpHost_flog('Closed')
+	_OtpHost_Destroy($_OtpHost)
 	Exit
 EndFunc   ;==>quit
 

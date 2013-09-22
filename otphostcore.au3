@@ -1,83 +1,82 @@
 Global $_OtpHost_OnCommand = ""
 Global Const $_OtpHost_Port = 12917
+Global Enum $_OtpHost_Instance_Bot, $_OtpHost_Instance_Host
+
+Global $_OtpHost__Instance=-99999
+
+Func _OtpHost_Create($instance); returns a value of unknown type, to be used as a Handle.  takes an input of an instance type Index.
+	TCPStartup()
+	Local $arr[2]=[$instance,_OtpHost_CreateListener($instance)]
+	_OtpHost_flog("OtpHost_Create ("&$arr[0]&","&$arr[1]&") :: "& ($_OtpHost_Port+$instance) &' '& _OtpHost_GetCompanionPort($instance))
+
+	Return $arr
+EndFunc
+Func _OtpHost_Destroy($hOtphost)
+	_OtpHost_flog("OtpHost_Destroy ("&$hOtphost[0]&","&$hOtphost[1]&")")
+	TCPCloseSocket($hOtphost[1])
+	TCPShutdown()
+	Return 1
+EndFunc
 
 
-Func _OtpHost_CreateListener()
-	Local $ret=TCPListen('127.0.0.1', $_OtpHost_Port)
+Func _OtpHost_GetCompanionPort($instance)
+	$instance=Mod($instance+1,2)+(Int($instance/2)*2); Pairs of ports 0=1  1=0   2=3  3=2
+	Return $_OtpHost_Port+$instance
+	Local $port=$_OtpHost_Port+$instance
+EndFunc
+Func _OtpHost_CreateListener($instance=0); user index is the
+	Local $port=$_OtpHost_Port+$instance
+	Local $ret=TCPListen('127.0.0.1', $port)
 	If @error<>0 Then _OtpHost_flog('_OtpHost_CreateListener LISTEN ERROR '&@error)
 	Return $ret
 EndFunc   ;==>_OtpHost_CreateListener
-
-
 Func _OtpHost_OnCommand($cmd, $data, $socket)
 	ConsoleWrite("ONCMD: " & $cmd & " " & $socket & @CRLF)
 	If StringLen($_OtpHost_OnCommand) Then Call($_OtpHost_OnCommand, $cmd, $data, $socket)
 EndFunc   ;==>_OtpHost_OnCommand
 
-
-Func _OtpHost_PollReply(ByRef $skOutgoing, $ms)
-	Local $timer = TimerInit()
-	While TimerDiff($timer) < $ms
-		Local $r = _OtpHost_GetReply($skOutgoing)
-		Local $e = @error
-		;_OtpHost_hlog("poll: "&$r&" "&$e)
-		If $e <> 0 Then
-			;_OtpHost_flog('_OtpHost_PollReply(' &$skOutgoing&',' &$ms&') FAILED '&$e)
-			Return SetError($e, 0, 0)
-		EndIf
-		If $r > 1 Then Return SetError(0, 0, $r)
-		Sleep(50)
-	WEnd
-	_OtpHost_flog('_OtpHost_PollReply(' &$skOutgoing&',' &$ms&') TIMEOUT ')
-	Return SetError(0xDEAD, 0xBEEF, 0)
-EndFunc   ;==>_OtpHost_PollReply
-
-Func _OtpHost_GetReply(ByRef $skOutgoing)
-	Local Static $buffer = ""
-	If $skOutgoing >= 0 Then
-		$buffer &= TCPRecv($skOutgoing, 1000)
-		Local $error=@error
-		If StringLen($buffer) Then ConsoleWrite($buffer & @CRLF)
-		Local $cmd, $data
-		If _OtpHost_bufsplit($buffer, $cmd, $data) Then
-			_OtpHost_OnCommand($cmd, $data, $skOutgoing)
-			$buffer = ""
-			Return SetError(0, 0, 1)
-		EndIf
-		If $error <> 0 Then
-			;_OtpHost_flog('_OtpHost_GetReply('&$skOutgoing&') RECV ERROR '&$error)
-			;$skOutgoing=-1
-			Return SetError(1, 0, 0)
-		EndIf
-		Return SetError(0, 0, 0)
-	EndIf
-	Return SetError(2, 0, 0)
-EndFunc   ;==>_OtpHost_GetReply
-
-
-Func _OtpHost_Listen($skListener, $closeSocket = True)
-	Local Static $skIncoming = -1
-	Local Static $buffer = ""
+Func _OtpHost_Listen($hOtphost, $closeSocket = True)
+	Local $skListener=$hOtphost[1]
+	Local $buffer = ""
+	$skIncoming = TCPAccept($skListener)
 	If $skIncoming >= 0 Then
-		$buffer &= TCPRecv($skIncoming, 1000)
+		_OtpHost_hlog("Host Conn: " & $skIncoming)
+		$buffer = TCPRecv($skIncoming, 4096)
 		If @error<>0 Then _OtpHost_flog('_OtpHost_Listen RECV ERROR '&@error)
 		If StringLen($buffer) Then ConsoleWrite($buffer & @CRLF)
 		Local $cmd, $data
 		If _OtpHost_bufsplit($buffer, $cmd, $data) Then
 			_OtpHost_OnCommand($cmd, $data, $skIncoming)
-			If $closeSocket Then TCPCloseSocket($skIncoming)
-			$skIncoming = -1
-			$buffer = ""
+			TCPCloseSocket($skIncoming)
 			Return 1
 		EndIf
 		Return 0
 	Else
-		$skIncoming = TCPAccept($skListener)
-		$buffer = ""
-		If $skIncoming >= 0 Then _OtpHost_hlog("Host Conn: " & $skIncoming)
 		Return -1
 	EndIf
 EndFunc   ;==>_OtpHost_Listen
+Func _OtpHost_SendCompanion($hOtphost, $cmd, $data)
+	Local $instance=$hOtphost[0]
+	Local $port=_OtpHost_GetCompanionPort($instance)
+
+	Local $sk = TCPConnect('127.0.0.1', $port)
+	If @error<>0 Then _OtpHost_flog('_OtpHost_SendCompanion CONNECT ERROR '&@error)
+	;Local $r = _OtpHost_ccmd($cmd, $data, $sk)
+
+
+	Local $bSuccess = ($sk >= 0)
+	If  $bSuccess Then
+		TCPSend($sk, _OtpHost_cmd($cmd, $data))
+		Local $err=@error
+		If $err<>0 Then _OtpHost_flog('_OtpHost_SendCompanion SEND ERROR '&@error)
+		$bSuccess = ($err = 0)
+		TCPCloseSocket($sk)
+		_OtpHost_hlog("CMD " & $cmd & " " & $sk & ' ' & $bSuccess)
+	EndIf
+	Return $bSuccess
+EndFunc
+
+
 
 
 
@@ -97,30 +96,6 @@ Func _OtpHost_bufsplit(ByRef $buffer, ByRef $cmd_out, ByRef $data_out)
 	$data_out = ""
 	Return False
 EndFunc   ;==>_OtpHost_bufsplit
-
-
-Func _OtpHost_scmd($cmd, $data, $closeSocket = True)
-	;_OtpHost_flog('_OtpHost_scmd('&$cmd&', '&$data&', '&$closeSocket&') ')
-	Local $sk = TCPConnect('127.0.0.1', 12917)
-	If @error<>0 Then _OtpHost_flog('_OtpHost_scmd CONNECT ERROR '&@error)
-	Local $r = _OtpHost_ccmd($cmd, $data, $sk)
-	If $closeSocket Then
-		TCPCloseSocket($sk)
-		$sk = -1
-	EndIf
-	Return SetError(0, $sk, $r)
-EndFunc   ;==>_OtpHost_scmd
-Func _OtpHost_ccmd($cmd, $data, $sk)
-	Local $bSuccess = ($sk >= 0)
-	If $sk >= 0 Then
-		TCPSend($sk, _OtpHost_cmd($cmd, $data))
-		Local $err=@error
-		If $err<>0 Then _OtpHost_flog('_OtpHost_ccmd SEND ERROR '&@error)
-		$bSuccess = ($err = 0)
-	EndIf
-	_OtpHost_hlog("CMD " & $cmd & " " & $sk & ' ' & $bSuccess)
-	Return $bSuccess
-EndFunc   ;==>_OtpHost_ccmd
 
 
 Func _OtpHost_cmd($cmd, $data)
