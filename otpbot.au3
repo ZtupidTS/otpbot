@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.4.0.65
+#AutoIt3Wrapper_Res_Fileversion=6.4.0.71
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crash_demons
 #AutoIt3Wrapper_Res_Language=1033
@@ -115,7 +115,7 @@ Else
 EndIf
 
 
-
+Global $ConnTimer=0
 $ADDR = TCPNameToIP($SERV)
 Msg('START')
 Open()
@@ -192,7 +192,7 @@ Func Process_Message($who, $where, $what); called by Process() which parses IRC 
 
 		Switch $pfx
 			Case 'help'
-				Return 'Commands are: more help version debug botping botupdate | Site commands: dial update updatechan query wiki | ' & _
+				Return 'Commands are: more help version debug uptime botping botupdate | Site commands: dial update updatechan query wiki | ' & _
 						'Pastebin Decoder commands: bluehill elpaso littlemissouri | ' & _
 						'Coordinates: UTM LL coord | NATO Decoding: 5GramFind 5Gram WORM | Other: ITA2 ITA2S lengthstobits flipbits ztime calc'
 			Case 'version'
@@ -239,6 +239,7 @@ Func OnStateChange($oldstate, $newstate)
 	Switch $newstate
 		Case $S_OFF
 		Case $S_INIT
+			$ConnTimer=TimerInit()
 			If StringLen($PASS) Then Cmd("PASS " & $PASS)
 			If StringLen($PASS) Then Cmd("PRIVMSG NICKSERV :IDENTIFY " & $NICK & " " & $PASS); this was made for Freenode, it'll fail other places - different NS services.
 			Cmd("NICK " & $NICK)
@@ -268,6 +269,14 @@ EndFunc
 
 #region ;------------------UTILITIES
 
+Func COMMAND_uptime()
+	Local $b=_OtpHost_SendCompanion($_OtpHost,"uptime","IRC Session: "&TimerDiffString($ConnTimer))
+	If $b Then
+		Return ""
+	Else
+		Return "Error: Could not connect to OtpHost to request uptime."
+	EndIf
+EndFunc
 
 Func COMMANDX_botping($who, $where, $what, $acmd)
 	If $where=$NICK Then $where=$who;reply to the sender of a PM.

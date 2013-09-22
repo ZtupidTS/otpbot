@@ -1,3 +1,5 @@
+#include <String.au3>
+
 Global $_OtpHost_OnCommand = ""
 Global $_OtpHost_OnLogWrite=""
 Global Const $_OtpHost_Port = 12917
@@ -84,15 +86,15 @@ EndFunc
 
 
 Func _OtpHost_bufsplit(ByRef $buffer, ByRef $cmd_out, ByRef $data_out)
-	Local $pCmd1 = StringInStr($buffer, '<!')
+	Local $pCmd1 = StringInStr($buffer, '<!--')
 	If $pCmd1 Then
-		$buffer = StringTrimLeft($buffer, $pCmd1 + 1); exclude trim= p-1   char trim=p    match trim=p+1;  trim the command prefix from the string
-		Local $pCmd2 = StringInStr($buffer, '!>')
+		$buffer = StringTrimLeft($buffer, $pCmd1 + 3); exclude trim= p-1   char trim=p    match trim=p+3;  trim the command prefix from the string
+		Local $pCmd2 = StringInStr($buffer, '--!>')
 		Local $sCmd = StringLeft($buffer, $pCmd2 - 1);extract command without the prefix.
-		$buffer = StringTrimLeft($buffer, $pCmd2 + 1);remove this command from the string.
-		Local $aCmd = StringSplit($sCmd & "|", "|")
+		$buffer = StringTrimLeft($buffer, $pCmd2 + 3);remove this command from the string.
+		Local $aCmd = StringSplit($sCmd & "|-!-|", "|-!-|",1)
 		$cmd_out = $aCmd[1]
-		$data_out = $aCmd[2]
+		$data_out = _HexToString($aCmd[2])
 		Return True
 	EndIf
 	$cmd_out = ""
@@ -102,7 +104,7 @@ EndFunc   ;==>_OtpHost_bufsplit
 
 
 Func _OtpHost_cmd($cmd, $data)
-	Return '<!' & $cmd & '|' & $data & '!>'
+	Return '<!--' & $cmd & '|-!-|' & _StringToHex($data) & '--!>'
 EndFunc   ;==>_OtpHost_cmd
 
 Func _OtpHost_hlog($s)
@@ -118,4 +120,50 @@ Func _OtpHost_flog($s)
 	If Not $OTPLOG Then Return
 	FileWriteLine('otplog.txt',StringFormat("%02d:%02d %02d-%02d-%04d %s %s", @HOUR, @MIN, @MDAY, @MON, @YEAR, @ScriptName, $s) & @CRLF)
 EndFunc
+
+
+Func TimerDiffString($timer)
+	Local $ms=TimerDiff($timer)
+	If $timer=0 Then Return "Never"
+	Return TimeString($ms)
+EndFunc
+Func TimeString($ms)
+	Local $s=$ms/1000
+
+	Local $factor=24*60*60
+	Local $days=Int($s/$factor)
+	$s-=$days*$factor
+	$factor=60*60
+	Local $hours=Int($s/$factor)
+	$s-=$hours*$factor
+	$factor=60
+	Local $minutes=Int($s/$factor)
+	$s-=$minutes*$factor
+	$s=Int($s)
+
+	Local $out=""
+	If $days Then
+		If StringLen($out) Then $out&=", "
+		$out&=StringFormat("%s days",$days)
+	EndIf
+	If $hours Then
+		If StringLen($out) Then $out&=", "
+		$out&=StringFormat("%s hours",$hours)
+	EndIf
+	If $minutes Then
+		If StringLen($out) Then $out&=", "
+		$out&=StringFormat("%s minutes",$minutes)
+	EndIf
+	If StringLen($out) Then $out&=", "
+	$out&=StringFormat("%s seconds",$s)
+	Return $out
+EndFunc
+Func TimeElapsed(ByRef $timer, $ms, $skipinitial = False)
+	If $skipinitial And $timer = 0 Then Return False
+	If TimerDiff($timer) > $ms Then
+		$timer = TimerInit()
+		Return True
+	EndIf
+	Return False
+EndFunc   ;==>TimeElapsed
 

@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_icon=host.ico
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
-#AutoIt3Wrapper_Res_Fileversion=2.0.0.44
+#AutoIt3Wrapper_Res_Fileversion=2.0.0.49
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_Language=1033
 #AutoIt3Wrapper_Res_requestedExecutionLevel=requireAdministrator
@@ -187,6 +187,42 @@ While 1
 WEnd
 ;------------------------------------------
 
+Func Process_HostCommand($cmd, $data, $socket)
+	Global $KeepAliveTimer, $HostTimer, $BotTimer
+	Local $resp_cmd=""
+	Local $resp=""
+	Switch $cmd
+		Case 'uptime'
+			$resp_cmd='message'
+			$resp="OtpHost Uptime: "&TimerDiffString($HostTimer)&" | OtpBot Uptime: "&TimerDiffString($BotTimer)&" | "&$data
+		Case 'info_request'
+			If $LastVerCmp=="" Then check()
+			$resp_cmd="info_response"
+			$resp=$LastVerCmp
+		Case 'log'
+			If $data='started' Then _OtpHost_hlog("Bot Console logging started.")
+			If $data='stopped' Then _OtpHost_hlog("Bot Console logging stopped.")
+		Case 'log_entry'
+			OnBotConsole($data)
+		Case 'ping'
+			$resp_cmd="pong"
+			$resp=$data
+		Case 'pong'
+			;just as below, update keepalive timer
+		Case 'update','check'
+			$resp_cmd="message"
+			If	check() Then
+				$resp="New version available - program update will occur shortly. ("&$LastVerCmp&")"
+				$UpdateTimer=0; force the timer to time-out on the next check and trigger full update-check
+			Else
+				$resp="Program appears to be up-to-date. ("&$LastVerCmp&")"
+			EndIf
+	EndSwitch
+	$isRestarting=False
+	$KeepAliveTimer = TimerInit()
+	If StringLen($resp_cmd)>0 Then _OtpHost_SendCompanion($_OtpHost,$resp_cmd,$resp)
+EndFunc   ;==>OnClientReply
+
 #region ;------UI Events
 Func Tray_Options_Click()
 	guiShow()
@@ -336,50 +372,6 @@ EndFunc
 #endregion ;------UI Events
 
 
-Func TimerDiffString($timer)
-	Local $ms=TimerDiff($timer)
-	If $timer=0 Then Return "Never"
-	Return TimeString($ms)
-EndFunc
-Func TimeString($ms)
-	Local $s=$ms/1000
-
-	Local $factor=24*60*60
-	Local $days=Int($s/$factor)
-	$s-=$days*$factor
-	$factor=60*60
-	Local $hours=Int($s/$factor)
-	$s-=$hours*$factor
-	$factor=60
-	Local $minutes=Int($s/$factor)
-	$s-=$minutes*$factor
-	$s=Int($s)
-
-	Local $out=""
-	If $days Then
-		If StringLen($out) Then $out&=", "
-		$out&=StringFormat("%s days",$days)
-	EndIf
-	If $hours Then
-		If StringLen($out) Then $out&=", "
-		$out&=StringFormat("%s hours",$hours)
-	EndIf
-	If $minutes Then
-		If StringLen($out) Then $out&=", "
-		$out&=StringFormat("%s minutes",$minutes)
-	EndIf
-	If StringLen($out) Then $out&=", "
-	$out&=StringFormat("%s seconds",$s)
-	Return $out
-EndFunc
-Func TimeElapsed(ByRef $timer, $ms, $skipinitial = False)
-	If $skipinitial And $timer = 0 Then Return False
-	If TimerDiff($timer) > $ms Then
-		$timer = TimerInit()
-		Return True
-	EndIf
-	Return False
-EndFunc   ;==>TimeElapsed
 
 Func checkProcess()
 	Local $proc=$PID
@@ -408,39 +400,6 @@ Func kill($reason = "Killed by OtpHost")
 	$KeepAliveTimer = 0
 EndFunc   ;==>kill
 
-
-Func Process_HostCommand($cmd, $data, $socket)
-	Global $KeepAliveTimer
-	Local $resp_cmd=""
-	Local $resp=""
-	Switch $cmd
-		Case 'info_request'
-			If $LastVerCmp=="" Then check()
-			$resp_cmd="info_response"
-			$resp=$LastVerCmp
-		Case 'log'
-			If $data='started' Then _OtpHost_hlog("Bot Console logging started.")
-			If $data='stopped' Then _OtpHost_hlog("Bot Console logging stopped.")
-		Case 'log_entry'
-			OnBotConsole($data)
-		Case 'ping'
-			$resp_cmd="pong"
-			$resp=$data
-		Case 'pong'
-			;just as below, update keepalive timer
-		Case 'update','check'
-			$resp_cmd="message"
-			If	check() Then
-				$resp="New version available - program update will occur shortly. ("&$LastVerCmp&")"
-				$UpdateTimer=0; force the timer to time-out on the next check and trigger full update-check
-			Else
-				$resp="Program appears to be up-to-date. ("&$LastVerCmp&")"
-			EndIf
-	EndSwitch
-	$isRestarting=False
-	$KeepAliveTimer = TimerInit()
-	If StringLen($resp_cmd)>0 Then _OtpHost_SendCompanion($_OtpHost,$resp_cmd,$resp)
-EndFunc   ;==>OnClientReply
 
 
 Func update()
