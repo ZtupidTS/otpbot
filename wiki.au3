@@ -186,7 +186,7 @@ EndFunc   ;==>_MatchBracket
 
 
 Func _Wiki_Link($canonical)
-	Return 'http://otp22.referata.com'&$canonical&' (mirror: '&COMMAND_tinyurl('http://otp22.zoxid.com'&$canonical)&' )'
+	Return 'http://otp22.referata.com'&$canonical;&' (mirror: '&COMMAND_tinyurl('http://otp22.zoxid.com'&$canonical)&' )'
 EndFunc
 
 Func _Wiki_Name($s)
