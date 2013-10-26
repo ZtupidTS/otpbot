@@ -10,12 +10,15 @@
 
 ; Script Start - Add your code below here
 
+
+
+
 Global Const $srQuote = '["' & "']"
 Global Const $srSlash = '[\\/]'
 Global Const $srNQuote = '[^"' & "']"
 Global Const $srNSlash = '[^\\/]'
 
-Local $_Calc_Whitelist[97] = [ _
+Global $_Calc_Whitelist[97] = [ _
 		'factor', 'StringToBinary', 'TCPNameToIP', 'TCPIpToName', _
 		'BaseToBase', _
 		'Degree', 'Radian', _
@@ -63,6 +66,7 @@ Func _Calc_Sanitize($s)
 	Local $srSimple = '^(\-|\+|\*|/|\^|\&|<|>|=|[0-9.]|\(|\)|\s)+$';numbers, operators and parenthesis. no functions or variables.
 	If StringRegExp($s, $srSimple) Then Return $s; expression is already safe.
 
+	Local $isNumber=False
 	Local $isReference = False
 	Local $isString = False
 	Local $stReference = ""
@@ -79,16 +83,22 @@ Func _Calc_Sanitize($s)
 				$isString = True
 			EndIf
 		EndIf
+
 		If Not $isString Then
-			If (Not $isReference) And _Calc_IsLetter($c) Then $isReference = True; starting a reference - functions have to start with letters.
-			If $isReference And (Not _Calc_IsRefChr($c)) Then
-				$isReference = False;				ending a reference
-				$stSanitized &= _Calc_Whitelist($stReference)
-				$stReference = ""
-			EndIf
-			If $isReference Then
-				$stReference &= $c
-				ContinueLoop
+			If (Not ($isNumber Or $isReference)) And $c=="0" Then $isNumber=True; if starting with an 0, then we allow for hex chars exempt from filtering (functions can't start with 0)
+			If $isNumber And (Not _Calc_IsHex($c)) Then $isNumber=False; end hex.
+
+			If Not $isNumber Then
+				If (Not $isReference) And _Calc_IsLetter($c) Then $isReference = True; starting a reference - functions have to start with letters.
+				If $isReference And (Not _Calc_IsRefChr($c)) Then;function letters were started, but encountering a non-reference symbol - end of the function name
+					$isReference = False;				ending a reference
+					$stSanitized &= _Calc_Whitelist($stReference)
+					$stReference = ""
+				EndIf
+				If $isReference Then;next char of function name
+					$stReference &= $c
+					ContinueLoop
+				EndIf
 			EndIf
 		EndIf
 		$stSanitized &= $c
@@ -98,7 +108,7 @@ Func _Calc_Sanitize($s)
 EndFunc   ;==>_Calc_Sanitize
 
 Func _Calc_Whitelist($sRef)
-	For $i = 1 To UBound($_Calc_Whitelist) - 1
+	For $i = 0 To UBound($_Calc_Whitelist) - 1
 		If $_Calc_Whitelist[$i] = $sRef Then Return $sRef
 	Next
 	Return "_REF_" & $sRef; prefixing with _REF_ invalidates functions and variables unless we actually define it.
@@ -109,6 +119,9 @@ Func _Calc_IsRefChr(ByRef $c)
 EndFunc   ;==>_Calc_IsRefChr
 Func _Calc_IsLetter(ByRef $c)
 	Return StringRegExp($c, '^[a-zA-Z]$')
+EndFunc   ;==>_Calc_IsLetter
+Func _Calc_IsHex(ByRef $c)
+	Return StringRegExp($c, '^[0123456789abcdefABCDEFx]$')
 EndFunc   ;==>_Calc_IsLetter
 
 Func _Calc_MakeLiteral($s)

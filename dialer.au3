@@ -1,3 +1,5 @@
+
+#include <Array.au3>
 #include "shorturl.au3"
 
 ; Note to reviewers: this only lists information from a website hosting recordings.
@@ -12,6 +14,7 @@ Global $otp22_time = 0
 Global $otp22_timeOld = 0
 Global $otp22_waves[$otp22_wavemax][2];size,filename
 Global $otp22_wavesOld[$otp22_wavemax][2];size,filename
+Global $otp22_downloadMax=5000
 
 Global $dialer_reportfunc = ''
 
@@ -77,7 +80,7 @@ Func otp22_getentries()
 
 	Local $text
 	Local $aReq = __HTTP_Req('GET', 'http://dialer.otp22.com/')
-	__HTTP_Transfer($aReq, $text, 5000)
+	__HTTP_Transfer($aReq, $text, $otp22_downloadMax)
 	If StringLen($text) < 2000 Then Return SetError(1, 0, "")
 	$text = StringReplace($text, '&nbsp;', ' ')
 	$text = StringReplace($text, ' ', '')
