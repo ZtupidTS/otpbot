@@ -1,45 +1,14 @@
 #include <String.au3>
-
-Global $_More_Entries=10
-Global $_More_Buffer[$_More_Entries][2]; session name[0] and buffered overflow text[1]
-Global $_More_NextEntry=0
-
-
-
-Func _More_SessionName($who, $where)
-	Local $location=$where
-	If Not (StringLeft($location,1)="#") Then $location=$who
-	Return $location
-EndFunc
-Func _More_SessionExists($sess)
-	For $i=0 To $_More_Entries-1
-		If $_More_Buffer[$i][0]=$sess Then Return $i;case insensitive?
-	Next
-	Return -1
-EndFunc
-
-Func _More_Store($who, $where, $what)
-	Local $sess=_More_SessionName($who, $where)
-	Local $i=_More_SessionExists($sess)
-	If $i<0 Then; if i>0, the session already exists, so update its data.  If i<0, this is a new session, so add it to the FIFO.
-		$i=$_More_NextEntry
-		$_More_NextEntry=Mod($_More_NextEntry+1,$_More_Entries);0 through $_More_Entries-1 looping FIFO
-	EndIf
-
-	$_More_Buffer[$i][0]=$sess
-	$_More_Buffer[$i][1]=$what
-EndFunc
-Func _More_Retrieve($who, $where, $what)
-	Local $sess=_More_SessionName($who, $where)
-	Local $i=_More_SessionExists($sess)
-	If $i<0 Then Return "Error: I could not find any More data for a conversation with `"&$sess&"`."
-	Return $_More_Buffer[$i][1]
-EndFunc
-
-Func COMMANDX_more($who, $where, $what, $acmd)
-	Return _More_Retrieve($who, $where, $what)
-EndFunc
-
+#include <Array.au3>
+#include "GeneralCommands.au3"
+_Help_RegisterGroup("Niche")
+_Help_Register("Worm","<5gram entries>","Decodes 5gram messages using the OTP22 Green Book QR-Code table.  eg: `worm FNAIU YPBIE`")
+_Help_Register("ZTime","<date string>","Attempts to present PRJMLPL-style date codes in a readable format. eg: `ztime 31125959Z`")
+_Help_Register("ITA2","<binary string>","Decodes ITA2 bits into a string. eg: `ITA2 10100001101101110000` (see http://en.wikipedia.org/wiki/Baudot_code#ITA2 )")
+_Help_Register("ITA2S","<binary string>","Decodes ITA2 bits into strings using various bit shifts on the input. See `help ita2` for more information.")
+_Help_Register("Ternary","<condition> <value A> <value B>","Performs a ternary operation. Note: all condition strings except for 0 and empty (blank parameter) evaluate to True internally.   eg: `ternary 1 a b` or `ternary 0 a b`")
+_Help_Register("LengthsToBits","<numeric string> [flip]","Translates a list of single-digit bit lengths into a binary string.  That is, every digit (`length`) represents the number of bits to print, and the value (1 or 0) alternates with each length.  If the `flip` paramter is given (as 1) then the binary string will be inverted in value.  eg: `lengthstobits 4412 1`")
+_Help_Register("FlipBits","<binary string>","Inverts a binary string switching 1's and 0's similar to a binary NOT operation.  eg: `flipbits 1011`")
 
 
 Func COMMANDX_Worm($who, $where, $what, $acmd)

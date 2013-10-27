@@ -1,9 +1,11 @@
 #include <String.au3>
+#include "GeneralCommands.au3"
 #include-once
 
 Global $_ShortUrl_Max=100
 Global $_ShortUrl_Idx=0
-
+_Help_RegisterGroup("ShortUrl")
+_Help_RegisterCommand("tinyurl","<link>","Generates a shortened link using a preset url-shortening service. (not necessarily tinyurl) Resulting URLs are cached.")
 
 
 

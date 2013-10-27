@@ -1,8 +1,12 @@
 
 #include <Array.au3>
 #include "shorturl.au3"
+#include "GeneralCommands.au3"
 
 ; Note to reviewers: this only lists information from a website hosting recordings.
+_Help_RegisterGroup("Dialer")
+_Help_RegisterCommand("dial","<agentcode> <password>","Posts a dial request to the auto-dialer. Completely numeric agent codes will have `#` automatically appended to them. Note: Use this in PM ONLY to prevent posting the password. If you use this in a channel, you are a MORON.")
+
 
 
 Global $otp22_sizeMin

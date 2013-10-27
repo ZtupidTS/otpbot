@@ -1,6 +1,7 @@
 #include-once
 #include <String.au3>
 #include "shorturl.au3"
+#include "GeneralCommands.au3"
 
 Global $NewsInterval
 Global $OTPNEWS
@@ -8,6 +9,13 @@ Global $OTPNEWSTIMER
 Global $news_url = "http://otp22.referata.com/wiki/Special:Ask/-5B-5BDisplay-20tag::News-20page-20entry-5D-5D/-3FOTP22-20NI-20full-20date/-3FSummary/format%3Dcsv/limit%3D5/sort%3DOTP22-20NI-20full-20date/order%3Ddescending/offset%3D0"
 Global $news_entries = 5
 Global $query_url = "http://otp22.referata.com/wiki/Special:Ask/%s/format%3Dcsv/offset%3D0"
+
+
+_Help_RegisterGroup("Wiki")
+_Help_RegisterCommand("update","","Displays News information and current events.")
+_Help_RegisterCommand("updatechan","","Displays News information and current events - sent to the channel.")
+_Help_RegisterCommand("query","<query string>","Performs a Semantic-MediaWiki query and results CSV results.")
+_Help_RegisterCommand("wiki","<page name>","Looks up a page name on the wiki and results a link. Provides a search link if not found. Offers some limited casing and redirect name-resolving through MediaWiki.")
 
 
 

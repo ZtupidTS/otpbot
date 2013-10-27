@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.4.0.73
+#AutoIt3Wrapper_Res_Fileversion=6.4.0.75
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crash_demons
 #AutoIt3Wrapper_Res_Language=1033
@@ -27,7 +27,8 @@
 #include "Dialer.au3"
 #include "shorturl.au3"
 #include "otphostcore.au3"
-#include "MiscFunctions.au3"
+#include "NicheFunctions.au3"
+#include "GeneralCommands.au3"
 
 Opt('TrayAutoPause',0)
 Opt('TrayMenuMode',1+2)
@@ -80,6 +81,15 @@ ReDim $otp22_waves[$otp22_wavemax][2]
 $dialer_reportfunc = 'SendPrimaryChannel'
 $_OtpHost_OnCommand = "Process_HostCmd"
 Global $_OtpHost_Info = ""
+
+_Help_RegisterGroup("Bot")
+_Help_RegisterCommand("uptime","","Displays uptime information about IRC Connection, OtpBot and OtpHost.")
+_Help_RegisterCommand("botping","","Sends a ping message to OtpHost.  Note: OtpHost pong responses are asynchronous and arrive at the bot's primary channel.")
+_Help_RegisterCommand("botupdate","","Requests OtpHost to check for updates. This may result in an immediate program update.  Note: OtpHost version responses are asynchronous and arrive at the bot's primary channel.")
+_Help_RegisterCommand("version","","Display version information about OtpBot.")
+_Help_RegisterCommand("debug","","Display command debugging, otphost, and keyfile debugging and status information.")
+
+
 #endregion ;------------------INTERNAL VARIABLES
 
 
@@ -190,10 +200,10 @@ Func Process_Message($who, $where, $what); called by Process() which parses IRC 
 		$pfx = StringTrimLeft($pfx, 1); trim off the @ or whatever
 
 		Switch $pfx
-			Case 'help'
-				Return 'Commands are: more help version debug uptime botping botupdate | Site commands: dial update updatechan query wiki | ' & _
-						'Pastebin Decoder commands: bluehill elpaso littlemissouri | ' & _
-						'Coordinates: UTM LL coord | NATO Decoding: 5GramFind 5Gram WORM | Other: ITA2 ITA2S lengthstobits flipbits ztime calc'
+			;Case 'help'
+			;	Return 'Commands are: more help version debug uptime botping botupdate | Site commands: dial update updatechan query wiki | ' & _
+			;			'Pastebin Decoder commands: bluehill elpaso littlemissouri | ' & _
+			;			'Coordinates: UTM LL coord | NATO Decoding: 5GramFind 5Gram WORM | Other: ITA2 ITA2S lengthstobits flipbits ztime calc'
 			Case 'version'
 				Return "OTPBOT v" & $VERSION & " - Crash_Demons | UTM - Nadando | " & $VersionInfoExt
 			Case 'updatechan', 'update_chan'
@@ -265,6 +275,8 @@ EndFunc
 
 
 #region ;------------------UTILITIES
+
+
 
 Func COMMAND_uptime()
 	Local $b=_OtpHost_SendCompanion($_OtpHost,"uptime","IRC Session: "&TimerDiffString($ConnTimer))

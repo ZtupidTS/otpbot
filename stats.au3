@@ -1,3 +1,8 @@
+#include-once
+#include "GeneralCommands.au3"
+
+_Help_Register("stats","","Provides otpbot host system information.")
+
 Func COMMAND_stats()
 	Local $mem=MemGetStats ( );
 	Local $drvf=DriveSpaceFree (@ScriptDir)
