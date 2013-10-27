@@ -10,8 +10,20 @@
 
 ; Script Start - Add your code below here
 
+#include "GeneralCommands.au3"
+
+_Help_RegisterGroup("UTM")
+_Help_Register("UTM","<UTM coordinate>","Returns the Latitude and Longitude for a UTM coordinate.  Usage: UTM zone/easting/northing   or   UTM zone easting northing -- Courtesy: Nadando")
+_Help_Register("LL","<latitude> <longitude>","Returns the UTM conversion for the given coordinate. -- Courtesy: Nadando")
+_Help_Register("Coord","<latitude> <longitude>","Returns the Google Maps link for the given coordinate.")
+
 Global Const $pi = 3.14159265358979323846264338327950288419716939937510
 Global Const $e = 2.71828182845904523536028747135266249775724709369995
+
+
+
+
+
 
 #cs
 	#include <Array.au3>
