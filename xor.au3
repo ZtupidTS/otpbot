@@ -11,6 +11,7 @@ _Help_RegisterCommand("littlemissouri","<pastebin link>","This command defaults 
 #region ;----- autodecoder for  black OTP1
 
 Func COMMAND_pastebinxor($link,$keyfile="elpaso.bin")
+	If (Not StringRegExp($keyfile,'^[a-zA-Z0-9_\-\.]+$')) Or StringInStr($keyfile,'..')>0 Then Return "Invalid keyfile name"
 	Return pastebindecode($link, $keyfile)
 EndFunc
 
