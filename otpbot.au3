@@ -172,7 +172,6 @@ Func Process_HostCmd($cmd, $data, $socket); message from the local controlling p
 EndFunc   ;==>Process_HostCmd
 
 Func Process_Message($who, $where, $what); called by Process() which parses IRC commands; if you return a string, Process() will form a reply.
-	Global $PM_Overflow
 	Local $isPM = ($where = $NICK)
 	Local $isChannel = (StringLeft($where, 1) = '#')
 	Local $isCommand = (StringLeft($what, 1) = $CommandChar)
@@ -197,15 +196,13 @@ Func Process_Message($who, $where, $what); called by Process() which parses IRC 
 						'Coordinates: UTM LL coord | NATO Decoding: 5GramFind 5Gram WORM | Other: ITA2 ITA2S lengthstobits flipbits ztime calc'
 			Case 'version'
 				Return "OTPBOT v" & $VERSION & " - Crash_Demons | UTM - Nadando | " & $VersionInfoExt
-			Case 'more'
-				Return $PM_Overflow
 			Case 'updatechan', 'update_chan'
 				Return OTP22News_Read()
 			Case 'update'
 				Reply_Message($who, $who, OTP22News_Read());redirect reply to PM
 				Return '';disable any automatic reply
 			Case 'debug'
-				Return StringFormat("DBG: WHO=%s WHERE=%s WHAT=%s Compiled=%s OTPHOST=%s data.bin=%s elpaso.bin=%s littlemissouri=%s p1.txt=%s p2.txt=%s p3.txt=%s p4.txt=%s", $who, $where, $what, @Compiled, $_OtpHost_Info, _
+				Return StringFormat("DBG: WHO=%s WHERE=%s WHAT=%s Compiled=%s OTPHOST=%s data.bin=%s elpaso.bin=%s littlemissouri.bin=%s p1.txt=%s p2.txt=%s p3.txt=%s p4.txt=%s", $who, $where, $what, @Compiled, $_OtpHost_Info, _
 						FileGetSize('data.bin'), FileGetSize('elpaso.bin'), FileGetSize('littlemissouri.bin'), _
 						FileGetSize('p1.txt'), FileGetSize('p2.txt'), FileGetSize('p3.txt'), FileGetSize('p4.txt'))
 
@@ -360,11 +357,10 @@ Func SendPrimaryChannel($what)
 EndFunc   ;==>SendPrimaryChannel
 
 Func PRIVMSG($where, $what)
-	Global $PM_Overflow
 
 	$what = StringReplace(StringStripCR(FilterText($what)), @LF, ' ')
 	$what = StringStripWS($what, 1 + 2);leading/trailing whitespace
-	If StringLen($what) = 0 Then $what = "ERROR: I tried to send a blank message. Report this to crash_demons along with the input used."
+	If StringLen($what) = 0 Then $what = "ERROR: I tried to send a blank message. Report this to https://code.google.com/p/otpbot/issues/entry along with the input used."
 
 
 	Local $lenMax = 496 - StringLen($NICK & $USERNAME & $HOSTNAME & $where);512 - (":" + nick + "!" + user + "@" + host + " PRIVMSG " + channel + " :" + CR + LF) == 496 - nick - user - host - channel
@@ -373,7 +369,7 @@ Func PRIVMSG($where, $what)
 	If $lenMsg > $lenMax Then
 		Local $notifier = " [type "&$CommandChar&"more]"
 		Local $lenOver = ($lenMsg - $lenMax) + StringLen($notifier) + 1; the +1 shouldn't be necessary but for unexplained reasons the text cut off by 1 char
-		$PM_Overflow = StringRight($what, $lenOver)
+		_More_Store($where,$where,StringRight($what, $lenOver))
 		$what = StringTrimRight($what, $lenOver) & $notifier
 	EndIf
 
