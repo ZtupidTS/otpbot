@@ -1,6 +1,17 @@
 #include <String.au3>
 #include <Array.au3>
+#include <Constants.au3>
+#include <Process.au3>
+#include <WinAPI.au3>
 #include "GeneralCommands.au3"
+_Help_RegisterGroup("PGP")
+_Help_Register("GetKey","<keyid> [keyserver]","Retrieves a PGP key from a keyserver for use with the Verify command. The default server is pgp.mit.edu.")
+_Help_Register("Verify","<pastebin link>","Retrieves and verifies a PGP-signed message from a pastebin link. You may need to use the GetKey first.")
+
+
+
+
+
 _Help_RegisterGroup("Niche")
 _Help_Register("Worm","<5gram entries>","Decodes 5gram messages using the OTP22 Green Book QR-Code table.  eg: `worm FNAIU YPBIE`")
 _Help_Register("ZTime","<date string>","Attempts to present PRJMLPL-style date codes in a readable format. eg: `ztime 31125959Z`")
@@ -11,6 +22,102 @@ _Help_Register("LengthsToBits","<numeric string> [flip]","Translates a list of s
 _Help_Register("FlipBits","<binary string>","Inverts a binary string switching 1's and 0's similar to a binary NOT operation.  eg: `flipbits 1011`")
 
 
+
+
+Func _Niche_getpastebin($message)
+	ConsoleWrite("getpastebin" & @CRLF)
+	Local $id = StringRegExpReplace($message, "(?s)^.*?pastebin.com/([\d\w]+).*$", "\1")
+	If @extended = 0 Then Return SetError(1, 0, "")
+	Return SetError(0, 0, $id)
+EndFunc   ;==>getpastebin
+
+Func COMMAND_VERIFY($message)
+	ConsoleWrite("pastebindecode" & @CRLF)
+	Local $id = _Niche_getpastebin($message)
+	If @error <> 0 Then Return SetError(1, 0, "")
+	Local $link = "http://pastebin.com/raw.php?i=" & $id
+	Local $data = BinaryToString(InetRead($link))
+
+	Return _Niche_VerifyPGP($data)
+EndFunc   ;==>pastebindecode
+
+
+Func _Niche_FindPGP()
+	Local $rpath="GNU\GnuPG"
+	Local $prefixes[4]=["Program Files","Program Files (x86)","progra~1","progra~2"]
+	Local $suffixes[3]=["","pub","bin"]
+	For $pfx In $prefixes
+		For $sfx In $suffixes
+			Local $path='C:\'&$pfx&'\'&$rpath&'\'&$sfx&'\gpg.exe'
+			$path=StringReplace($path,'\\','\');
+			If FileExists($path) Then Return SetError(0,0,$path)
+		Next
+	Next
+	Return SetError(1,0,"")
+EndFunc
+
+Func COMMAND_GetKey($keyid,$keyserver="pgp.mit.edu")
+	If Not StringRegExp($keyserver,"^[a-zA-Z0-9.]+$") Return "Invalid keyserver name."
+	If Not StringRegExp($keyid,"^[abcdefABCDEF0123456789]+$") Return "Invalid KeyID."
+	Return _Niche_InitPGP($keyid,$keyserver)
+EndFunc
+Func _Niche_InitPGP($keyid,$keyserver)
+	;Return StringFormat("C:\Users\Crash\Desktop\otp22\otpdox\OtpXor\Release\OtpXor.exe e %s %s %s %s",$key,$in,$offset,$out)
+	Local $exe=_Niche_FindPGP()
+	If @error<>0 Then Return "GPG folder not found."
+	Local $program=StringFormat('"%s"',$exe)
+	Local $params=StringFormat('--keyserver %s --recv-keys %s',$keyserver,$keyid)
+
+	Local $run = $program&' '&$params
+	ConsoleWrite("Run: " & $run)
+	ConsoleWrite(@CRLF)
+	;Local $pid=Run($run,EnvGet('PATH'),@SW_SHOW);try shellex
+	RunWait($run,@WorkingDir,@SW_HIDE);
+	If @error<>0 Then Return "Failure"
+	Return "Success"
+EndFunc   ;==>decodebin
+
+Func _Niche_VerifyPGP($message)
+	Local $in = @TempDir & "\msgOTP.txt"
+	Local $out = @TempDir & "\outOTP.txt"
+
+
+	FileDelete($in)
+	FileDelete($out)
+	FileWrite($in, $message)
+	;Return StringFormat("C:\Users\Crash\Desktop\otp22\otpdox\OtpXor\Release\OtpXor.exe e %s %s %s %s",$key,$in,$offset,$out)
+	Local $exe=_Niche_FindPGP()
+	If @error<>0 Then Return "GPG folder not found."
+	Local $program=StringFormat('"%s"',$exe)
+	Local $params=StringFormat('--batch --status-file "%s" --verify "%s"',$out,$in)
+
+	Local $run = $program&' '&$params
+	ConsoleWrite("Run: " & $run)
+	ConsoleWrite(@CRLF)
+	;Local $pid=Run($run,EnvGet('PATH'),@SW_SHOW);try shellex
+	RunWait($run,@WorkingDir,@SW_HIDE);
+
+	Local $txt=FileRead($out)
+	Local $arr=StringSplit(StringStripWS(StringStripCR($txt),1+2+4),@LF)
+	For $line In $arr
+		$line=StringTrimLeft($line,StringInStr($line,"]"))
+		$line=StringStripWS($line,1+2+4)
+		;ConsoleWrite(StringLeft($line,6)&@CRLF)
+		If StringLeft($line,6)="GOODSI" Or StringLeft($line,6)="BADSIG" Then Return $line
+	Next
+	Return "Could not verify signature: "&$txt
+EndFunc   ;==>decodebin
+
+
+
+
+
+
+
+
+
+
+;------------------------------------------------------
 Func COMMANDX_Worm($who, $where, $what, $acmd)
 	Local $o = ""
 	Local $PARAM_START=2; we're not transcluding that.

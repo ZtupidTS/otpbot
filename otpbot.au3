@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.4.0.79
+#AutoIt3Wrapper_Res_Fileversion=6.4.0.81
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crash_demons
 #AutoIt3Wrapper_Res_Language=1033
@@ -255,8 +255,9 @@ Func OnStateChange($oldstate, $newstate)
 			Cmd('JOIN ' & $CHANNEL)
 		Case $S_CHAT
 			If $TestMode Then; whatever needs debugging at the moment.
-				Msg(Process_Message('who', 'where', "@wiki abc d"))
-				Msg(Process_Message('who', 'where', "@wiki agent system"))
+				Msg(Process_Message('who', 'where', "@VERIFY http://pastebin.com/sJiGQEPM"))
+				Msg(COMMAND_VERIFY("@VERIFY http://pastebin.com/sJiGQEPM"))
+				;Msg(Process_Message('who', 'where', "@wiki agent system"))
 				;COMMAND_tinyurl('http://google.com/y4')
 				;COMMAND_tinyurl('http://google.com/y5')
 				;COMMAND_tinyurl('http://google.com/y6')
