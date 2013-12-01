@@ -57,8 +57,8 @@ Func _Niche_FindPGP()
 EndFunc
 
 Func COMMAND_GetKey($keyid,$keyserver="pgp.mit.edu")
-	If Not StringRegExp($keyserver,"^[a-zA-Z0-9.]+$") Return "Invalid keyserver name."
-	If Not StringRegExp($keyid,"^[abcdefABCDEF0123456789]+$") Return "Invalid KeyID."
+	If Not StringRegExp($keyserver,"^[a-zA-Z0-9.]+$") Then Return "Invalid keyserver name."
+	If Not StringRegExp($keyid,"^[abcdefABCDEF0123456789]+$") Then Return "Invalid KeyID."
 	Return _Niche_InitPGP($keyid,$keyserver)
 EndFunc
 Func _Niche_InitPGP($keyid,$keyserver)
