@@ -18,7 +18,7 @@ Global $otp22_time = 0
 Global $otp22_timeOld = 0
 Global $otp22_waves[$otp22_wavemax][2];size,filename
 Global $otp22_wavesOld[$otp22_wavemax][2];size,filename
-Global $otp22_downloadMax=5000
+Global $otp22_downloadMax=20000
 
 Global $dialer_reportfunc = ''
 
@@ -56,6 +56,7 @@ Func otp22_checknew()
 	Local $bNew = False
 	For $i = 0 To $otp22_wavemax - 1
 		If ($otp22_sizeMin>0) And ($otp22_waves[$i][0] < $otp22_sizeMin) Then ContinueLoop
+		If StringLen($otp22_waves[$i][1])<1 Then ContinueLoop
 		If _ArraySearch($otp22_wavesOld, $otp22_waves[$i][1], 0, 0, 0, 0, 1, 1) > -1 Then ContinueLoop;;;
 		$bNew = True
 		Local $url=StringFormat("http://dialer.otp22.com/%s", $otp22_waves[$i][1])
@@ -96,6 +97,10 @@ Func otp22_getentries()
 	Local $limit = UBound($entries)
 	If $limit > $otp22_wavemax Then $limit = $otp22_wavemax
 	For $i = 0 To $limit - 1
+		Local $p=StringInStr($entries[$i],"</a>")
+		If $p>0 Then $entries[$i]=StringMid($entries[$i],1,$p+3)
+
+
 		$otp22_waves[$i][0] = Int(StringStripWS(StringLeft($entries[$i], StringInStr($entries[$i], '<a')), 8))
 		$otp22_waves[$i][1] = _StringBetweenFirst($entries[$i], 'href="', '"')
 	Next
@@ -103,6 +108,7 @@ Func otp22_getentries()
 		$otp22_waves[$i][0] = 0
 		$otp22_waves[$i][1] = ""
 	Next
+	_ArrayDisplay($otp22_waves)
 EndFunc   ;==>otp22_getentries
 Func _StringBetweenFirst(ByRef $sInput, $sFirst, $sLast)
 	Local $array = _StringBetween($sInput, $sFirst, $sLast)

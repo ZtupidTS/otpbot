@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.4.0.82
+#AutoIt3Wrapper_Res_Fileversion=6.4.0.84
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crash_demons
 #AutoIt3Wrapper_Res_Language=1033
@@ -255,6 +255,7 @@ Func OnStateChange($oldstate, $newstate)
 			Cmd('JOIN ' & $CHANNEL)
 		Case $S_CHAT
 			If $TestMode Then; whatever needs debugging at the moment.
+				otp22_getentries()
 				Msg(Process_Message('who', 'where', "@VERIFY http://pastebin.com/sJiGQEPM"))
 				Msg(COMMAND_VERIFY("@VERIFY http://pastebin.com/sJiGQEPM"))
 				;Msg(Process_Message('who', 'where', "@wiki agent system"))
