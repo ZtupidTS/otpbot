@@ -108,7 +108,6 @@ Func otp22_getentries()
 		$otp22_waves[$i][0] = 0
 		$otp22_waves[$i][1] = ""
 	Next
-	_ArrayDisplay($otp22_waves)
 EndFunc   ;==>otp22_getentries
 Func _StringBetweenFirst(ByRef $sInput, $sFirst, $sLast)
 	Local $array = _StringBetween($sInput, $sFirst, $sLast)
