@@ -22,6 +22,8 @@ _Help_RegisterCommand("wiki","<page name>","Looks up a page name on the wiki and
 Func COMMANDX_query($who, $where, $what, $acmd)
 	$query=StringMid($what,1+StringLen("@query "))
 	$query=StringReplace(StringReplace(StringReplace(__SU_URIEncode($query),"+","%20"),"-","-2D"),"%","-")
+	$query=StringReplace($query,"-7C-3F","/-3F")
+	$query=StringReplace($query,"-3D","%3D")
 	$url=StringFormat($query_url,$query)
 	Return BinaryToString(InetRead($url, 1))& ' -- '&COMMAND_tinyurl($url);
 EndFunc
