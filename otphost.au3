@@ -211,11 +211,13 @@ Func Process_HostCommand($cmd, $data, $socket)
 			;just as below, update keepalive timer
 		Case 'update','check'
 			$resp_cmd="message"
-			If	check() Then
+			Local $checky=check()
+			Local $checke=@error
+			If $checky Then
 				$resp="New version available - program update will occur shortly. ("&$LastVerCmp&")"
 				$UpdateTimer=0; force the timer to time-out on the next check and trigger full update-check
 			Else
-				$resp="Program appears to be up-to-date. ("&$LastVerCmp&")"
+				$resp="Program appears to be up-to-date. ("&$LastVerCmp&"  ERR:"&$checke&")"
 			EndIf
 	EndSwitch
 	$isRestarting=False
@@ -469,26 +471,32 @@ Func check()
 	l(StringFormat("VERCHECK l%06d:r%06d", $lv, $rv))
 	$LastVerCmp = StringFormat("l%06d:r%06d", $lv, $rv)
 
-	If $re <> 0 Or $le <> 0 Then SetError(1, 0, False)
+	Local $errorcode=0
+	If $re<>0 Then $errorcode+=1;01
+	If $le<>0 Then $errorcode+=2;10
+
+	If $re <> 0 Or $le <> 0 Then SetError($errorcode, 0, False)
 
 	$RemoteVer = $rv
 
-	Return ($rv > $lv)
+	Return SetError(0,0,($rv > $lv))
 EndFunc   ;==>check
 
 Func remver()
 	;http://otpbot.googlecode.com/svn/trunk/
 	Local $b = InetRead("http://otpbot.googlecode.com/svn/trunk/Release.ver", 1)
+	Local $e = @error
 	Local $s = BinaryToString($b)
 	l($b & @CRLF & $s & @CRLF)
 	Local $r = ver($s)
-	Local $e = @error
+	$e+=@error
 	Return SetError($e, 0, $r)
 EndFunc   ;==>remver
 Func locver()
 	Local $s = FileRead("Release.ver")
-	Local $r = ver($s)
 	Local $e = @error
+	Local $r = ver($s)
+	$e += @error
 	Return SetError($e, 0, $r)
 EndFunc   ;==>locver
 
