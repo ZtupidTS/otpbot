@@ -84,7 +84,7 @@ Func otp22_getentries()
 
 
 	Local $text
-	Local $aReq = __HTTP_Req('GET', 'http://dialer.otp22.com/'&@YEAR&"-"&@MON&".dir")
+	Local $aReq = __HTTP_Req('GET', 'http://dialer.otp22.com/'&@YEAR&"-"&@MON&".dir/")
 	__HTTP_Transfer($aReq, $text, $otp22_downloadMax)
 	If StringLen($text) < 2000 Then Return SetError(1, 0, "")
 	$text = StringReplace($text, '&nbsp;', ' ')
