@@ -13,6 +13,7 @@
 #include-once
 #include "GeneralCommands.au3"
 
+
 _Help_Register("calc","<AutoIt or Numeric Expression>","Performs a calculation or executes an expression. Input strings are sanitized against a whitelist of function names.")
 _Help_Register("cstr","<AutoIt or Numeric Expression>","Sanitizes an expression against a whitelist of function names and returns the sanitized version. Used to debug expressions. See `help calc`.")
 
@@ -41,6 +42,7 @@ Global $_Calc_Whitelist[97] = [ _
 		'sin', 'cos', 'tan', 'min', 'max', _
 		'not', 'and', 'or', '' _
 		]
+
 
 
 Func COMMANDX_Cstr($who, $where, $what, $acmd)
@@ -73,6 +75,7 @@ Func _Calc_Sanitize($s)
 	Local $isNumber=False
 	Local $isReference = False
 	Local $isString = False
+	Local $isMacro = False
 	Local $stReference = ""
 	Local $chStringEnd = ""
 	Local $stSanitized = ""
@@ -89,10 +92,14 @@ Func _Calc_Sanitize($s)
 		EndIf
 
 		If Not $isString Then
-			If (Not ($isNumber Or $isReference)) And $c=="0" Then $isNumber=True; if starting with an 0, then we allow for hex chars exempt from filtering (functions can't start with 0)
+			If (Not ($isNumber Or $isReference Or $isMacro)) And $c=="0" Then $isNumber=True; if starting with an 0, then we allow for hex chars exempt from filtering (functions can't start with 0)
 			If $isNumber And (Not _Calc_IsHex($c)) Then $isNumber=False; end hex.
 
-			If Not $isNumber Then
+			If (Not ($isNumber Or $isReference Or $isMacro)) And $c=="@" Then $isMacro=True
+			If $isMacro And (Not _Calc_IsMacroChr($c)) Then $isMacro=False;end macro
+
+
+			If Not ($isNumber Or $isMacro) Then
 				If (Not $isReference) And _Calc_IsLetter($c) Then $isReference = True; starting a reference - functions have to start with letters.
 				If $isReference And (Not _Calc_IsRefChr($c)) Then;function letters were started, but encountering a non-reference symbol - end of the function name
 					$isReference = False;				ending a reference
@@ -101,7 +108,7 @@ Func _Calc_Sanitize($s)
 				EndIf
 				If $isReference Then;next char of function name
 					$stReference &= $c
-					ContinueLoop
+					ContinueLoop;skip the per-char appending, collect our reference chars and sanitize before outputting them. (see above)
 				EndIf
 			EndIf
 		EndIf
@@ -117,7 +124,9 @@ Func _Calc_Whitelist($sRef)
 	Next
 	Return "_REF_" & $sRef; prefixing with _REF_ invalidates functions and variables unless we actually define it.
 EndFunc   ;==>_Calc_Whitelist
-
+Func _Calc_IsMacroChr(ByRef $c)
+	Return StringRegExp($c, '^[@a-zA-Z0-9_]$')
+EndFunc   ;==>_Calc_IsRefChr
 Func _Calc_IsRefChr(ByRef $c)
 	Return StringRegExp($c, '^[a-zA-Z0-9_]$')
 EndFunc   ;==>_Calc_IsRefChr
