@@ -59,7 +59,7 @@ Func otp22_checknew()
 		If StringLen($otp22_waves[$i][1])<1 Then ContinueLoop
 		If _ArraySearch($otp22_wavesOld, $otp22_waves[$i][1], 0, 0, 0, 0, 1, 1) > -1 Then ContinueLoop;;;
 		$bNew = True
-		Local $url=StringFormat("http://dialer.otp22.com/%s", $otp22_waves[$i][1])
+		Local $url=StringFormat("http://dialer.otp22.com/"&@YEAR&"-"&@MON&".dir/%s", $otp22_waves[$i][1])
 		Local $uri=__URIDecode($otp22_waves[$i][1])
 		$uri=StringReplace($uri,'.wav','')
 		Local $auri=StringSplit($uri&' - ? - ?',' - ',1)
