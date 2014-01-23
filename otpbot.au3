@@ -26,6 +26,7 @@
 #include "Stats.au3"
 #include "Dialer.au3"
 #include "shorturl.au3"
+#include "userinfo.au3"
 #include "otphostcore.au3"
 #include "NicheFunctions.au3"
 #include "GeneralCommands.au3"
@@ -279,7 +280,10 @@ EndFunc
 
 #region ;------------------UTILITIES
 
-
+Func COMMANDX_IDENTIFY($who, $where, $what, $acmd)
+	Cmd("WHOIS "&$who,True)
+	Return "Refreshed status information for "&$who
+EndFunc
 
 Func COMMAND_uptime()
 	Local $b=_OtpHost_SendCompanion($_OtpHost,"uptime","IRC Session: "&TimerDiffString($ConnTimer))
@@ -474,6 +478,9 @@ Func Process()
 		Local $isRegular = (UBound($acmd) >= 3);     :from COMMAND to ...
 		Local $isMessage = (UBound($acmd) >= 4);     :from COMMAND to payload ...
 
+
+		;Msg('IN=' & $cmd & " | "&UBound($acmd))
+
 		If $isBasic Then
 			If $acmd[0] = "PING" Then Return Cmd(StringReplace($cmd, 'PING ', 'PONG '));because laziness but also to prevent losing the ":"
 		EndIf
@@ -485,7 +492,7 @@ Func Process()
 
 
 			If $cmdtype = "372" Then Return;server spamming us.
-			If Int($cmdtype) > 001 Then Return;server spamming us.
+			If Int($cmdtype) > 001 And Int($cmdtype)<>330 Then Return;server spamming us.
 			Switch $STATE
 				Case $S_INIT
 					Switch $cmdtype
@@ -495,14 +502,20 @@ Func Process()
 				Case $S_ON
 					Msg('IN=' & $cmd)
 					Switch $cmdtype
-						Case 'JOIN'
+						Case 'JOIN';:crashdemons!crashdemons@6D6517.5668E6.7585CE.B49C62 JOIN :##hell
 							If $fromShort = $NICK And StringLeft($acmd[2], 1) = "#" Then
 								$HOSTNAME = NameGetHostname($from)
 								State($S_CHAT)
 							EndIf
 					EndSwitch
 				Case $S_CHAT
-
+					Switch $cmdtype
+						Case 'JOIN';:crashdemons!crashdemons@6D6517.5668E6.7585CE.B49C62 JOIN :##hell
+							If StringLeft($acmd[2], 1) = "#" Then
+								;$fromShort
+								Cmd("WHOIS " & $fromShort, True); queue a WHOIS request so we can retrieve the Accountname later.
+							EndIf
+					EndSwitch
 			EndSwitch
 		EndIf
 		If $isMessage Then
@@ -524,6 +537,18 @@ Func Process()
 				Case 'KICK';:WiZ!jto@tolsun.oulu.fi KICK #Finnish John
 					If $where = $CHANNEL And $what = $NICK Then State($S_ON)
 			EndSwitch
+		EndIf
+		If (UBound($acmd) >= 5) Then
+			Local $from = NameShorten($acmd[0])
+			Local $cmdtype = $acmd[1]
+			Local $dest = $acmd[2]
+			Local $nickname = $acmd[3]
+			Local $acctname = $acmd[4]
+			Msg('IN=' & $cmd)
+			;Local $message = $acmd[5]
+			If $cmdtype="330" Then;:hitchcock.freenode.net 330 AutoBit nickname accountname :is logged in as
+				_UserInfo_Remember($nickname,$acctname)
+			EndIf
 		EndIf
 
 		;; do something with commands
@@ -596,10 +621,10 @@ Func StateGetName($STATE)
 EndFunc   ;==>StateGetName
 
 
-Func Cmd($scmd)
+Func Cmd($scmd,$debugforce=False)
 	If $TestMode Then Return Msg('OT=' & $scmd)
 	If $SOCK < 0 Then Return SetError(9999, 0, "")
-	If $STATE < $S_CHAT Then Msg('OT=' & $scmd)
+	If $STATE < $S_CHAT Or $debugforce Then Msg('OT=' & $scmd)
 	TCPSend($SOCK, $scmd & @CRLF)
 	If @error Then
 		Msg('Send Error [' & @error & ',' & @extended & ']',1)

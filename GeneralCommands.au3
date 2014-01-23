@@ -43,21 +43,23 @@ EndFunc
 Func _Help_List()
 	Local $s="Commands:"
 	For $i=0 To UBound($_Help_Commands)-1
+		If (Not (StringLeft($_Help_Commands[$i],1)='|')) And StringInStr($_Help_Commands[$i],' ') Then ContinueLoop; show Groups, but skip subcommands.
 		$s&=" "&$_Help_Commands[$i]
 	Next
 	Return $s&" ||| Use the command form `help commandname` for information about a specific command. (eg: `help more`)"
 EndFunc
-Func _Help_Command($command)
+Func _Help_Command($command,$subcommand="")
+	If StringLen($subcommand) Then $command&=" "&$subcommand
 	For $i=0 To UBound($_Help_Commands)-1
 		If $_Help_Commands[$i]=$command Then
-			Return $_Help_Commands[$i]&' '&$_Help_Usage[$i]&' - '&$_Help_Descriptions[$i]
+			Return StringUpper($_Help_Commands[$i])&' '&$_Help_Usage[$i]&' - '&$_Help_Descriptions[$i]
 		EndIf
 	Next
 	Return 'help: No information available for the command `'&$command&'`.'
 EndFunc
-Func COMMAND_Help($command="")
+Func COMMAND_Help($command="",$subcommand="")
 	If $command="" Then Return _Help_List()
-	Return _Help_Command($command)
+	Return _Help_Command($command,$subcommand)
 EndFunc
 
 

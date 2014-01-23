@@ -2,6 +2,7 @@
 #include <String.au3>
 #include "shorturl.au3"
 #include "GeneralCommands.au3"
+#include "userinfo.au3"
 
 Global $NewsInterval
 Global $OTPNEWS
@@ -16,6 +17,9 @@ _Help_RegisterCommand("update","","Displays News information and current events.
 _Help_RegisterCommand("updatechan","","Displays News information and current events - sent to the channel.")
 _Help_RegisterCommand("query","<query string>","Performs a Semantic-MediaWiki query and results CSV results.")
 _Help_RegisterCommand("wiki","<page name>","Looks up a page name on the wiki and results a link. Provides a search link if not found. Offers some limited casing and redirect name-resolving through MediaWiki.")
+
+
+;_UserInfo_Option_Add('notifyupdate')
 
 
 
