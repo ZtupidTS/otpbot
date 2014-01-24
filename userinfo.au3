@@ -9,12 +9,18 @@ Global Const $_USERINFO_MAX=0x1000
 Global $_USERINFO_IDX=0
 Global $_USERINFO_NICKS[$_USERINFO_MAX]
 Global $_USERINFO_ACCTS[$_USERINFO_MAX]
+Global $_USERINFO_TSUPD[$_USERINFO_MAX]
+Global $_USERINFO_TSCRT[$_USERINFO_MAX]
 Global $_USERINFO_INI=@ScriptDir&"\userinfo.ini"
 
+_UserInfo_Option_Add('_lastposttime')
+_UserInfo_Option_Add('_lastposttext')
+_UserInfo_Option_Add('_firstseentime')
 
 ;------------------------------------------------
-_Help_RegisterGroup("User Info")
-_Help_RegisterCommand("IDENTIFY","","Refreshes the account name information for your nickname.  Try WHOAMI after this to see updated information.")
+_Help_RegisterGroup("Users")
+_Help_RegisterCommand("SEEN","[nickname]","Displays information about the account name - for your nickname if none is given.")
+_Help_RegisterCommand("IDENTIFY","[nickname]","Refreshes the account name information for a nickname - for your nickname if none is given.  Try WHOAMI after this to see updated information.")
 _Help_RegisterCommand("WHOAMI","","Retrieves the NickServ account-name for your nickname in the channel if you are recognized.  Try using the IDENTIFY command before this if you are not recognized correctly.")
 _Help_RegisterCommand("WHOIS","<nickname>","Retrieves the NickServ account-name for a nickname in the channel if the user is recognized.")
 _Help_RegisterCommand("OPTION","<command> <values>","Retrieves or changes your personal bot settings.  You must be registered with NickServ to use this command. use OPTION LIST to see all of the options, OPTION GET <optionname> to get a setting value, OPTION SET <optionname> <value> to change a setting.  You may use HELP OPTION <command> for more information.")
@@ -22,13 +28,58 @@ _Help_RegisterCommand("OPTION LIST","","Lists all of the per-user settings for t
 _Help_RegisterCommand("OPTION GET" ,"<optionname>","Retrieves one of your personal bot settings and describes the option. NOTE: Password-style options cannot be retrieved by using this command. Use OPTION LIST for a list of possible settings.")
 _Help_RegisterCommand("OPTION SET" ,"<optionname> <value>","Changes one of your personal bot settings.  Use OPTION LIST for a list of possible settings.")
 ;------------------------------------------------
+Func __timediffstr($ts)
+	$ts=Int($ts)
+	If $ts="" Or $ts=0 Or $ts<0 Then Return "Unknown"
+	Return __timestr(TimerDiff($ts))&" ago"
+EndFunc
+Func __timestr($ts)
+	$ts=Int($ts/1000)
+	Local $days=Int($ts/(60*60*24))
+	$ts-=$days*(60*60*24)
+	Local $hours=Int($ts/(60*60))
+	$ts-=$hours*(60*60)
+	Local $minutes=Int($ts/(60))
+	$ts-=$minutes*(60)
+
+	Local $str=""
+	If $days   >0 Then $str&=$days&" days, "
+	If $hours  >0 Then $str&=$hours&" hours, "
+	If $minutes>0 Then $str&=$minutes&" minutes, "
+	If $ts>0 Or StringLen($str)=0 Then $str&=$ts&" seconds"
+	Return $str
+EndFunc
+Func COMMANDX_Seen($who, $where, $what, $acmd)
+	Local $user=__element($acmd,2)
+	If $user="" Then $user=$who
+
+
+	Local $out=""
+	Local $acct=_UserInfo_Whois($user)
+	If $acct="" Then
+		$acct=$user
+		$out="Account "&$acct&' - '
+	Else
+		$out="Nickname "&$user&" Account "&$acct&' - '
+	EndIf
+	Local $tsFSEEN=_UserInfo_GetOptValueByAcct($acct, '_firstseentime')
+	If $tsFSEEN="" Then Return $out&"I do not recall seeing this user."
+	Local $tsLSEEN=_UserInfo_GetOptValueByAcct($acct, '_lastposttime')
+
+	Local $lpost=_UserInfo_GetOptValueByAcct($acct, '_lastposttext')
+	Local $lseen=__timediffstr($tsLSEEN)
+	Local $fseen=__timediffstr($tsFSEEN)
+
+	Return $out&StringFormat("First Seen: %s, Last Seen: %s, Last Post: %s",$fseen,$lseen,$lpost)
+
+EndFunc
 Func COMMANDX_Whoami($who, $where, $what, $acmd)
 	Return COMMAND_Whois($who)
 EndFunc
 Func COMMAND_Whois($nick)
 	Local $acct=_UserInfo_Whois($nick)
 	If Not StringLen($acct) Then Return "I do not recognize `"&$nick&"`, or the user is not logged in."
-	Return "`"&$nick&"` is recognized under account `"&$nick&"`."
+	Return "`"&$nick&"` is recognized under account `"&$acct&"`."
 EndFunc
 Func COMMANDX_Option($who, $where, $what, $acmd)
 	Local $sAcct=_UserInfo_Whois($who)
@@ -99,6 +150,7 @@ Func _UserInfo_Option_List()
 	For $i=0 To UBound($_USERINFO_OPTIONS)-1
 		Local $opt=$_USERINFO_OPTIONS[$i]
 		If Not IsArray($opt) Then ContinueLoop
+		If StringLeft($opt[0],1)=='_' Then ContinueLoop; internal option.
 		$list&=StringUpper($opt[0]) & "  "
 	Next
 	Return $list
@@ -140,8 +192,17 @@ Func _UserInfo_Remember($nick,$acct)
 		$i=$_USERINFO_IDX
 		$isNewEntry=True
 	EndIf
-	$_USERINFO_NICKS[$_USERINFO_IDX]=$nick
-	$_USERINFO_ACCTS[$_USERINFO_IDX]=$acct
+	$_USERINFO_NICKS[$i]=$nick
+	$_USERINFO_ACCTS[$i]=$acct
+	$_USERINFO_TSUPD[$i]=TimerInit()
+	If $isNewEntry Then $_USERINFO_TSCRT[$i]=TimerInit()
+	_UserInfo_GetOptValue($i, '_firstseentime')
+	If @error=3 Then; no prior record of this user.
+		_UserInfo_SetOptValue($i, '_firstseentime',TimerInit())
+	EndIf
+
+
+
 	If $isNewEntry Then $_USERINFO_IDX=Mod($_USERINFO_IDX+1,$_USERINFO_MAX); cycles 0 to Max forwards, makes sure the oldest entry is always overwritten first.
 EndFunc
 Func _UserInfo_Forget($nick)
@@ -149,6 +210,7 @@ Func _UserInfo_Forget($nick)
 	If _UserInfo_IsValidIndex($i) Then
 		$_USERINFO_NICKS[$i]=''
 		$_USERINFO_ACCTS[$i]=''
+		$_USERINFO_TSUPD[$i]=0
 	EndIf
 EndFunc
 
@@ -156,6 +218,10 @@ Func _UserInfo_Whois($nick)
 	Local $i=_UserInfo_GetByNick($nick)
 	If _UserInfo_IsValidIndex($i) Then Return SetError(0,$i,$_USERINFO_ACCTS[$i])
 	Return SetError(1,-1,"")
+EndFunc
+Func _UserInfo_GetUpdateTime($i)
+	If Not _UserInfo_IsValidIndex($i) Then Return SetError(1,0,-1)
+	Return TimerDiff($_USERINFO_TSUPD[$i])
 EndFunc
 
 
@@ -179,6 +245,15 @@ Func _UserInfo_IsValidIndex($i)
 EndFunc
 
 ;------------------------------------------------------
+
+Func _UserInfo_SetOptValueByNick($nick, $option,$value)
+	Local $i=_UserInfo_GetByNick($nick)
+	Return _UserInfo_SetOptValue($i, $option,$value)
+EndFunc
+Func _UserInfo_GetOptValueByNick($nick, $option,$value)
+	Local $i=_UserInfo_GetByNick($nick)
+	Return _UserInfo_GetOptValue($i, $option)
+EndFunc
 
 Func _UserInfo_SetOptValue($i, $option,$value)
 	If Not _UserInfo_IsValidIndex($i) Then Return SetError(1,0,"")
@@ -208,6 +283,22 @@ Func _UserInfo_GetOptValue($i, $option)
 	If $value=="ERR:READ_OPTION_FAILED" Then Return SetError(3,0,"")
 	Return _UserInfo_DeprepValue($value,$option_ispassword)
 EndFunc
+
+
+Func _UserInfo_GetOptValueByAcct($acct, $option)
+	Local $iOption=_UserInfo_Option_GetIndex($option)
+	If Not _UserInfo_Option_IsValidIndex($iOption) Then Return SetError(2,0,"")
+
+	Local $opt=$_USERINFO_OPTIONS[$iOption]
+	Local $option_name=$opt[0]
+	Local $option_ispassword=$opt[2]
+
+	$acct=_UserInfo_SanitizeName($acct)
+	Local $value=IniRead($_USERINFO_INI,$acct,$option_name,"ERR:READ_OPTION_FAILED")
+	If $value=="ERR:READ_OPTION_FAILED" Then Return SetError(3,0,"")
+	Return _UserInfo_DeprepValue($value,$option_ispassword)
+EndFunc
+
 ;---------------------------------------------------------------------
 Func _UserInfo_PrepValue($value,$isPassword=False)
 	$value=StringLeft($value,512)

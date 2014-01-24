@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.4.0.92
+#AutoIt3Wrapper_Res_Fileversion=6.4.0.93
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crash_demons
 #AutoIt3Wrapper_Res_Language=1033
@@ -213,9 +213,9 @@ Func Process_Message($who, $where, $what); called by Process() which parses IRC 
 				Reply_Message($who, $who, OTP22News_Read());redirect reply to PM
 				Return '';disable any automatic reply
 			Case 'debug'
-				Return StringFormat("DBG: WHO=%s WHERE=%s WHAT=%s Compiled=%s OTPHOST=%s data.bin=%s elpaso.bin=%s littlemissouri.bin=%s p1.txt=%s p2.txt=%s p3.txt=%s p4.txt=%s", $who, $where, $what, @Compiled, $_OtpHost_Info, _
+				Return StringFormat("DBG: WHO=%s WHERE=%s WHAT=%s Compiled=%s OTPHOST=%s data.bin=%s elpaso.bin=%s littlemissouri.bin=%s p1.txt=%s p2.txt=%s p3.txt=%s p4.txt=%s Log=%s UserInfo=%s", $who, $where, $what, @Compiled, $_OtpHost_Info, _
 						FileGetSize('data.bin'), FileGetSize('elpaso.bin'), FileGetSize('littlemissouri.bin'), _
-						FileGetSize('p1.txt'), FileGetSize('p2.txt'), FileGetSize('p3.txt'), FileGetSize('p4.txt'))
+						FileGetSize('p1.txt'), FileGetSize('p2.txt'), FileGetSize('p3.txt'), FileGetSize('p4.txt'), FileGetSize('otplog.txt'), FileGetSize('userinfo.ini'))
 
 
 				;commands that aren't servicable.
@@ -281,8 +281,10 @@ EndFunc
 #region ;------------------UTILITIES
 
 Func COMMANDX_IDENTIFY($who, $where, $what, $acmd)
-	Cmd("WHOIS "&$who,True)
-	Return "Refreshed status information for "&$who
+	Local $user=__element($acmd,2)
+	If $user="" Then $user=$who
+	Cmd("WHOIS "&$user,True)
+	Return "Refreshed status information for "&$user
 EndFunc
 
 Func COMMAND_uptime()
@@ -515,6 +517,8 @@ Func Process()
 								;$fromShort
 								Cmd("WHOIS " & $fromShort, True); queue a WHOIS request so we can retrieve the Accountname later.
 							EndIf
+						Case 'PART','QUIT';:crashdemons!~crashdemo@unaffiliated/crashdemons PART #ARG
+							_UserInfo_Forget($fromShort)
 					EndSwitch
 			EndSwitch
 		EndIf
@@ -526,6 +530,27 @@ Func Process()
 
 			Switch $cmdtype
 				Case 'PRIVMSG', 'NOTICE'
+
+
+					Global $tsLastWHOIS
+					Global $strLastWHOIS
+					Local $strAcct=_UserInfo_Whois($nick)
+					Local $idxAcct=@extended
+					Local $errAcct=@error
+					Local $doUpdate=True
+					If @error=0 Then
+						If _UserInfo_GetUpdateTime($idxAcct) < (5*60*1000) Then $doUpdate=False
+					Else
+						If $who=$strLastWHOIS Or TimerDiff($tsLastWHOIS) < (10*1000) Then $doUpdate=False
+					EndIf
+					If $doUpdate Then
+						Cmd("WHOIS " & $who,True)
+						$strLastWHOIS=$who
+						$tsLastWHOIS=TimerInit()
+					EndIf
+
+					_UserInfo_SetOptValueByNick($who, '_lastposttext',$what)
+					_UserInfo_SetOptValueByNick($who, '_lastposttime',TimerInit())
 					Reply_Message($who, $where, Process_Message($who, $where, $what))
 				Case 'INVITE';:crash_demons!~crashdemo@unaffiliated/crashdemons INVITE AutoBit :##proggit
 					If $where = $NICK Then

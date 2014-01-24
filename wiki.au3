@@ -16,7 +16,7 @@ _Help_RegisterGroup("Wiki")
 _Help_RegisterCommand("update","","Displays News information and current events.")
 _Help_RegisterCommand("updatechan","","Displays News information and current events - sent to the channel.")
 _Help_RegisterCommand("query","<query string>","Performs a Semantic-MediaWiki query and results CSV results.")
-_Help_RegisterCommand("wiki","<page name>","Looks up a page name on the wiki and results a link. Provides a search link if not found. Offers some limited casing and redirect name-resolving through MediaWiki.")
+_Help_RegisterCommand("page","<page name>","Looks up a page name on the wiki and results a link. Provides a search link if not found. Offers some limited casing and redirect name-resolving through MediaWiki.")
 
 
 ;_UserInfo_Option_Add('notifyupdate')
@@ -33,7 +33,7 @@ Func COMMANDX_query($who, $where, $what, $acmd)
 EndFunc
 
 
-Func COMMANDX_wiki($who, $where, $what, $acmd)
+Func COMMANDX_page($who, $where, $what, $acmd)
 	$page=StringMid($what,1+StringLen("@wiki "))
 	Local $url="http://otp22.referata.com/w/index.php?title=Special%3ASearch&search="&__SU_URIEncode($page)&"&go=Go"
 	Local $data=InetRead($url)

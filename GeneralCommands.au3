@@ -4,11 +4,9 @@
 
 
 
-Global $_Help_Commands[1]=['help']
-Global $_Help_Usage[1]=['[command name]']
-Global $_Help_Descriptions[1]=['Lists and provides help information for registered commands. '& _
-'Use the syntax "help command" for information about the command. (eg: "help more" provides information about More.).  '& _
-'The Usage information for each command displays the parameters you can use for the command. Brackets like [] incidate the parameter is optional. Nested brackets may imply that a series of optional parameters requires each previous one to be used first.']
+Global $_Help_Commands[1]=['GRP:General']
+Global $_Help_Usage[1]=['']
+Global $_Help_Descriptions[1]=['']
 
 
 Global $_More_Entries=10
@@ -16,19 +14,23 @@ Global $_More_Buffer[$_More_Entries][2]; session name[0] and buffered overflow t
 Global $_More_NextEntry=0
 
 
+_Help_Register("help","[command name]",'Lists and provides help information for registered commands. '& _
+'Use the syntax "help command" for information about the command. (eg: "help more" provides information about More.).  '& _
+'The Usage information for each command displays the parameters you can use for the command. Brackets like [] incidate the parameter is optional. Nested brackets may imply that a series of optional parameters requires each previous one to be used first.')
+_Help_Register("more","","Provides more text from the end of a previous post that was cut off. Using `more` will not clear the original text held unless the new text is also too long or the text held is the oldest cached entry. Note: `more` results are specific to PM username and channel name.")
 
 #include "stats.au3"; have to put this here because of initialization code using globals.
 #include "Calc.au3"
 
 
 ;---------------------------------------
-_Help_Register("more","","Provides more text from the end of a previous post that was cut off. Using `more` will not clear the original text held unless the new text is also too long or the text held is the oldest cached entry. Note: `more` results are specific to PM username and channel name.")
 
 
 ;------------------------------------------------------------------------------
 
 Func _Help_RegisterGroup($group)
-	_ArrayAdd($_Help_Commands,"| "&$group&":")
+	_ArrayAdd($_Help_Commands,"GRP:"&$group)
+	;_ArrayAdd($_Help_Commands,"| "&$group&":")
 	_ArrayAdd($_Help_Usage,"<none>")
 	_ArrayAdd($_Help_Descriptions,"This is a command group.")
 EndFunc
@@ -40,14 +42,46 @@ EndFunc
 Func _Help_RegisterCommand($command,$usage="[parameters unknown]",$description="No help infomation is available for this command.")
 	Return _Help_Register($command,$usage,$description)
 EndFunc
-Func _Help_List()
-	Local $s="Commands:"
+Func _Help_ListGroups()
+	Local $s="Topics:"
 	For $i=0 To UBound($_Help_Commands)-1
-		If (Not (StringLeft($_Help_Commands[$i],1)='|')) And StringInStr($_Help_Commands[$i],' ') Then ContinueLoop; show Groups, but skip subcommands.
-		$s&=" "&$_Help_Commands[$i]
+		Local $isGroup=(StringLeft($_Help_Commands[$i],4)='GRP:')
+		If Not $isGroup Then ContinueLoop
+		Local $sGroup=StringTrimLeft($_Help_Commands[$i],4)
+		$s&=" "&$sGroup
+	Next
+	Return $s&" ||| Use the command form `help topicname` to show commands in that topic. (eg: `help General`)"
+EndFunc
+Func _Help_IsGroup($group)
+	For $i=0 To UBound($_Help_Commands)-1
+		Local $isGroup=(StringLeft($_Help_Commands[$i],4)='GRP:')
+		Local $sGroup=StringTrimLeft($_Help_Commands[$i],4)
+		If $isGroup And $sGroup=$group Then Return True
+	Next
+	Return False
+EndFunc
+Func _Help_ListCommands($group)
+	Local $s=$group&" Commands:"
+	Local $group_started=False
+	Local $group_ended=False
+	For $i=0 To UBound($_Help_Commands)-1
+		Local $isGroup=(StringLeft($_Help_Commands[$i],4)='GRP:')
+		Local $sGroup=StringTrimLeft($_Help_Commands[$i],4)
+		If $isGroup Then
+			If $sGroup=$group Then
+				$group_started=True
+			Else
+				If $group_started Then $group_ended=True
+			EndIf
+		Else
+			If StringInStr($_Help_Commands[$i],' ') Then ContinueLoop
+			If $group_started And (Not $group_ended) Then  $s&=" "&$_Help_Commands[$i]
+		EndIf
 	Next
 	Return $s&" ||| Use the command form `help commandname` for information about a specific command. (eg: `help more`)"
 EndFunc
+
+
 Func _Help_Command($command,$subcommand="")
 	If StringLen($subcommand) Then $command&=" "&$subcommand
 	For $i=0 To UBound($_Help_Commands)-1
@@ -58,7 +92,8 @@ Func _Help_Command($command,$subcommand="")
 	Return 'help: No information available for the command `'&$command&'`.'
 EndFunc
 Func COMMAND_Help($command="",$subcommand="")
-	If $command="" Then Return _Help_List()
+	If $command="" Then Return _Help_ListGroups()
+	If _Help_IsGroup($command) Then Return _Help_ListCommands($command);where command=groupname
 	Return _Help_Command($command,$subcommand)
 EndFunc
 

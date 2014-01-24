@@ -6,7 +6,10 @@
 
 ; Note to reviewers: this only lists information from a website hosting recordings.
 _Help_RegisterGroup("Dialer")
-_Help_RegisterCommand("dial","<agentcode> <password>","Posts a dial request to the auto-dialer. Completely numeric agent codes will have `#` automatically appended to them. Note: Use this in PM ONLY to prevent posting the password. If you use this in a channel, you are a MORON.")
+_Help_RegisterCommand("dial","<agentcode>","Posts a dial request to the OTP22 auto-dialer. Completely numeric agent codes will have `#` automatically appended to them. Note: Uses your account saved dialer password. (see OPTION GET DIALERPASS )")
+
+_UserInfo_Option_Add('dialerpass','Password to use for the OTP22 AutoDialer, This is automatically used when you use the DIAL <agentnumber> command.',True)
+
 
 
 
@@ -22,8 +25,6 @@ Global $otp22_wavesOld[$otp22_wavemax][2];size,filename
 Global $otp22_downloadMax=20000
 
 Global $dialer_reportfunc = ''
-
-_UserInfo_Option_Add('dialerpass','Password to use for the OTP22 AutoDialer, This is automatically used when you use the DIAL <agentnumber> command.',True)
 
 
 
