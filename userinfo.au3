@@ -100,7 +100,7 @@ Func COMMANDX_Option($who, $where, $what, $acmd)
 				Local $optname=$aOpt[0]
 				Local $desc=$aOpt[1]
 				Local $isPassword=$aOpt[2]
-				If $isPassword Then $desc=" (NOTE: This is an encrypted password option and cannot be displayed)"
+				If $isPassword Then $desc&=" (NOTE: This is an encrypted password option and cannot be displayed)"
 				Local $output="Option Name: "&StringUpper($aOpt[0])
 				If $isRecognized Then
 					$output&=" | Your Value: "
