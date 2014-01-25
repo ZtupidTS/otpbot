@@ -19,11 +19,11 @@
 
 ;OTP22 utility libraries
 #include "Xor.au3"
-#include "UTM.au3"
 #include "Calc.au3"
 #include "Wiki.au3"
 #include "5gram.au3"
 #include "Stats.au3"
+#include "coords.au3"
 #include "Dialer.au3"
 #include "shorturl.au3"
 #include "userinfo.au3"
