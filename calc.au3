@@ -15,7 +15,7 @@
 
 
 _Help_Register("calc","<AutoIt or Numeric Expression>","Performs a calculation or executes an expression. Input strings are sanitized against a whitelist of function names.")
-_Help_Register("cstr","<AutoIt or Numeric Expression>","Sanitizes an expression against a whitelist of function names and returns the sanitized version. Used to debug expressions. See `help calc`.")
+_Help_Register("cstr","<AutoIt or Numeric Expression>","Sanitizes an expression against a whitelist of function names and returns the sanitized version. Used to debug expressions. See `%!%help calc`")
 
 
 Global Const $srQuote = '["' & "']"

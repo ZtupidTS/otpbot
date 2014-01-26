@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.4.0.93
+#AutoIt3Wrapper_Res_Fileversion=6.4.0.94
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crash_demons
 #AutoIt3Wrapper_Res_Language=1033
@@ -28,6 +28,7 @@
 #include "shorturl.au3"
 #include "userinfo.au3"
 #include "otphostcore.au3"
+#include "phpbb_scrape.au3"
 #include "NicheFunctions.au3"
 #include "GeneralCommands.au3"
 
@@ -56,7 +57,12 @@ Global $NewsInterval = Get("newsinterval", 15 * 60 * 1000); 15 minutes = 900000m
 Global $otp22_sizeMin = Get("dialersizemin", 0);300;kb
 Global $otp22_wavemax = Get("dialercomparemax", 20)
 Global $otp22_timeMax = Get("dialercomparetime", 5 * 60 * 1000);5 minutes
-Global $dialer_checktime = Get("dialerchecktime", 2 * 60 * 1000);5 minutes
+Global $dialer_checktime = Get("dialerchecktime", 2 * 60 * 1000);2 minutes
+
+
+$PHPBB_URL = Get("forumurl", "http://forums.unfiction.com/forums/")
+$PHPBB_TopicID = Get("forumtopicid", 36166)
+Global $forum_checktime = Get("forumchecktime", 10 * 60 * 1000);10 minutes
 
 Global $news_url = Get("newsurl", "http://otp22.referata.com/wiki/Special:Ask/-5B-5BDisplay-20tag::News-20page-20entry-5D-5D/-3FOTP22-20NI-20full-20date/-3FSummary/format%3Dcsv/limit%3D3/sort%3DOTP22-20NI-20full-20date/order%3Ddescending/offset%3D0")
 Global $news_entries=Get("newsentries",5);last 5 updates from News wiki page.
@@ -80,6 +86,7 @@ Global $STATE = $S_OFF
 ;library configuration variables
 ReDim $otp22_waves[$otp22_wavemax][2]
 $dialer_reportfunc = 'SendPrimaryChannel'
+$PHPBB_ReportFunc = 'SendPrimaryChannel'
 $_OtpHost_OnCommand = "Process_HostCmd"
 Global $_OtpHost_Info = ""
 
@@ -114,6 +121,7 @@ _OtpHost_flog('Starting')
 _ShortUrl_Startup()
 FileChangeDir(@ScriptDir)
 AdlibRegister("otp22_dialler_report", $dialer_checktime)
+AdlibRegister("phpbb_report_NewPostsAndLink", $forum_checktime)
 OnAutoItExitRegister("Quit")
 
 
@@ -260,6 +268,7 @@ Func OnStateChange($oldstate, $newstate)
 				ConsoleWrite(@CRLF&@error&@CRLF)
 				Msg(Process_Message('who', 'where', "@VERIFY http://pastebin.com/sJiGQEPM"))
 				Msg(COMMAND_VERIFY("@VERIFY http://pastebin.com/sJiGQEPM"))
+				Msg(Process_Message('who', 'where', "~forumdebug"))
 				;Msg(Process_Message('who', 'where', "@wiki agent system"))
 				;COMMAND_tinyurl('http://google.com/y4')
 				;COMMAND_tinyurl('http://google.com/y5')
@@ -378,7 +387,6 @@ Func SendPrimaryChannel($what)
 EndFunc   ;==>SendPrimaryChannel
 
 Func PRIVMSG($where, $what)
-
 	$what = StringReplace(StringStripCR(FilterText($what)), @LF, ' ')
 	$what = StringStripWS($what, 1 + 2);leading/trailing whitespace
 	If StringLen($what) = 0 Then $what = "ERROR: I tried to send a blank message. Report this to https://code.google.com/p/otpbot/issues/entry along with the input used."
@@ -397,7 +405,19 @@ Func PRIVMSG($where, $what)
 	Cmd("PRIVMSG " & $where & " :" & $what)
 EndFunc   ;==>PRIVMSG
 
+Func FilterMacros($s)
+	$s=StringReplace($s,"%NICK%",$NICK)
+	$s=StringReplace($s,"%SERVER%",$SERV)
+	$s=StringReplace($s,"%PORT%",$PORT)
+	$s=StringReplace($s,"%USER%",$USERNAME)
+	$s=StringReplace($s,"%!%",$CommandChar)
+	Return $s
+EndFunc
+
+
 Func FilterText($s)
+	$s=FilterMacros($s)
+
 	Local $o=''
 	For $i=1 To StringLen($s)
 		Local $c=StringMid($s,$i,1)
@@ -534,11 +554,12 @@ Func Process()
 
 					Global $tsLastWHOIS
 					Global $strLastWHOIS
-					Local $strAcct=_UserInfo_Whois($nick)
+					Local $strAcct=_UserInfo_Whois($who)
 					Local $idxAcct=@extended
 					Local $errAcct=@error
 					Local $doUpdate=True
-					If @error=0 Then
+					;ConsoleWrite('Chk '&$nick&' '&$strAcct&' '&$errAcct&@CRLF)
+					If $errAcct=0 Then
 						If _UserInfo_GetUpdateTime($idxAcct) < (5*60*1000) Then $doUpdate=False
 					Else
 						If $who=$strLastWHOIS Or TimerDiff($tsLastWHOIS) < (10*1000) Then $doUpdate=False

@@ -38,6 +38,9 @@ Global $Settings[100][3] = [ _
 		['utility', 'newsinterval', 'Time between Wiki News checks (ms)'], _
 		['utility', 'newsurl', 'Wiki News semantic query URL'], _
 		['utility', 'newsentries', 'Number of Wiki News entries to return'], _
+		['utility', 'forumurl', 'Forum base URL (ending with a /)'], _
+		['utility', 'forumtopicid', 'Topid ID# of the thread to watch for replies'], _
+		['utility', 'forumchecktime', 'New-reply check interval for a forum (ms)'], _
 		['', '', '']]
 
 

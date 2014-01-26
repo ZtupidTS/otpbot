@@ -13,7 +13,7 @@
 #include "GeneralCommands.au3"
 
 _Help_RegisterGroup("Coords")
-_Help_Register("UTM","<UTM coordinate>","Returns the Latitude and Longitude for a UTM coordinate.  Usage: UTM zone/easting/northing   or   UTM zone easting northing -- Courtesy: Nadando")
+_Help_Register("UTM","<UTM coordinate>","Returns the Latitude and Longitude for a UTM coordinate.  Usage: %!%UTM zone/easting/northing   or   UTM zone easting northing -- Courtesy: Nadando")
 _Help_Register("LL","<latitude> <longitude>","Returns the UTM conversion for the given coordinate. -- Courtesy: Nadando")
 _Help_Register("Coord","<latitude> <longitude>","Returns the Google Maps link for the given coordinate.")
 

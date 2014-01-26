@@ -10,7 +10,7 @@ Global $_USERINFO_IDX=0
 Global $_USERINFO_NICKS[$_USERINFO_MAX]
 Global $_USERINFO_ACCTS[$_USERINFO_MAX]
 Global $_USERINFO_TSUPD[$_USERINFO_MAX]
-Global $_USERINFO_TSCRT[$_USERINFO_MAX]
+;Global $_USERINFO_TSCRT[$_USERINFO_MAX]
 Global $_USERINFO_INI=@ScriptDir&"\userinfo.ini"
 
 _UserInfo_Option_Add('_lastposttime')
@@ -20,13 +20,13 @@ _UserInfo_Option_Add('_firstseentime')
 ;------------------------------------------------
 _Help_RegisterGroup("Users")
 _Help_RegisterCommand("SEEN","[nickname]","Displays information about the account name - for your nickname if none is given.")
-_Help_RegisterCommand("IDENTIFY","[nickname]","Refreshes the account name information for a nickname - for your nickname if none is given.  Try WHOAMI after this to see updated information.")
-_Help_RegisterCommand("WHOAMI","","Retrieves the NickServ account-name for your nickname in the channel if you are recognized.  Try using the IDENTIFY command before this if you are not recognized correctly.")
+_Help_RegisterCommand("IDENTIFY","[nickname]","Refreshes the account name information for a nickname - for your nickname if none is given.  Try %!%WHOAMI after this to see updated information.")
+_Help_RegisterCommand("WHOAMI","","Retrieves the NickServ account-name for your nickname in the channel if you are recognized.  Try using the %!%IDENTIFY command before this if you are not recognized correctly.")
 _Help_RegisterCommand("WHOIS","<nickname>","Retrieves the NickServ account-name for a nickname in the channel if the user is recognized.")
-_Help_RegisterCommand("OPTION","<command> <values>","Retrieves or changes your personal bot settings.  You must be registered with NickServ to use this command. use OPTION LIST to see all of the options, OPTION GET <optionname> to get a setting value, OPTION SET <optionname> <value> to change a setting.  You may use HELP OPTION <command> for more information.")
-_Help_RegisterCommand("OPTION LIST","","Lists all of the per-user settings for the bot. Use OPTION GET <optionname> for information about a specific option.")
-_Help_RegisterCommand("OPTION GET" ,"<optionname>","Retrieves one of your personal bot settings and describes the option. NOTE: Password-style options cannot be retrieved by using this command. Use OPTION LIST for a list of possible settings.")
-_Help_RegisterCommand("OPTION SET" ,"<optionname> <value>","Changes one of your personal bot settings.  Use OPTION LIST for a list of possible settings.")
+_Help_RegisterCommand("OPTION","<command> <values>","Retrieves or changes your personal bot settings.  You must be registered with NickServ to use this command. use %!%OPTION LIST to see all of the options, %!%OPTION GET <optionname> to get a setting value, %!%OPTION SET <optionname> <value> to change a setting.  You may use %!%HELP OPTION <command> for more information.")
+_Help_RegisterCommand("OPTION LIST","","Lists all of the per-user settings for the bot. Use %!%OPTION GET <optionname> for information about a specific option.")
+_Help_RegisterCommand("OPTION GET" ,"<optionname>","Retrieves one of your personal bot settings and describes the option. NOTE: Password-style options cannot be retrieved by using this command. Use %!%OPTION LIST for a list of possible settings.")
+_Help_RegisterCommand("OPTION SET" ,"<optionname> <value>","Changes one of your personal bot settings.  Use %!%OPTION LIST for a list of possible settings.")
 ;------------------------------------------------
 Func __timediffstr($ts)
 	$ts=Int($ts)
@@ -92,7 +92,7 @@ Func COMMANDX_Option($who, $where, $what, $acmd)
 	Local $subcmd_param2=__element($acmd,4)
 	Switch $subcmd
 		Case 'LIST'
-			Return "Personal bot options: "&_UserInfo_Option_List()&" | use OPTION GET <optionname> for more information."
+			Return "Personal bot options: "&_UserInfo_Option_List()&" | use %!%OPTION GET <optionname> for more information."
 		Case 'GET'
 			Local $iOpt=_UserInfo_Option_GetIndex($subcmd_param1)
 			If _UserInfo_Option_IsValidIndex($iOpt) Then
@@ -115,7 +115,7 @@ Func COMMANDX_Option($who, $where, $what, $acmd)
 				$output&=" | Description: "&$desc
 				Return $output
 			Else
-				Return "Invalid option name. Refer to OPTION LIST"
+				Return "Invalid option name. Refer to %!%OPTION LIST"
 			EndIf
 		Case 'SET'
 			Local $iOpt=_UserInfo_Option_GetIndex($subcmd_param1)
@@ -124,7 +124,7 @@ Func COMMANDX_Option($who, $where, $what, $acmd)
 				Local $aOpt=$_USERINFO_OPTIONS[$iOpt]
 				Local $optname=$aOpt[0]
 				Local $isPassword=$aOpt[2]
-				If Not StringLen($value) Then Return "You did not enter a value. Please retry the command in the format OPTION SET <optionname> <value>"
+				If Not StringLen($value) Then Return "You did not enter a value. Please retry the command in the format %!%OPTION SET <optionname> <value>"
 				_UserInfo_SetOptValue($iAcct,$optname,$value)
 				If $isPassword Then
 					Return StringFormat("You have successfully changed option `%s`. (NOTE: This is an encrypted password option and cannot be displayed)",$optname,$value)
@@ -132,10 +132,10 @@ Func COMMANDX_Option($who, $where, $what, $acmd)
 					Return StringFormat("You have set option `%s` to the value `%s`.",$optname,$value)
 				EndIf
 			Else
-				Return "Invalid option name. Refer to OPTION LIST"
+				Return "Invalid option name. Refer to %!%OPTION LIST"
 			EndIf
 		Case Else
-			Return "Invalid Command. Refer to the HELP OPTION command."
+			Return "Invalid Command. Refer to the %!%HELP OPTION command."
 	EndSwitch
 EndFunc
 
@@ -192,10 +192,11 @@ Func _UserInfo_Remember($nick,$acct)
 		$i=$_USERINFO_IDX
 		$isNewEntry=True
 	EndIf
+	ConsoleWrite("Rem "&$i&" "&$nick&" "&$acct&" "&$_USERINFO_TSUPD[$i]&" "&TimerInit()&@CRLF)
 	$_USERINFO_NICKS[$i]=$nick
 	$_USERINFO_ACCTS[$i]=$acct
 	$_USERINFO_TSUPD[$i]=TimerInit()
-	If $isNewEntry Then $_USERINFO_TSCRT[$i]=TimerInit()
+	;If $isNewEntry Then $_USERINFO_TSCRT[$i]=TimerInit()
 	_UserInfo_GetOptValue($i, '_firstseentime')
 	If @error=3 Then; no prior record of this user.
 		_UserInfo_SetOptValue($i, '_firstseentime',TimerInit())

@@ -4,10 +4,10 @@
 
 
 _Help_RegisterGroup("Xor")
-_Help_RegisterCommand("pastebinxor","<pastebin link> [key filename]","Performs a XOR operation on a transcribed decimal NATO message with an offset (given as a pastebin entry), with a local keyfile. eg `pastebinxor http://pastebin.com/djeUWxm elpaso.bin`")
-_Help_RegisterCommand("elpaso","<pastebin link>","This command defaults the keyfile used in pastebin xor operations. See `help pastebinxor`. ")
-_Help_RegisterCommand("databin","<pastebin link>","This command defaults the keyfile used in pastebin xor operations. See `help pastebinxor`. ")
-_Help_RegisterCommand("littlemissouri","<pastebin link>","This command defaults the keyfile used in pastebin xor operations. See `help pastebinxor`. ")
+_Help_RegisterCommand("pastebinxor","<pastebin link> [key filename]","Performs a XOR operation on a transcribed decimal NATO message with an offset (given as a pastebin entry), with a local keyfile. eg `%!%pastebinxor http://pastebin.com/djeUWxm elpaso.bin`")
+_Help_RegisterCommand("elpaso","<pastebin link>","This command defaults the keyfile used in pastebin xor operations. See `%!%help pastebinxor`. ")
+_Help_RegisterCommand("databin","<pastebin link>","This command defaults the keyfile used in pastebin xor operations. See `%!%help pastebinxor`. ")
+_Help_RegisterCommand("littlemissouri","<pastebin link>","This command defaults the keyfile used in pastebin xor operations. See `%!%help pastebinxor`. ")
 #region ;----- autodecoder for  black OTP1
 
 Func COMMAND_pastebinxor($link,$keyfile="elpaso.bin")

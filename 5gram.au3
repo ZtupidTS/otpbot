@@ -26,7 +26,7 @@ Func COMMAND_5gramfind($num, $in)
 	Return FileRead($out)
 EndFunc   ;==>COMMAND_5gramfind
 Func COMMANDX_5gram($who, $where, $what, $acmd);;;;$num,$message)
-	If (UBound($acmd) - 1) < 3 Then Return "5gram: not enough parameters: filenumber 5grams"
+	If (UBound($acmd) - 1) < 3 Then Return "5gram: not enough parameters. Usage: %!%5gram filenumber 5grams"
 	$nums = $acmd[2]
 	Local $message = CommandToString($acmd, 3, -1)
 

@@ -6,9 +6,9 @@
 
 ; Note to reviewers: this only lists information from a website hosting recordings.
 _Help_RegisterGroup("Dialer")
-_Help_RegisterCommand("dial","<agentcode>","Posts a dial request to the OTP22 auto-dialer. Completely numeric agent codes will have `#` automatically appended to them. Note: Uses your account saved dialer password. (see OPTION GET DIALERPASS )")
+_Help_RegisterCommand("dial","<agentcode>","Posts a dial request to the OTP22 auto-dialer. Completely numeric agent codes will have `#` automatically appended to them. Note: Uses your account saved dialer password. (see %!%OPTION GET DIALERPASS )")
 
-_UserInfo_Option_Add('dialerpass','Password to use for the OTP22 AutoDialer, This is automatically used when you use the DIAL <agentnumber> command.',True)
+_UserInfo_Option_Add('dialerpass','Password to use for the OTP22 AutoDialer, This is automatically used when you use the %!%DIAL <agentnumber> command.',True)
 
 
 
@@ -31,7 +31,7 @@ Global $dialer_reportfunc = ''
 ;Func COMMAND_dial($agent, $number=1)
 Func COMMANDX_dial($who, $where, $what, $acmd)
 	Local $agent=__element($acmd,2)
-	If $agent="" Then Return "dial: not eneough parameters.  Usage: DIAL <agentnumber>"
+	If $agent="" Then Return "dial: not eneough parameters.  Usage: %!%DIAL <agentnumber>"
 	Local $number=__element($acmd,3)
 	If $number="" Then $number=1
 
