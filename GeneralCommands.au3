@@ -83,6 +83,7 @@ EndFunc
 
 
 Func _Help_Command($command,$subcommand="")
+	If StringRegExp(StringLeft($command,1),'^\W$') Then $command=StringTrimLeft($command,1)
 	If StringLen($subcommand) Then $command&=" "&$subcommand
 	For $i=0 To UBound($_Help_Commands)-1
 		If $_Help_Commands[$i]=$command Then
