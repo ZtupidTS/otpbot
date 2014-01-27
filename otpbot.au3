@@ -88,6 +88,8 @@ ReDim $otp22_waves[$otp22_wavemax][2]
 $dialer_reportfunc = 'SendPrimaryChannel'
 $PHPBB_ReportFunc = 'SendPrimaryChannel'
 $_OtpHost_OnCommand = "Process_HostCmd"
+$_UserInfo_Event_Tell = "PRIVMSG"
+$_UserInfo_Event_Pounce = "PRIVMSG"
 Global $_OtpHost_Info = ""
 
 _Help_RegisterGroup("Bot")

@@ -20,9 +20,21 @@ Global $_USERINFO_INI=@ScriptDir&"\userinfo.ini"
 _UserInfo_Option_Add('_lastposttime')
 _UserInfo_Option_Add('_lastposttext')
 _UserInfo_Option_Add('_firstseentime')
+_UserInfo_Option_Add('_telln')
+_UserInfo_Option_Add('_pouncen')
+_UserInfo_Option_Add('_pouncelist')
+For $i=0 To 0x1F
+	_UserInfo_Option_Add('_tell'&$i)
+	_UserInfo_Option_Add('_pounce'&$i)
+Next
 
 ;------------------------------------------------
 _Help_RegisterGroup("Users")
+_Help_RegisterCommand("TELL","<user> <message>","Leaves a message for a user for the next time they show up. (Must be a recognized account)")
+_Help_RegisterCommand("READ","","Reads messages left for you using the %!%TELL command and clears them.")
+_Help_RegisterCommand("POUNCE","<user>","Adds a user to your Pounce List and notifies you when they show up next. (%!%WHOPOUNCE will display your Pounce List)")
+_Help_RegisterCommand("NOPOUNCE","<user>","Removes a user to your Pounce List and stops notifying you when they show up next. (%!%WHOPOUNCE will display your Pounce List)")
+_Help_RegisterCommand("WHOPOUNCE","","Lists users on your Pounce List that you receive notifications for (use %!%POUNCE to add users and %!%NOPOUNCE to remove them)")
 _Help_RegisterCommand("SEEN","[nickname]","Displays information about the account name - for your nickname if none is given.")
 _Help_RegisterCommand("IDENTIFY","[nickname]","Refreshes the account name information for a nickname - for your nickname if none is given.  Try %!%WHOAMI after this to see updated information.")
 _Help_RegisterCommand("WHOAMI","","Retrieves the NickServ account-name for your nickname in the channel if you are recognized.  Try using the %!%IDENTIFY command before this if you are not recognized correctly.")
@@ -77,6 +89,54 @@ Func COMMANDX_Seen($who, $where, $what, $acmd)
 	Return $out&StringFormat("First Seen: %s, Last Seen: %s, Last Post: %s",$fseen,$lseen,$lpost)
 
 EndFunc
+Func COMMANDX_WhoPounce($who, $where, $what, $acmd)
+	Local $acctFrom=_UserInfo_Whois($who)
+	If Not StringLen($acctFrom) Then Return "I do not recognize you, "&$who&", or you have not logged in."
+	Local $list=_UserInfo_GetOptValueByAcct($acctFrom, '_pouncelist')
+	Return "You have the following users on pounce: "&$list
+EndFunc
+Func COMMANDX_NoPounce($who, $where, $what, $acmd)
+	If Not _Cmd_HasParamsExact($acmd,1) Then Return "Error: Usage is %!%NOPOUNCE <User>"
+	Local $acctFrom=_UserInfo_Whois($who)
+	If Not StringLen($acctFrom) Then Return "I do not recognize you, "&$who&", or you have not logged in."
+	Local $person=_Cmd_GetParameter($acmd,0)
+	Local $acctTo=__resolveacctname($person)
+	If StringLen($acctTo)=0 Then Return "Error: I do not know who "&$person&" is, or they have not logged in."
+	Local $count=Int(_UserInfo_GetOptValueByAcct($acctTo, '_pouncen'))
+	For $i=0 To $count-1
+		If _UserInfo_GetOptValueByAcct($acctTo, '_pounce'&$i)=$acctFrom Then _UserInfo_SetOptValueByAcct($acctTo, '_pounce'&$i,'')
+	Next
+
+	Local $list=_UserInfo_GetOptValueByAcct($acctFrom, '_pouncelist')
+	Local $arr=StringSplit($list,' ',2)
+	Local $idx=_ArraySearch($arr,$acctTo)
+	If $idx>=0 Then $arr[$idx]=""
+	$list=_ArrayToString($arr,' ')
+	_UserInfo_SetOptValueByAcct($acctFrom, '_pouncelist',$list)
+
+	Return "I will no longer tell you the next time I see "&$acctTo&"."
+EndFunc
+Func COMMANDX_Pounce($who, $where, $what, $acmd)
+	If Not _Cmd_HasParamsExact($acmd,1) Then Return "Error: Usage is %!%POUNCE <User>"
+	Local $acctFrom=_UserInfo_Whois($who)
+	If Not StringLen($acctFrom) Then Return "I do not recognize you, "&$who&", or you have not logged in."
+	Local $person=_Cmd_GetParameter($acmd,0)
+	Local $acctTo=__resolveacctname($person)
+	If StringLen($acctTo)=0 Then Return "Error: I do not know who "&$person&" is, or they have not logged in."
+	Local $count=Int(_UserInfo_GetOptValueByAcct($acctTo, '_pouncen'))
+	_UserInfo_SetOptValueByAcct($acctTo, '_pounce'&$count,$acctFrom)
+	_UserInfo_SetOptValueByAcct($acctTo, '_pouncen',$count+1)
+
+
+	Local $list=_UserInfo_GetOptValueByAcct($acctFrom, '_pouncelist')
+	Local $arr=StringSplit($list,' ',2)
+	If _ArraySearch($arr,$acctTo)<0 Then _ArrayAdd($arr,$acctTo)
+	$list=_ArrayToString($arr,' ')
+	_UserInfo_SetOptValueByAcct($acctFrom, '_pouncelist',$list)
+
+
+	Return "I will tell you the next time I see "&$acctTo&"."
+EndFunc
 Func COMMANDX_Tell($who, $where, $what, $acmd)
 	$acmd=_Cmd_Tokenize($what,2);force the message to be a single token.
 	If Not _Cmd_HasParams($acmd,2) Then Return "Error: Usage is %!%TELL <User> <Message>"
@@ -87,7 +147,9 @@ Func COMMANDX_Tell($who, $where, $what, $acmd)
 	Local $tellCount=Int(_UserInfo_GetOptValueByAcct($acct, '_telln'))
 	_UserInfo_SetOptValueByAcct($acct, '_tell'&$tellCount,'<'&$who&'> '&$message)
 	_UserInfo_SetOptValueByAcct($acct, '_telln',$tellCount+1)
+	Return "I will tell "&$acct&" your message next I see them."
 EndFunc
+
 Func COMMANDX_Read($who, $where, $what, $acmd)
 	Local $acct=_UserInfo_Whois($who)
 	If Not StringLen($acct) Then Return "I do not recognize you, "&$who&", or you have not logged in."
@@ -109,7 +171,21 @@ Func _UserInfo_NotifyMessages($who)
 	If Not StringLen($acct) Then Return SetError(1,0,"")
 	Local $tellCount=Int(_UserInfo_GetOptValueByAcct($acct, '_telln'))
 	If $tellCount=0 Then Return SetError(2,0,"")
-	Return StringFormat("You have %s New Messages. Use %!%READ to read and clear them.",$tellCount)
+	If StringLen($_UserInfo_Event_Tell) Then Call($_UserInfo_Event_Tell, $who, StringFormat("You have %s New Messages. Use %!%READ to read and clear them.",$tellCount))
+EndFunc
+Func _UserInfo_NotifyPounces($who)
+	Local $acct=_UserInfo_Whois($who)
+	If Not StringLen($acct) Then Return SetError(1,0,"")
+	Local $count=Int(_UserInfo_GetOptValueByAcct($acct, '_pouncen'))
+	If $count=0 Then Return SetError(2,0,"")
+	For $i=0 To $count-1
+		Local $acctPouncer=_UserInfo_GetOptValueByAcct($acct, '_pounce'&$i)
+		Local $iPouncer=_UserInfo_GetByAcct($acctPouncer)
+		If _UserInfo_IsValidIndex($iPouncer) Then
+			Local $nickPouncer=$_USERINFO_NICKS[$iPouncer]
+			If StringLen($_UserInfo_Event_Pounce) Then Call($_UserInfo_Event_Pounce, $nickPouncer, StringFormat("Notification: %s (%s) is now online.  Requested by: %s (%s)",$who,$acct,$nickPouncer,$acctPouncer))
+		EndIf
+	Next
 EndFunc
 Func COMMANDX_Whoami($who, $where, $what, $acmd)
 	Return COMMAND_Whois($who)
@@ -233,7 +309,7 @@ EndFunc
 
 Func _UserInfo_Remember($nick,$acct)
 	Local $i=_UserInfo_GetByNick($nick)
-	Local $isNewEntry=False
+	Local $isNewEntry=False;new SESSION entry
 	If $i=-1 Then
 		$i=$_USERINFO_IDX
 		$isNewEntry=True
@@ -248,8 +324,8 @@ Func _UserInfo_Remember($nick,$acct)
 		_UserInfo_SetOptValue($i, '_firstseentime',TimerInit())
 	EndIf
 
-
-
+	If $isNewEntry Then _UserInfo_NotifyMessages($nick)
+	If $isNewEntry Then _UserInfo_NotifyPounces($nick)
 	If $isNewEntry Then $_USERINFO_IDX=Mod($_USERINFO_IDX+1,$_USERINFO_MAX); cycles 0 to Max forwards, makes sure the oldest entry is always overwritten first.
 EndFunc
 Func _UserInfo_Forget($nick)
