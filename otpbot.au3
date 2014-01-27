@@ -202,7 +202,7 @@ Func Process_Message($who, $where, $what); called by Process() which parses IRC 
 			Return ''
 		EndIf
 	Else;command processing
-		Local $params = StringSplit($what, ' ')
+		Local $params = _Cmd_Tokenize($what);StringSplit($what, ' ')
 		Local $paramn = UBound($params) - 2; [0]=count [1]=~command [2]=param1,  ubound=3;  ubound-2=1
 		Local $pfx = $what
 		If (UBound($params) - 1) >= 1 Then $pfx = $params[1]

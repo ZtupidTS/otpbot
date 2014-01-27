@@ -23,7 +23,62 @@ _Help_Register("more","","Provides more text from the end of a previous post tha
 #include "Calc.au3"
 
 
+
+
 ;---------------------------------------
+Func _Cmd_Tokenize($what,$maxParameters=256)
+	Local $aCmd[1]=[0]
+	Local $sToken=""
+	Local $isQuoted=False
+	For $i=1 To StringLen($what)
+
+		If $maxParameters<=$aCmd[0] Then ExitLoop
+
+		Local $c=StringMid($what,$i,1)
+		Local $isEnd=False
+		Local $doAppend=True
+		If $c=' ' Then
+			$isEnd=(Not $isQuoted); end the token if NOT QUOTED
+			$doAppend=$isQuoted; append the space character IF QUOTED
+		EndIf
+		If $c='"' Then
+			$isEnd=$isQuoted; end the token if the string was already quoted.
+			$doAppend=False; do not append the quotation mark
+			$isQuoted=(Not $isQuoted);toggle the quotation status.
+		EndIf
+
+		If $doAppend Then $sToken&=$c
+		If $isEnd And StringLen($sToken)Then
+			_ArrayAdd($aCmd,$sToken)
+			$aCmd[0]+=1
+			$sToken=""
+		EndIf
+	Next
+	If $maxParameters<=$aCmd[0] Then
+		_ArrayAdd($aCmd,StringMid($what,$i))
+		$aCmd[0]+=1
+		;$out_Remainder=StringMid($what,$i)
+	Else
+		If StringLen($sToken) Then
+			_ArrayAdd($aCmd,$sToken)
+			$aCmd[0]+=1
+		EndIf
+	EndIf
+	;$aCmd[0]=UBound($aCmd)-1
+	Return $aCmd
+EndFunc
+Func _Cmd_CountParams(ByRef $acmd)
+	Return $acmd[0]-1
+EndFunc
+Func _Cmd_HasParams(ByRef $acmd,$num)
+	Return $num >= ($acmd[0]-1)
+EndFunc
+Func _Cmd_HasParamsExact(ByRef $acmd,$num)
+	Return $num = ($acmd[0]-1)
+EndFunc
+Func _Cmd_GetParameter(ByRef $acmd,$index)
+	Return $acmd[$index+2]
+EndFunc
 
 
 ;------------------------------------------------------------------------------

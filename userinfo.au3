@@ -3,6 +3,10 @@
 #include <Array.au3>
 #include "GeneralCommands.au3"
 
+Global $_UserInfo_Event_Pounce=""
+Global $_UserInfo_Event_Tell=""
+
+;------------------------------------------------
 Global $_USERINFO_OPTIONS[1]=['']
 
 Global Const $_USERINFO_MAX=0x1000
@@ -73,6 +77,40 @@ Func COMMANDX_Seen($who, $where, $what, $acmd)
 	Return $out&StringFormat("First Seen: %s, Last Seen: %s, Last Post: %s",$fseen,$lseen,$lpost)
 
 EndFunc
+Func COMMANDX_Tell($who, $where, $what, $acmd)
+	$acmd=_Cmd_Tokenize($what,2);force the message to be a single token.
+	If Not _Cmd_HasParams($acmd,2) Then Return "Error: Usage is %!%TELL <User> <Message>"
+	Local $dest=_Cmd_GetParameter($acmd,0)
+	Local $message=_Cmd_GetParameter($acmd,1)
+	Local $acct=__resolveacctname($dest)
+	If StringLen($acct)=0 Then Return "Error: I do not know who that is, or they have not logged in."
+	Local $tellCount=Int(_UserInfo_GetOptValueByAcct($acct, '_telln'))
+	_UserInfo_SetOptValueByAcct($acct, '_tell'&$tellCount,'<'&$who&'> '&$message)
+	_UserInfo_SetOptValueByAcct($acct, '_telln',$tellCount+1)
+EndFunc
+Func COMMANDX_Read($who, $where, $what, $acmd)
+	Local $acct=_UserInfo_Whois($who)
+	If Not StringLen($acct) Then Return "I do not recognize you, "&$who&", or you have not logged in."
+	Local $tellCount=Int(_UserInfo_GetOptValueByAcct($acct, '_telln'))
+
+	Local $out=StringFormat("%s New Messages",$tellCount)
+	If $tellCount>0 Then
+		$out&=": "
+		For $i=0 To $tellCount-1
+			$out&=_UserInfo_GetOptValueByAcct($acct, '_tell'&$i)&" | "
+			_UserInfo_SetOptValueByAcct($acct, '_tell'&$i,'')
+		Next
+	EndIf
+	_UserInfo_SetOptValueByAcct($acct, '_telln',0)
+	Return $out
+EndFunc
+Func _UserInfo_NotifyMessages($who)
+	Local $acct=_UserInfo_Whois($who)
+	If Not StringLen($acct) Then Return SetError(1,0,"")
+	Local $tellCount=Int(_UserInfo_GetOptValueByAcct($acct, '_telln'))
+	If $tellCount=0 Then Return SetError(2,0,"")
+	Return StringFormat("You have %s New Messages. Use %!%READ to read and clear them.",$tellCount)
+EndFunc
 Func COMMANDX_Whoami($who, $where, $what, $acmd)
 	Return COMMAND_Whois($who)
 EndFunc
@@ -138,7 +176,15 @@ Func COMMANDX_Option($who, $where, $what, $acmd)
 			Return "Invalid Command. Refer to the %!%HELP OPTION command."
 	EndSwitch
 EndFunc
-
+Func __resolveacctname($nick)
+	Local $acct=_UserInfo_Whois($nick)
+	If StringLen($acct)=0 Then
+		$acct=$nick
+		Local $tsFSEEN=_UserInfo_GetOptValueByAcct($acct, '_firstseentime')
+		If $tsFSEEN="" Then Return SetError(1,0,"")
+	EndIf
+	Return $acct
+EndFunc
 Func __element(ByRef $arr, $idx)
 	If $idx<0 Or $idx>=UBound($arr) Then Return ""
 	Return $arr[$idx]
@@ -298,6 +344,20 @@ Func _UserInfo_GetOptValueByAcct($acct, $option)
 	Local $value=IniRead($_USERINFO_INI,$acct,$option_name,"ERR:READ_OPTION_FAILED")
 	If $value=="ERR:READ_OPTION_FAILED" Then Return SetError(3,0,"")
 	Return _UserInfo_DeprepValue($value,$option_ispassword)
+EndFunc
+
+Func _UserInfo_SetOptValueByAcct($acct, $option,$value)
+	Local $iOption=_UserInfo_Option_GetIndex($option)
+	If Not _UserInfo_Option_IsValidIndex($iOption) Then Return SetError(2,0,"")
+
+	Local $opt=$_USERINFO_OPTIONS[$iOption]
+	Local $option_name=$opt[0]
+	Local $option_ispassword=$opt[2]
+
+	$acct=_UserInfo_SanitizeName($acct)
+	$value=_UserInfo_PrepValue($value,$option_ispassword)
+	If Not IniWrite($_USERINFO_INI,$acct,$option_name,$value) Then Return SetError(3,0,"")
+	Return SetError(0,0,"")
 EndFunc
 
 ;---------------------------------------------------------------------
