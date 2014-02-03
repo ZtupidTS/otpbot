@@ -17,11 +17,11 @@ _Help_RegisterGroup("Wiki")
 _Help_RegisterCommand("update","","Displays News information and current events.")
 _Help_RegisterCommand("updatechan","","Displays News information and current events - sent to the channel.")
 _Help_RegisterCommand("query","<query string>","Performs a Semantic-MediaWiki query and results CSV results.")
-_Help_RegisterCommand("page","<page name>","Looks up a page name on the wiki and results a link. Provides a search link if not found. Offers some limited casing and redirect name-resolving through MediaWiki.")
+_Help_RegisterCommand("page","<page name>","Looks up a page name on the wiki and provides a link. Provides the first title search result if no exact match is found.")
+_Help_RegisterCommand("search","<search terms>","Performs a search of the wiki by title name. If no results are found, a Text search is done.")
 
 
 ;_UserInfo_Option_Add('notifyupdate')
-
 
 
 Func COMMANDX_query($who, $where, $what, $acmd)
@@ -40,6 +40,27 @@ Func COMMANDX_query($who, $where, $what, $acmd)
 	Return $out
 EndFunc
 
+Func COMMANDX_search($who, $where, $what, $acmd)
+	$terms=StringMid($what,1+StringLen("@search "))
+	Local $arr=Wiki_Search($terms,"title")
+	If UBound($arr)<1 Then $arr=Wiki_Search($terms,"text")
+	If UBound($arr)<1 Then Return "I'm sorry. I couldn't find anything like that on the wiki."
+	Local $out=UBound($arr)&' results: '
+	For $i=0 To UBound($arr)-1
+		$out&=($i+1)&'. '&_Wiki_Link('/wiki/'&_Wiki_Name($arr[$i]))&' '
+	Next
+	Return $out
+EndFunc
+
+Func Wiki_Search($terms,$mode="title");text?
+	Local $url="http://otp22.referata.com/w/api.php?action=query&list=search&srsearch="&__SU_URIEncode($terms)&"&srprop=timestamp&srredirects=true&format=xml&limit=10&srwhat="&__SU_URIEncode($mode)
+	Local $data=InetRead($url)
+	If @error<>0 Then
+		Return ""
+	EndIf
+	$data=BinaryToString($data)
+	Return _StringBetween($data,'title="','"')
+EndFunc
 
 Func COMMANDX_page($who, $where, $what, $acmd)
 	$page=StringMid($what,1+StringLen("@wiki "))
@@ -55,7 +76,10 @@ Func COMMANDX_page($who, $where, $what, $acmd)
 		If Not (StringInStr($a[0],"Special:Search") Or StringInStr($a[0],"Special%3ASearch")) Then $result=1
 	EndIf
 	If $result Then return _Wiki_Link($a[0])
-	Return "I couldn't find `"&$page&"` on the wiki. Try searching for it: "&COMMAND_tinyurl($url)
+
+	Local $arr=Wiki_Search($page,"title")
+	If UBound($arr) Then Return 'Did you mean: '&_Wiki_Link('/wiki/'&_Wiki_Name($arr[0]))&' ?'
+	Return "I couldn't find `"&$page&"` on the wiki, sorry.  Try %!%SEARCH instead."
 EndFunc
 
 #region ;--------@UPDATE
