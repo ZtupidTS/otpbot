@@ -1,4 +1,5 @@
 #include <String.au3>
+#include "HTTP.au3"
 #include "GeneralCommands.au3"
 #include-once
 
@@ -56,7 +57,7 @@ EndFunc
 Func _ShortUrl_Generate($url)
 	$UE_url=__SU_URIEncode($url)
 	;Local $s=InetRead("http://tinyurl.com/api-create.php?url="&$UE_url)
-	Local $s=InetRead("http://is.gd/create.php?format=simple&url="&$UE_url)
+	Local $s=_InetRead("http://is.gd/create.php?format=simple&url="&$UE_url)
 	$s=StringStripWS(BinaryToString($s),8)
 	If StringLeft($s,5)="http:" Then Return SetError(0,0, $s)
 	Return SetError(1,0,'')

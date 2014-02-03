@@ -1,5 +1,6 @@
 #include-once
 #include <String.au3>
+#include "HTTP.au3"
 #include "shorturl.au3"
 #include "GeneralCommands.au3"
 #include "userinfo.au3"
@@ -24,6 +25,7 @@ _Help_RegisterCommand("search","<search terms>","Performs a search of the wiki b
 ;_UserInfo_Option_Add('notifyupdate')
 
 
+
 Func COMMANDX_query($who, $where, $what, $acmd)
 	$query=StringMid($what,1+StringLen("@query "))
 	$query=StringReplace(StringReplace(StringReplace(__SU_URIEncode($query),"+","%20"),"-","-2D"),"%","-")
@@ -33,7 +35,7 @@ Func COMMANDX_query($who, $where, $what, $acmd)
 	Local $out=""
 	For $i=0 To UBound($query_formats)-1
 		Local $url=StringFormat($query_url,$query,$query_formats[$i])
-		If $i=0 Then $out&=BinaryToString(InetRead($url, 1))&' --'
+		If $i=0 Then $out&=BinaryToString(_InetRead($url, 1))&' --'
 		$out&=' '&StringUpper($query_formats[$i])&': '&COMMAND_tinyurl($url)
 
 	Next
@@ -54,7 +56,7 @@ EndFunc
 
 Func Wiki_Search($terms,$mode="title");text?
 	Local $url="http://otp22.referata.com/w/api.php?action=query&list=search&srsearch="&__SU_URIEncode($terms)&"&srprop=timestamp&srredirects=true&format=xml&limit=10&srwhat="&__SU_URIEncode($mode)
-	Local $data=InetRead($url)
+	Local $data=_InetRead($url)
 	If @error<>0 Then
 		Return ""
 	EndIf
@@ -65,7 +67,7 @@ EndFunc
 Func COMMANDX_page($who, $where, $what, $acmd)
 	$page=StringMid($what,1+StringLen("@wiki "))
 	Local $url="http://otp22.referata.com/w/index.php?title=Special%3ASearch&search="&__SU_URIEncode($page)&"&go=Go"
-	Local $data=InetRead($url)
+	Local $data=_InetRead($url)
 	If @error<>0 Then
 		Return "I couldn't check the page name at this time. Try this: "&_Wiki_Link('/wiki/'&_Wiki_Name($page))
 	EndIf
@@ -100,7 +102,7 @@ Func OTP22News_Retrieve()
 	;\x2212 February 2013 07:43:00\x22,\x22[[Second Knights of Pythias Cemetery drop]] picked up!\x22\n
 	;\x22News#Mon,_11_Feb_2013_01:52:00_+0000\x22,\x2211 February 2013 01:52:00\x22,\x22Multiple new [[Agent_Systems/Investigation/Black_OTP1_messages#Messages_from_11_February|OTP messages]]. Pictures of drop locations, references to [[Zeus]] and a need for new keys.\x22\n
 	;\x22News#Thu,_07_Feb_2013_23:17:00_+0000\x22,\x227 February 2013 23:17:00\x22,\x22Two new [[Black_OTP1_messages#Messages_from_7_February|OTP messages]].  Used 99985 to request more time picking up drop.\x22\n
-	Local $s = InetRead($news_url, 1)
+	Local $s = _InetRead($news_url, 1)
 	$s = BinaryToString($s)
 	$s = StringReplace($s, @LF, ',')
 	;ConsoleWrite("DLd"&@CRLF)

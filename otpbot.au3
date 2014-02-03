@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.4.0.96
+#AutoIt3Wrapper_Res_Fileversion=6.4.0.97
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crash_demons
 #AutoIt3Wrapper_Res_Language=1033
@@ -21,6 +21,7 @@
 #include "Xor.au3"
 #include "Calc.au3"
 #include "Wiki.au3"
+#include "HTTP.au3"
 #include "5gram.au3"
 #include "Stats.au3"
 #include "coords.au3"
@@ -90,6 +91,7 @@ $PHPBB_ReportFunc = 'SendPrimaryChannel'
 $_OtpHost_OnCommand = "Process_HostCmd"
 $_UserInfo_Event_Tell = "PRIVMSG"
 $_UserInfo_Event_Pounce = "PRIVMSG"
+$_HTTP_Event_Debug = '_OtpHost_flog'
 Global $_OtpHost_Info = ""
 
 _Help_RegisterGroup("Bot")
@@ -728,88 +730,5 @@ Func NameGetHostname($name)
 	If $pAt Then Return StringTrimLeft($name, $pAt)
 	Return ''
 EndFunc   ;==>NameGetHostname
-
-
-
-Func __HTTP_Req($Method = 'GET', $url = 'http://example.com/', $Content = '', $extraHeaders = '')
-	Local $aRet[4]
-	$url = StringTrimLeft($url, StringInStr($url, '://') + 2)
-	Local $pos = StringInStr($url, '/')
-	Local $HOST = StringLeft($url, $pos - 1)
-
-	Local $PORT = 80
-	Local $pColon = StringInStr($HOST, ':')
-	If $pColon > 0 Then
-		$PORT = StringMid($HOST, $pColon + 1)
-		$HOST = StringLeft($HOST, $pColon - 1)
-	EndIf
-
-	$url = StringMid($url, $pos)
-	Local $HTTPRequest = $Method & ' ' & $url & ' HTTP/1.0' & @CRLF & _
-			'Accept-Language: en' & @CRLF & _
-			'Accept: */*' & @CRLF & _
-			'Host: ' & $HOST & @CRLF & _
-			'Cache-Control: no-cache' & @CRLF & _
-			'User-Agent: Mozilla/1.0' & @CRLF & _
-			'Connection: close' & @CRLF & _
-			'Accept-Encoding: ' & @CRLF & _
-			'Accept-Language: en' & @CRLF
-	If StringLen($extraHeaders) > 0 Then $HTTPRequest &= $extraHeaders
-	If StringLen($Content) > 0 Then
-		$HTTPRequest &= 'Content-Length: ' & StringLen($Content) & @CRLF
-		$HTTPRequest &= @CRLF & $Content;&@CRLF
-	Else
-		$HTTPRequest &= @CRLF
-	EndIf
-	$aRet[0] = $HOST
-	$aRet[1] = $url; now a URI
-	$aRet[2] = $HTTPRequest
-	$aRet[3] = $PORT
-	Return $aRet
-EndFunc   ;==>__HTTP_Req
-Func __HTTP_Transfer(ByRef $aReq, ByRef $sRecv_Out, $limit = 0)
-	;ConsoleWrite($aReq[2]&@CRLF)
-	Local $error = 0
-	Local $SOCK = TCPConnect(TCPNameToIP($aReq[0]), $aReq[3])
-	;ConsoleWrite('HTTPSock: '&$aReq[0]&'//'&$aReq[3]&'//'&$sock&'//'&@error&@CRLF)
-	TCPSend($SOCK, $aReq[2])
-	$sRecv_Out = ""
-	While $SOCK <> -1
-		Local $recv = TCPRecv($SOCK, 10000, 1)
-		If @error <> 0 Then $error = @error
-		If $limit > 0 And StringLen($sRecv_Out) > $limit Then $error = 0xBEEF
-		If IsBinary($recv) Then $recv = BinaryToString($recv)
-		$sRecv_Out &= $recv
-		If $error <> 0 Then
-			TCPCloseSocket($SOCK)
-			$SOCK = -1
-			ExitLoop
-		EndIf
-		;Sleep(50)
-	WEnd
-	;ConsoleWrite('HTTPSockError: '&$error&@CRLF)
-EndFunc   ;==>__HTTP_Transfer
-
-
-
-; Thanks Progandy
-Func _URIEncode($sData)
-	; Prog@ndy
-	Local $aData = StringSplit(BinaryToString(StringToBinary($sData, 4), 1), "")
-	Local $nChar
-	$sData = ""
-	For $i = 1 To $aData[0]
-		$nChar = Asc($aData[$i])
-		Switch $nChar
-			Case 45, 46, 48 To 57, 65 To 90, 95, 97 To 122, 126
-				$sData &= $aData[$i]
-			Case 32
-				$sData &= "+"
-			Case Else
-				$sData &= "%" & Hex($nChar, 2)
-		EndSwitch
-	Next
-	Return $sData
-EndFunc   ;==>_URIEncode
 
 #endregion ;------------------BOT INTERNALS

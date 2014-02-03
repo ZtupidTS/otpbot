@@ -1,5 +1,6 @@
 #include <Process.au3>
 #include <String.au3>
+#include "HTTP.au3"
 #include "GeneralCommands.au3"
 
 
@@ -40,7 +41,7 @@ Func pastebindecode($message, $keyfile = "elpaso.bin")
 	Local $id = getpastebin($message)
 	If @error <> 0 Then Return SetError(1, 0, "")
 	Local $link = "http://pastebin.com/raw.php?i=" & $id
-	Local $data = BinaryToString(InetRead($link))
+	Local $data = BinaryToString(_InetRead($link))
 	If Not StringRegExp($data, "(?s)[\d\s]+offset[\d\s]+") Then Return SetError(1, 0, "")
 
 	Local $autocorrect=StringInStr($message,'correct')

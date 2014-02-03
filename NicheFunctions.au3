@@ -3,6 +3,7 @@
 #include <Constants.au3>
 #include <Process.au3>
 #include <WinAPI.au3>
+#include "HTTP.au3"
 #include "GeneralCommands.au3"
 _Help_RegisterGroup("PGP")
 _Help_Register("GetKey","<keyid> [keyserver]","Retrieves a PGP key from a keyserver for use with the Verify command. The default server is pgp.mit.edu.")
@@ -40,7 +41,7 @@ Func COMMAND_VERIFY($message)
 	Local $id = _Niche_getpastebin($message)
 	If @error <> 0 Then Return SetError(1, 0, "")
 	Local $link = "http://pastebin.com/raw.php?i=" & $id
-	Local $data = BinaryToString(InetRead($link))
+	Local $data = BinaryToString(_InetRead($link))
 
 	Return _Niche_VerifyPGP($data)
 EndFunc   ;==>pastebindecode

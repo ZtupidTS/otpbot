@@ -1,6 +1,7 @@
 #include <Array.au3>
 #include <String.au3>
 #include "shorturl.au3"
+#include "HTTP.au3"
 #include-once
 
 Global $PHPBB_URL="http://forums.unfiction.com/forums/"
@@ -9,7 +10,7 @@ Global $PHPBB_PostsPerPage=15
 Global $PHPBB_ReportFunc=''
 ;----------------------------------------------------------
 Global $PHPBB_TopicURL=phpbb_url_viewtopic($PHPBB_URL,$PHPBB_TopicID)
-Global $PHPBB_TopicHTML=BinaryToString(InetRead($PHPBB_TopicURL,1))
+Global $PHPBB_TopicHTML=BinaryToString(_InetRead($PHPBB_TopicURL,1))
 Global $PHPBB_TopicPostCount=phpbb_scrape_postcount($PHPBB_TopicHTML)
 ;----------------------------------------------------------
 
@@ -73,7 +74,7 @@ Func phpbb_stringify_newpostinfo($newposts,$authors)
 EndFunc
 Func phpbb_get_newpostinfo($url,$topicid,$lastpostcount)
 	$PHPBB_TopicURL=phpbb_url_viewtopic($url,$topicid)
-	$PHPBB_TopicHTML=BinaryToString(InetRead($PHPBB_TopicURL,1))
+	$PHPBB_TopicHTML=BinaryToString(_InetRead($PHPBB_TopicURL,1))
 	$PHPBB_TopicPostCount=phpbb_scrape_postcount($PHPBB_TopicHTML)
 
 	Local $newposts=$PHPBB_TopicPostCount-$lastpostcount
@@ -81,7 +82,7 @@ Func phpbb_get_newpostinfo($url,$topicid,$lastpostcount)
 	If $newposts<=0 Then Return SetError(0xF00D,0,0)
 
 	Local $start=$PHPBB_TopicPostCount-$newposts; start post index of only the new posts.
-	$PHPBB_TopicHTML=BinaryToString(InetRead(phpbb_url_viewtopic($url,$topicid,$start),1))
+	$PHPBB_TopicHTML=BinaryToString(_InetRead(phpbb_url_viewtopic($url,$topicid,$start),1))
 	Local $authors=phpbb_scrape_authors($PHPBB_TopicHTML)
 
 	Return SetError(0,$newposts,$authors)
