@@ -369,7 +369,7 @@ Func TryCommandFunc($who, $where, $what, ByRef $acmd)
 		$err = @error
 		$ext = @extended
 	EndIf
-	If $err = 0xDEAD And $ext = 0xBEEF Then; no simple command exists, try a Whitelisted Calculate function! - had to put it here to reuse the CallArgArray
+	If $err = 0xDEAD And $ext = 0xBEEF Then; no simple command exists, try a Whitelisted Calculate function!
 		$err=0
 		$ext=0
 		Local $expression=$acmd[1]&'('
@@ -381,6 +381,14 @@ Func TryCommandFunc($who, $where, $what, ByRef $acmd)
 		$ret = _Calc_Evaluate($expression)
 		$err = @error
 		$ext = @extended
+
+		If $err = 3 Then; no simple whitelisted function exists - try a sanitized Calculate expression!
+			Local $expression=StringTrimLeft($what,1)
+			$ret = _Calc_Evaluate($expression)
+			$err = @error
+			$ext = @extended
+		EndIf
+
 	EndIf
 	If $err<>0 Then Return "Command `" & $acmd[1] & "` (with " & $paramn & " parameters) not found."
 	Return $ret
