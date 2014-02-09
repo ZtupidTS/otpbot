@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_icon=host.ico
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
-#AutoIt3Wrapper_Res_Fileversion=2.1.0.54
+#AutoIt3Wrapper_Res_Fileversion=2.1.0.55
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_Language=1033
 #AutoIt3Wrapper_Res_requestedExecutionLevel=requireAdministrator

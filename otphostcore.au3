@@ -112,13 +112,31 @@ Func _OtpHost_hlog($s)
 	If StringLen($_OtpHost_OnLogWrite) Then Call($_OtpHost_OnLogWrite,$s)
 	ConsoleWrite($s & @CRLF)
 EndFunc   ;==>_OtpHost_hlog
+
 Func _OtpHost_flog($s)
 	If Not IsDeclared('OTPLOG') Then
 		Global $OTPLOG=Int(IniRead('otpbot.ini','config','debuglog','0'))
 	EndIf
 	_OtpHost_hlog($s)
 	If Not $OTPLOG Then Return
-	FileWriteLine('otplog.txt',StringFormat("%02d:%02d %02d-%02d-%04d %s %s", @HOUR, @MIN, @MDAY, @MON, @YEAR, @ScriptName, $s) & @CRLF)
+
+	Global $iResizeStep
+	If $iResizeStep=1 Then _OtpHost_flog_resize(); audits the log file size on the second entry out of every 10 entries.
+	$iResizeStep=Mod($iResizeStep+1,10)
+
+
+	FileWriteLine(@ScriptDir&'\otplog.txt',StringFormat("%02d:%02d %02d-%02d-%04d %s %s", @HOUR, @MIN, @MDAY, @MON, @YEAR, @ScriptName, $s) & @CRLF)
+EndFunc
+Func _OtpHost_flog_resize(); resize log files >100kb  to 40mb (but don't read data >1mb into memory)
+	If Not $OTPLOG Then Return
+	Local $size=FileGetSize(@ScriptDir&'\otplog.txt')
+	Local $data=""
+	If $size>(100*1024) Then
+		If $size<(1*1024*1024) Then $data=StringRight(FileRead(@ScriptDir&'\otplog.txt'),40*1024)
+		Local $fh=FileOpen(@ScriptDir&'\otplog.txt',2);Overwrite previous contents
+		FileWrite($fh,$data)
+		FileClose($fh)
+	EndIf
 EndFunc
 
 
