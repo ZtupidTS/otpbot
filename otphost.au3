@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_icon=host.ico
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
-#AutoIt3Wrapper_Res_Fileversion=2.0.0.53
+#AutoIt3Wrapper_Res_Fileversion=2.1.0.54
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_Language=1033
 #AutoIt3Wrapper_Res_requestedExecutionLevel=requireAdministrator
@@ -407,7 +407,7 @@ EndFunc   ;==>kill
 Func update()
 	_OtpHost_flog('Updating...')
 	l("UPDATING")
-	kill('Updating to r' & $RemoteVer & '...')
+	kill('Updating to r' & $RemoteVer & '... [ Details: http://code.google.com/p/otpbot/source/list ]')
 	If $TestMode Then Return
 	Sleep(5000)
 
