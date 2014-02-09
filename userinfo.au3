@@ -43,6 +43,8 @@ _Help_RegisterCommand("OPTION","<command> <values>","Retrieves or changes your p
 _Help_RegisterCommand("OPTION LIST","","Lists all of the per-user settings for the bot. Use %!%OPTION GET <optionname> for information about a specific option.")
 _Help_RegisterCommand("OPTION GET" ,"<optionname>","Retrieves one of your personal bot settings and describes the option. NOTE: Password-style options cannot be retrieved by using this command. Use %!%OPTION LIST for a list of possible settings.")
 _Help_RegisterCommand("OPTION SET" ,"<optionname> <value>","Changes one of your personal bot settings.  Use %!%OPTION LIST for a list of possible settings.")
+_Help_RegisterCommand("USERS","","Lists the current state of the userinfo file. %!%USERS CLEAN will audit the file for old entries and remove them. (see %!%HELP USERS CLEAN )")
+_Help_RegisterCommand("USERS CLEAN","","Audits the userinfo file and removes entries older than 7 days with no options set.")
 ;------------------------------------------------
 Func __timediffstr($ts)
 	$ts=Int($ts)
@@ -65,6 +67,83 @@ Func __timestr($ts)
 	If $ts>0 Or StringLen($str)=0 Then $str&=$ts&" seconds"
 	Return $str
 EndFunc
+
+
+
+
+Func COMMAND_users($s="")
+	If $s="clean" Then
+		Local $a=COMMAND_users("_array")
+		_UserInfo_Audit()
+		Local $b=COMMAND_users("_array")
+		Local $d[2]=[$a[0]-$b[0], $a[1]-$b[1]]
+
+		Return 	StringFormat("Before cleanup: %s users, %s bytes | After cleanup: %s users, %s bytes | Removed %s user entries of %s bytes.", _
+					$a[0],$a[1], _
+					$b[0],$b[1], _
+					$d[0],$d[1])
+	EndIf
+
+	Local $users=IniReadSectionNames ($_USERINFO_INI)
+	Local $nUsers=UBound($users)-1
+	Local $nSize=FileGetSize($_USERINFO_INI)
+	If $s="_array" Then
+		Local $a[2]=[$nUsers,$nSize]
+		Return $a
+	EndIf
+	Return StringFormat("%s users recorded, %s bytes | Use %!%USERS CLEAN to perform an automated cleanup of the UserInfo file.",$nUsers,$nSize)
+
+EndFunc
+Func _UserInfo_Audit()
+	;cleans up userinfo entries more than 7 days old with no options set.
+	Local $fact_days=1*24*60*60*1000;factor of days in miliseconds count
+	Local $users=IniReadSectionNames ($_USERINFO_INI)
+	For $i=1 To UBound($users)-1
+		Local $sAcct=$users[$i]
+		Local $bHasOptions=False
+
+		Local $ts=_UserInfo_GetOptValueByAcctRaw($sAcct,'_lastposttime')
+		If $ts="" Then $ts=_UserInfo_GetOptValueByAcctRaw($sAcct,'_firstseentime')
+		$ts=Int($ts)
+		Local $diff=TimerDiff($ts)
+		Local $diffdays=$diff/$fact_days
+		ConsoleWrite($sAcct&' '&$diffdays&@CRLF)
+
+		If $diffdays>=7 Then
+
+
+
+
+			For $j=0 To UBound($_USERINFO_OPTIONS)-1
+				Local $opt=$_USERINFO_OPTIONS[$j]
+				If IsArray($opt) Then
+					;ConsoleWrite('   '&$opt[0]&@CRLF)
+					If Not (StringLeft($opt[0],1)='_') Then;all noninternal options
+						Local $sValue=_UserInfo_GetOptValueByAcctRaw($sAcct,$opt[0])
+						;ConsoleWrite('   '&$opt[0]& ' = '&StringLen($sValue)&@CRLF)
+						If StringLen($sValue)>0 Then
+							$bHasOptions=True
+							ExitLoop
+						EndIf
+					EndIf
+				EndIf
+			Next
+
+			If Int(_UserInfo_GetOptValueByAcctRaw($sAcct,'_telln'))>0 Then $bHasOptions=True
+			If Int(_UserInfo_GetOptValueByAcctRaw($sAcct,'_pouncen'))>0 Then $bHasOptions=True
+			If StringLen(_UserInfo_GetOptValueByAcctRaw($sAcct,'_pouncelist')) Then $bHasOptions=True
+			If Not $bHasOptions Then
+				ConsoleWrite('   No options'&@CRLF)
+				IniDelete($_USERINFO_INI,$sAcct)
+			EndIf
+		EndIf
+
+	Next
+
+
+
+EndFunc
+
 Func COMMANDX_Seen($who, $where, $what, $acmd)
 	Local $user=__element($acmd,2)
 	If $user="" Then $user=$who
@@ -421,6 +500,19 @@ Func _UserInfo_GetOptValueByAcct($acct, $option)
 	If $value=="ERR:READ_OPTION_FAILED" Then Return SetError(3,0,"")
 	Return _UserInfo_DeprepValue($value,$option_ispassword)
 EndFunc
+Func _UserInfo_GetOptValueByAcctRaw($acct, $option)
+	Local $iOption=_UserInfo_Option_GetIndex($option)
+	If Not _UserInfo_Option_IsValidIndex($iOption) Then Return SetError(2,0,"")
+
+	Local $opt=$_USERINFO_OPTIONS[$iOption]
+	Local $option_name=$opt[0]
+	Local $option_ispassword=$opt[2]
+
+	;$acct=_UserInfo_SanitizeName($acct)
+	Local $value=IniRead($_USERINFO_INI,$acct,$option_name,"ERR:READ_OPTION_FAILED")
+	If $value=="ERR:READ_OPTION_FAILED" Then Return SetError(3,0,"")
+	Return _UserInfo_DeprepValue($value,$option_ispassword)
+EndFunc
 
 Func _UserInfo_SetOptValueByAcct($acct, $option,$value)
 	Local $iOption=_UserInfo_Option_GetIndex($option)
@@ -446,6 +538,7 @@ Func _UserInfo_PrepValue($value,$isPassword=False)
 	Return "TXT:"&$value
 EndFunc
 Func _UserInfo_DeprepValue($value,$isPassword=False)
+	;ConsoleWrite("      deprep: "&$value&' '&$isPassword&@CRLF)
 	If $isPassword Then Return _UserInfo_ObfuscatePassword($value,False)
 	Local $pfx=StringLeft($value,4)
 	$value=StringMid($value,5)
