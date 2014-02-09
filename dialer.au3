@@ -6,8 +6,9 @@
 
 ; Note to reviewers: this only lists information from a website hosting recordings.
 _Help_RegisterGroup("Dialer")
-_Help_RegisterCommand("dial","<agentcode>","Posts a dial request to the OTP22 auto-dialer. Completely numeric agent codes will have `#` automatically appended to them. Note: Uses your account saved dialer password. (see %!%OPTION GET DIALERPASS )")
-
+_Help_RegisterCommand("dial","<agentcode> [line]","Posts an agent number request to the OTP22 auto-dialer. Completely numeric agent codes will have `#` automatically appended to them. Use the line parameter to specify which number to dial by keyword. (See %!%DIAL LIST for a list) Note: Uses your account saved dialer password. (see %!%OPTION GET DIALERPASS )")
+_Help_RegisterCommand("call","<line>","Posts a call request to the OTP22 auto-dialer. No agent number is used for this call. Use the line parameter to specify which number to dial by keyword. (See %!%DIAL LIST for a list) Note: Uses your account saved dialer password. (see %!%OPTION GET DIALERPASS )")
+_Help_RegisterCommand("lines","","Lists the valid phone line keywords for use with the %!%DIAL command.")
 _UserInfo_Option_Add('dialerpass','Password to use for the OTP22 AutoDialer, This is automatically used when you use the %!%DIAL <agentnumber> command.',True)
 
 
@@ -27,13 +28,108 @@ Global $otp22_downloadMax=20000
 Global $dialer_reportfunc = ''
 
 
+Global $dialer_numbers[7]=[ _
+"+1 202-999-3335", _
+"+1 303-309-0004", _
+"+1 709-700-0122", _
+"+48 22-307-1061", _
+"+1 888-854-2402", _
+"+1 202-204-2303", _
+"+1 202-999-3337"  ]
+
+Global $dialer_keywords[7]=[ _
+"202|AS|WA|agent|agent system|Washington|two|3335", _
+"303|CO|Colorado|three|0004", _
+"709|CA|NF|0122", _
+"48|Poland|concern|1061", _
+"888|FL|MOD|FLL|material desk|material order desk|2402", _
+"*202|MD|message desk|204|2303", _
+"*202|Controller|Control|Melter|ctrl|3337"  ]
+
+Func dialer_getShortName($i)
+	Local $kws=StringSplit($dialer_keywords[$i],"|")
+	Return StringReplace($kws[1]&'/'&$kws[2],'*','')
+EndFunc
+Func dialer_getIndexFromKeyword($kw)
+	For $i=0 To UBound($dialer_keywords)-1
+		Local $kws=StringSplit($dialer_keywords[$i],"|")
+		For $j=1 To UBound($kws)-1
+			If StringLeft($kws[$j],1)="*" Then $kws[$j]=StringTrimLeft($kws[$j],1)
+			If $kw=$kws[$j] Then Return $i
+		Next
+	Next
+	Return SetError(1,0,-1)
+EndFunc
+Func dialer_getIndexFromNumber($num)
+	$num=StringRegexpReplace($num,"\D","")
+	For $i=0 To UBound($dialer_numbers)-1
+		Local $sNum=$dialer_numbers[$i]
+		Local $aNum=StringSplit($sNum,' ')
+		Local $sNum1=StringRegexpReplace($sNum,"\D",""); just digits
+		Local $sNum2=StringRegexpReplace($aNum[2],"\D","");just the end digits.
+		; possibly get the last four digits also?
+		If $num=$sNum1 Or $num=$sNum2 Then Return $i
+	Next
+	Return SetError(1,0,-1)
+EndFunc
+Func dialer_getIndexFromInput($in)
+	If $in="" Then Return 0
+	Local $i=dialer_getIndexFromNumber($in)
+	If $i=-1 Then $i=dialer_getIndexFromKeyword($in)
+	If $i=-1 Then Return SetError(1,0,-1)
+	Return $i
+EndFunc
+
+
+Func COMMAND_lines()
+	Local $out=""
+	For $i=0 To UBound($dialer_keywords)-1
+		Local $sNum=$dialer_numbers[$i]
+		Local $kws=StringSplit($dialer_keywords[$i],"|")
+		If $i>0 Then $out&=" | "
+		$out&=$sNum&": "
+		For $j=1 To UBound($kws)-1
+			If Not (StringLeft($kws[$j],1)="*") Then
+				If $j>1 Then $out&=", "
+				$out&=$kws[$j]
+			EndIf
+		Next
+	Next
+	Return $out
+EndFunc
+
 
 ;Func COMMAND_dial($agent, $number=1)
+Func COMMANDX_call($who, $where, $what, $acmd)
+	Local $sInLine=__element($acmd,2)
+	Local $iLine=dialer_getIndexFromInput($sInLine)
+	If $iLine=-1 Then Return "call: unknown line to call. Try using a keyword listed in %!%LINES"
+	Local $number=$iLine+1; shifted for form input values.
+
+
+	dialer_userdial($who,$number,'')
+	Switch @error
+		Case 0;userdial success
+			Return "Queued Request to call line "&dialer_getShortName($iLine)&" ("&$dialer_numbers[$iLine]&") with your password."
+		Case 1;userdial not recognized
+			Return "You must be logged in to NickServ to use this command. If you think you are logged in, you might try the IDENTIFY command to refresh your information."
+		Case 2;userdial password option not set
+			Return "You have not set a dialer password for your account. To do this, Open a Private Message to the bot and use the command OPTION SET DIALERPASS <password> (without brackets).  DO NOT use the password in the chatroom.  Setting your this password lets you use the command easily while you are logged in without exposing sensitive information."
+		Case 3;dial rejected
+			Return "Your request was rejected by the server."
+		Case 4;dial failed
+			Return "There was an error submitting your request."
+	EndSwitch
+EndFunc
 Func COMMANDX_dial($who, $where, $what, $acmd)
 	Local $agent=__element($acmd,2)
-	If $agent="" Then Return "dial: not eneough parameters.  Usage: %!%DIAL <agentnumber>"
-	Local $number=__element($acmd,3)
-	If $number="" Then $number=1
+	If $agent="" Then Return "dial: not eneough parameters.  Usage: %!%DIAL <agentnumber> [line]"
+	Local $sInLine=__element($acmd,3)
+	Local $iLine=dialer_getIndexFromInput($sInLine)
+	If $iLine=-1 Then Return "dial: unknown line to call. Try using a keyword listed in %!%LINES"
+	Local $number=$iLine+1; shifted for form input values.
+
+
 
 	Local $sAcct=_UserInfo_Whois($who)
 	Local $iAcct=@extended
@@ -44,18 +140,53 @@ Func COMMANDX_dial($who, $where, $what, $acmd)
 
 
 
-	Local $headers='Referer: http://dialer.otp22.com/live/'&@CRLF&'Content-Type: application/x-www-form-urlencoded'&@CRLF
-	Local $text='error'
 
 	If StringRegexp($agent,"^[0-9ABCD]+$") Then $agent&='#'
 
 	;element_2=1&element_1=18004%23&element_3=melter3&form_id=486303&submit=Submit
 	;element_2 == 1(+1 202-999-3335) 2(+1 303-309-0004) 3(+1 709-700-0122) 4(+48 22-307-1061)
-	Local $aReq=__HTTP_Req('POST','http://dialer.otp22.com/live/call.php', StringFormat("element_2=%s&element_1=%s&element_3=%s&form_id=486303&submit=Submit",_URIEncode($number),_URIEncode($agent),_URIEncode($pass)),$headers)
+	dialer_userdial($who,$number,$agent)
+	Switch @error
+		Case 0;userdial success
+			Return "Queued Request for agent number "&$agent&" on line "&dialer_getShortName($iLine)&" ("&$dialer_numbers[$iLine]&") with your password."
+		Case 1;userdial not recognized
+			Return "You must be logged in to NickServ to use this command. If you think you are logged in, you might try the IDENTIFY command to refresh your information."
+		Case 2;userdial password option not set
+			Return "You have not set a dialer password for your account. To do this, Open a Private Message to the bot and use the command OPTION SET DIALERPASS <password> (without brackets).  DO NOT use the password in the chatroom.  Setting your this password lets you use the command easily while you are logged in without exposing sensitive information."
+		Case 3;dial rejected
+			Return "Your request was rejected by the server."
+		Case 4;dial failed
+			Return "There was an error submitting your request."
+	EndSwitch
+EndFunc
+
+Func dialer_userdial($who,$line=1,$agent="")
+	Local $sAcct=_UserInfo_Whois($who)
+	Local $iAcct=@extended
+	Local $isRecognized=(@error=0)
+	If Not $isRecognized Then Return SetError(1,0,0)
+	Local $pass=_UserInfo_GetOptValue($iAcct, 'dialerpass')
+	If $pass="" Then Return SetError(2,0,0)
+
+
+	Local $ret=dialer_dial($line,$agent,$pass)
+	Local $err=@error
+	Local $ext=@extended
+	If $err<>0 Then $err+=2
+	Return SetError($err,$ext,$ret)
+EndFunc
+
+Func dialer_dial($line=1,$agent="",$pass="")
+	;element_2=1&element_1=18004%23&element_3=melter3&form_id=486303&submit=Submit
+	;element_2 == 1(+1 202-999-3335) 2(+1 303-309-0004) 3(+1 709-700-0122) 4(+48 22-307-1061)
+	Local $headers='Referer: http://dialer.otp22.com/live/'&@CRLF&'Content-Type: application/x-www-form-urlencoded'&@CRLF
+	Local $text=''
+	Local $aReq=__HTTP_Req('POST','http://dialer.otp22.com/live/call.php', StringFormat("element_2=%s&element_1=%s&element_3=%s&form_id=486303&submit=Submit",_URIEncode($line),_URIEncode($agent),_URIEncode($pass)),$headers)
 	__HTTP_Transfer($aReq,$text,5000)
 	$text=StringReplace($text,Chr(0),'')
-	If StringLen($text)=0 Then Return "Error Submitting"
-	Return "Queued Request for "&$agent&" with your password."
+	If StringInStr($text,'Invalid Password') Then Return SetError(1,0,0)
+	If StringLen($text)=0 Then Return SetError(2,0,0)
+	Return SetError(0,$agent,$line)
 EndFunc
 
 
@@ -86,8 +217,12 @@ Func otp22_checknew()
 		;_ArrayDisplay($auri)
 
 		Local $time=$auri[1]
-		Local $phone=StringLeft($auri[2],3);202, 709, 303
+		Local $phone=$auri[2];202, 709, 303
 		Local $agent=$auri[3]
+
+		Local $iLine=dialer_getIndexFromNumber($phone)
+		If $iLine>-1 Then $phone=dialer_getShortName($iLine)
+
 
 		$sNew &= StringFormat("%dkb (%s on %s) %s | ", $otp22_waves[$i][0], $agent,$phone, _ShortUrl_Retrieve($url,0)); 0->do not cache shorturl
 	Next
