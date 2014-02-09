@@ -32,6 +32,16 @@ Func _InetRead_Manual($url,$opt=0)
 	Local $req=__HTTP_Req('GET', $url)
 	__HTTP_Transfer($req, $sRecv_Out,10000);10s max
 	If StringLen($sRecv_Out)=0 Then Return SetError(1,0,'')
+
+	Local $iPos=StringInStr($sRecv_Out,@LF&@LF)+2
+	If $iPos<=2 Then $iPos=StringInStr($sRecv_Out,@CRLF&@CRLF)+4
+	If $iPos>4 Then
+		$sRecv_Out=StringMid($sRecv_Out,$iPos)
+	Else
+		$sRecv_Out=""
+	EndIf
+
+
 	Return StringToBinary($sRecv_Out)
 EndFunc
 
