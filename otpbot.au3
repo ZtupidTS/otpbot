@@ -92,6 +92,8 @@ $_OtpHost_OnCommand = "Process_HostCmd"
 $_UserInfo_Event_Tell = "PRIVMSG"
 $_UserInfo_Event_Pounce = "PRIVMSG"
 $_HTTP_Event_Debug = '_OtpHost_flog'
+$_HTTP_Client_Name="OtpBot"
+$_HTTP_Client_Version=$VERSION
 Global $_OtpHost_Info = ""
 
 _Help_RegisterGroup("Bot")

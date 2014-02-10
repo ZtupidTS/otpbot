@@ -2,6 +2,8 @@
 Global Enum $_INETREAD_BUILTIN=0, $_INETREAD_MANUAL,$_INETREAD_MODES
 Global $_INETREAD_MODE=$_INETREAD_MANUAL
 Global $_HTTP_Event_Debug=''
+Global $_HTTP_Client_Name="UnknownHTTPClient"
+Global $_HTTP_Client_Version="1.0"
 ;TCPStartup()
 
 
@@ -64,7 +66,7 @@ Func __HTTP_Req($Method = 'GET', $url = 'http://example.com/', $Content = '', $e
 			'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' & @CRLF & _
 			'Host: ' & $HOST & @CRLF & _
 			'Cache-Control: no-cache' & @CRLF & _
-			'User-Agent: Mozilla/1.0' & @CRLF & _
+			'User-Agent: Mozilla/1.0 (Windows; like MS-DOS) CDHTTPAU3/1.0 '&$_HTTP_Client_Name&'/'&$_HTTP_Client_Version & @CRLF & _
 			'Connection: close' & @CRLF
 	If StringLen($extraHeaders) > 0 Then $HTTPRequest &= $extraHeaders
 	If StringLen($Content) > 0 Then
