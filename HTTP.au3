@@ -30,7 +30,7 @@ EndFunc
 Func _InetRead_Manual($url,$opt=0)
 	Local $sRecv_Out=''
 	Local $req=__HTTP_Req('GET', $url)
-	__HTTP_Transfer($req, $sRecv_Out,10000);10s max
+	__HTTP_Transfer($req, $sRecv_Out,100000);10s max
 	If StringLen($sRecv_Out)=0 Then Return SetError(1,0,'')
 
 	Local $iPos=StringInStr($sRecv_Out,@LF&@LF)+2
@@ -60,14 +60,12 @@ Func __HTTP_Req($Method = 'GET', $url = 'http://example.com/', $Content = '', $e
 
 	$url = StringMid($url, $pos)
 	Local $HTTPRequest = $Method & ' ' & $url & ' HTTP/1.0' & @CRLF & _
-			'Accept-Language: en' & @CRLF & _
-			'Accept: */*' & @CRLF & _
+			'Accept-Language: en-US,en;q=0.5' & @CRLF & _
+			'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' & @CRLF & _
 			'Host: ' & $HOST & @CRLF & _
 			'Cache-Control: no-cache' & @CRLF & _
 			'User-Agent: Mozilla/1.0' & @CRLF & _
-			'Connection: close' & @CRLF & _
-			'Accept-Encoding: ' & @CRLF & _
-			'Accept-Language: en' & @CRLF
+			'Connection: close' & @CRLF
 	If StringLen($extraHeaders) > 0 Then $HTTPRequest &= $extraHeaders
 	If StringLen($Content) > 0 Then
 		$HTTPRequest &= 'Content-Length: ' & StringLen($Content) & @CRLF
@@ -79,6 +77,7 @@ Func __HTTP_Req($Method = 'GET', $url = 'http://example.com/', $Content = '', $e
 	$aRet[1] = $url; now a URI
 	$aRet[2] = $HTTPRequest
 	$aRet[3] = $PORT
+	ConsoleWrite($HTTPRequest&@CRLF)
 	Return $aRet
 EndFunc   ;==>__HTTP_Req
 Func __HTTP_Transfer(ByRef $aReq, ByRef $sRecv_Out, $limit = 0, $timeout=0)
@@ -90,13 +89,15 @@ Func __HTTP_Transfer(ByRef $aReq, ByRef $sRecv_Out, $limit = 0, $timeout=0)
 	$sRecv_Out = ""
 	Local $ts=TimerInit()
 	While $SOCK <> -1
-		Local $recv = TCPRecv($SOCK, 10000, 1)
+		Local $recv = TCPRecv($SOCK, 50000, 1)
 		If @error <> 0 Then $error = @error
 		If $timeout > 0 And TimerDiff($ts)>$timeout Then $error=0xB33F
 		If $limit > 0 And StringLen($sRecv_Out) > $limit Then $error = 0xBEEF
 		If IsBinary($recv) Then $recv = BinaryToString($recv)
 		$sRecv_Out &= $recv
 		If $error <> 0 Then
+			;MsgBox(0,0,$error)
+			Call($_HTTP_Event_Debug,"HTTP: Connection error="&$error&" ("&Hex($error)&") inetreadmode="&$_INETREAD_MODE)
 			TCPCloseSocket($SOCK)
 			$SOCK = -1
 			ExitLoop
