@@ -41,6 +41,7 @@ Global $Settings[100][3] = [ _
 		['utility', 'forumurl', 'Forum base URL (ending with a /)'], _
 		['utility', 'forumtopicid', 'Topid ID# of the thread to watch for replies'], _
 		['utility', 'forumchecktime', 'New-reply check interval for a forum (ms)'], _
+		['utility', 'mdichecktime', 'Check interval for the Message Desk Indexer (ms)'], _
 		['', '', '']]
 
 

@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.6.0.102
+#AutoIt3Wrapper_Res_Fileversion=6.6.0.103
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crash_demons
 #AutoIt3Wrapper_Res_Language=1033
@@ -32,6 +32,7 @@
 #include "phpbb_scrape.au3"
 #include "NicheFunctions.au3"
 #include "GeneralCommands.au3"
+#include "MessageDeskIndexer.au3"
 
 Opt('TrayAutoPause',0)
 Opt('TrayMenuMode',1+2)
@@ -68,6 +69,9 @@ Global $forum_checktime = Get("forumchecktime", 10 * 60 * 1000);10 minutes
 Global $news_url = Get("newsurl", "http://otp22.referata.com/wiki/Special:Ask/-5B-5BDisplay-20tag::News-20page-20entry-5D-5D/-3FOTP22-20NI-20full-20date/-3FSummary/format%3Dcsv/limit%3D3/sort%3DOTP22-20NI-20full-20date/order%3Ddescending/offset%3D0")
 Global $news_entries=Get("newsentries",5);last 5 updates from News wiki page.
 
+
+Global $mdi_checktime = Get("mdichecktime", 5 * 60 * 1000);5 minutes
+
 #endregion ;------------CONFIG
 
 #region ;------------------INTERNAL VARIABLES
@@ -88,6 +92,7 @@ Global $STATE = $S_OFF
 ReDim $otp22_waves[$otp22_wavemax][2]
 $dialer_reportfunc = 'SendPrimaryChannel'
 $PHPBB_ReportFunc = 'SendPrimaryChannel'
+$_MDI_ReportFunc = 'SendPrimaryChannel'
 $_OtpHost_OnCommand = "Process_HostCmd"
 $_UserInfo_Event_Tell = "PRIVMSG"
 $_UserInfo_Event_Pounce = "PRIVMSG"
@@ -128,6 +133,7 @@ _ShortUrl_Startup()
 FileChangeDir(@ScriptDir)
 AdlibRegister("otp22_dialler_report", $dialer_checktime)
 AdlibRegister("phpbb_report_NewPostsAndLink", $forum_checktime)
+AdlibRegister("_MDI_Report_NewEntries", $mdi_checktime)
 OnAutoItExitRegister("Quit")
 
 
@@ -279,6 +285,7 @@ Func OnStateChange($oldstate, $newstate)
 				;COMMAND_tinyurl('http://google.com/y4')
 				;COMMAND_tinyurl('http://google.com/y5')
 				;COMMAND_tinyurl('http://google.com/y6')
+				Sleep(20000)
 				_OtpHost_flog('Quitting OtpBot Testmode')
 				Exit
 			EndIf

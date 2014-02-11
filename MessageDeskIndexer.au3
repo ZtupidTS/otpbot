@@ -7,23 +7,37 @@
 
 Global $_MDI_LastTS = -1;initial request without a TS, just acquires the current TS
 Global $_MDI_URL = 'http://sukasa.rustedlogic.net/MD/'
+Global $_MDI_ReportFunc=''
 
 
-;;---------- TEST
-TCPStartup()
-Local $foo = _MDI_GetNewEntries()
-Local $arraydisplay_title = $_MDI_LastTS; should be updated now
-_ArrayDisplay($foo, $arraydisplay_title)
-;;----------
+
+Func _MDI_Report_NewEntries()
+	Local $s=_MDI_GetNewEntriesString()
+	If StringLen($s) And StringLen($_MDI_ReportFunc) Then Call($_MDI_ReportFunc,$s)
+EndFunc
+
+Func _MDI_GetNewEntriesString()
+	Local $entries=_MDI_GetNewEntries()
+	Local $count=@extended
+	If $count<1 Then Return ""
+	Local $out=$count&' new Message Desk Indexer entries: '
+	For $i=0 To UBound($entries)-1
+		Local $link=_ShortUrl_Retrieve('http://sukasa.rustedlogic.net/MD/Index.aspx?Details='&$entries[$i][0],0)
+		$out&=$entries[$i][0]&' = '&WikiText_Translate($entries[$i][2], "http://otp22.referata.com/wiki/")&' ('&$entries[$i][1]&') '&$link&' | '
+	Next
+	Return $out
+EndFunc
 
 Func _MDI_GetNewEntries()
 	Global $_MDI_LastTS
 	Local $url, $data, $update, $count, $j=0
 
 
-	$url = $_MDI_URL & 'LastDemo1.txt?last=' & $_MDI_LastTS
-	$data = BinaryToString(_InetRead($url), 4);request our data (this server returns UTF8, so convert that...)
+	$url = $_MDI_URL & 'Updates.aspx?last=' & $_MDI_LastTS
+	$data = BinaryToString(_InetRead($url),4);request our data (this server returns UTF8, so convert that...)
 	If StringLen($data) < 1 Then Return SetError(1, 0, 0);error on null responses
+	ConsoleWrite($data)
+	$data=StringStripCR($data)
 
 	$update = StringSplit($data, @LF, 2); Format is line-delimited:  0=newTS, 1=Count 2=Entries 3=Entries ...
 	If UBound($update) < 2 Then Return SetError(2, 0, 0); we require at least the NewTS and Count fields.
@@ -39,5 +53,5 @@ Func _MDI_GetNewEntries()
 		$results[$j][2] = $update[$i + 2];response
 		$j += 1
 	Next
-	Return SetError(0, 0, $results)
+	Return SetError(0, $count, $results)
 EndFunc   ;==>_MDI_GetNewEntries

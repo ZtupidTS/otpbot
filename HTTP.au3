@@ -35,6 +35,8 @@ Func _InetRead_Manual($url,$opt=0)
 	__HTTP_Transfer($req, $sRecv_Out,100000);10s max
 	If StringLen($sRecv_Out)=0 Then Return SetError(1,0,'')
 
+	;ConsoleWrite(@CRLF&$sRecv_Out&@CRLF)
+
 	Local $iPos=StringInStr($sRecv_Out,@LF&@LF)+2
 	If $iPos<=2 Then $iPos=StringInStr($sRecv_Out,@CRLF&@CRLF)+4
 	If $iPos>4 Then
@@ -86,8 +88,10 @@ Func __HTTP_Transfer(ByRef $aReq, ByRef $sRecv_Out, $limit = 0, $timeout=0)
 	;ConsoleWrite($aReq[2]&@CRLF)
 	Local $error = 0
 	Local $SOCK = TCPConnect(TCPNameToIP($aReq[0]), $aReq[3])
+	ConsoleWrite(TCPNameToIP($aReq[0])&@CRLF)
 	;ConsoleWrite('HTTPSock: '&$aReq[0]&'//'&$aReq[3]&'//'&$sock&'//'&@error&@CRLF)
 	TCPSend($SOCK, $aReq[2])
+	If @error<>0 Then Call($_HTTP_Event_Debug,"HTTP: SConnection error="&@error&" ("&Hex(@error)&") inetreadmode="&$_INETREAD_MODE)
 	$sRecv_Out = ""
 	Local $ts=TimerInit()
 	While $SOCK <> -1
@@ -99,7 +103,7 @@ Func __HTTP_Transfer(ByRef $aReq, ByRef $sRecv_Out, $limit = 0, $timeout=0)
 		$sRecv_Out &= $recv
 		If $error <> 0 Then
 			;MsgBox(0,0,$error)
-			Call($_HTTP_Event_Debug,"HTTP: Connection error="&$error&" ("&Hex($error)&") inetreadmode="&$_INETREAD_MODE)
+			If $error<>-1 Then Call($_HTTP_Event_Debug,"HTTP: RConnection error="&$error&" ("&Hex($error)&") inetreadmode="&$_INETREAD_MODE)
 			TCPCloseSocket($SOCK)
 			$SOCK = -1
 			ExitLoop
