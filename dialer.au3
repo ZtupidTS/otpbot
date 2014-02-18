@@ -23,7 +23,7 @@ Global $otp22_time = 0
 Global $otp22_timeOld = 0
 Global $otp22_waves[$otp22_wavemax][2];size,filename
 Global $otp22_wavesOld[$otp22_wavemax][2];size,filename
-Global $otp22_downloadMax=20000
+Global $otp22_downloadMax=50000
 
 Global $dialer_reportfunc = ''
 

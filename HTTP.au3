@@ -1,3 +1,4 @@
+
 #include-once
 Global Enum $_INETREAD_BUILTIN=0, $_INETREAD_MANUAL,$_INETREAD_MODES
 Global $_INETREAD_MODE=$_INETREAD_MANUAL
@@ -148,7 +149,7 @@ Func _TCP_Error($error,$state,$addr,$port,$sock,$len,$flag)
 EndFunc
 Func _HTTP_Error($aReq,$address,$sock,$error,$state)
 	Local $buffer=""
-	_HTTP_ErrorEx($aReq,$address,$sock,$error,$state)
+	_HTTP_ErrorEx($aReq,$address,$sock,$error,$state,$buffer)
 EndFunc
 Func _HTTP_ErrorEx($aReq,$address,$sock,$error,$state,ByRef $buffer)
 	 Call($_HTTP_Event_Debug,StringFormat("HTTP: Error %s (%s) during %s on host %s (%s) socket %s. Buffer size: %s. Inetreadmode: %s", _
