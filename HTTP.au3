@@ -86,16 +86,20 @@ Func __HTTP_Req($Method = 'GET', $url = 'http://example.com/', $Content = '', $e
 EndFunc   ;==>__HTTP_Req
 Func __HTTP_Transfer(ByRef $aReq, ByRef $sRecv_Out, $limit = 0, $timeout=0)
 	;ConsoleWrite($aReq[2]&@CRLF)
-	Local $error = 0
-	Local $SOCK = TCPConnect(TCPNameToIP($aReq[0]), $aReq[3])
-	ConsoleWrite(TCPNameToIP($aReq[0])&@CRLF)
-	;ConsoleWrite('HTTPSock: '&$aReq[0]&'//'&$aReq[3]&'//'&$sock&'//'&@error&@CRLF)
-	TCPSend($SOCK, $aReq[2])
-	If @error<>0 Then Call($_HTTP_Event_Debug,"HTTP: SConnection error="&@error&" ("&Hex(@error)&") inetreadmode="&$_INETREAD_MODE)
 	$sRecv_Out = ""
+	Local $error = 0
+	Local $addr=TCPNameToIP($aReq[0])
+	Local $SOCK = _TCPConnect($addr, $aReq[3])
+	If @error<>0 Or $SOCK=-1 Then _HTTP_ErrorEx($aReq,$addr,$SOCK,$error,'Connect',$sRecv_Out)
+	ConsoleWrite($addr&@CRLF)
+	;ConsoleWrite('HTTPSock: '&$aReq[0]&'//'&$aReq[3]&'//'&$sock&'//'&@error&@CRLF)
+	_TCPSend($SOCK, $aReq[2])
+	If @error<>0 Then _HTTP_ErrorEx($aReq,$addr,$SOCK,$error,'SendRequest',$sRecv_Out)
+
+;Call($_HTTP_Event_Debug,"HTTP: SConnection error="&@error&" ("&Hex(@error)&") inetreadmode="&$_INETREAD_MODE)
 	Local $ts=TimerInit()
 	While $SOCK <> -1
-		Local $recv = TCPRecv($SOCK, 50000, 1)
+		Local $recv = _TCPRecv($SOCK, 50000, 1)
 		If @error <> 0 Then $error = @error
 		If $timeout > 0 And TimerDiff($ts)>$timeout Then $error=0xB33F
 		If $limit > 0 And StringLen($sRecv_Out) > $limit Then $error = 0xBEEF
@@ -103,15 +107,53 @@ Func __HTTP_Transfer(ByRef $aReq, ByRef $sRecv_Out, $limit = 0, $timeout=0)
 		$sRecv_Out &= $recv
 		If $error <> 0 Then
 			;MsgBox(0,0,$error)
-			If $error<>-1 Then Call($_HTTP_Event_Debug,"HTTP: RConnection error="&$error&" ("&Hex($error)&") inetreadmode="&$_INETREAD_MODE)
+			If $error<>-1 Then _HTTP_ErrorEx($aReq,$addr,$SOCK,$error,'ReceiveResponseLoop',$sRecv_Out)
 			TCPCloseSocket($SOCK)
 			$SOCK = -1
 			ExitLoop
 		EndIf
 		;Sleep(50)
 	WEnd
+	TCPCloseSocket($SOCK)
 	;ConsoleWrite('HTTPSockError: '&$error&@CRLF)
 EndFunc   ;==>__HTTP_Transfer
+
+Func _TCPConnect($addr,$port)
+	Local $r=TCPConnect($addr,$port)
+	Local $e=@error
+	Local $x=@extended
+	If @error<>0 Then _TCP_Error($e,"Connect",$addr,$port,$r,0,0)
+	Return SetError($e,$x,$r)
+EndFunc
+Func _TCPRecv($sock,$len,$flag=0)
+	Local $r=TCPRecv($sock,$len,$flag)
+	Local $e=@error
+	Local $x=@extended
+	If @error<>0 Then _TCP_Error($e,"Recv",'','',$sock,StringLen($r)&'/'&$len,$flag)
+	Return SetError($e,$x,$r)
+EndFunc
+Func _TCPSend($sock,$data)
+	Local $r=TCPSend($sock,$data)
+	Local $e=@error
+	Local $x=@extended
+	If @error<>0 Then _TCP_Error($e,"Send",'','',$sock,$r&'/'&StringLen($data),0)
+	Return SetError($e,$x,$r)
+EndFunc
+
+
+
+Func _TCP_Error($error,$state,$addr,$port,$sock,$len,$flag)
+	Call($_HTTP_Event_Debug,StringFormat("TCP: Error %s (%s) During %s on host %s:%s. socket %s. Buffer size: %s. Flag: %s", _
+	$error,Hex($error),$addr,$port,$sock,$len,$flag))
+EndFunc
+Func _HTTP_Error($aReq,$address,$sock,$error,$state)
+	Local $buffer=""
+	_HTTP_ErrorEx($aReq,$address,$sock,$error,$state)
+EndFunc
+Func _HTTP_ErrorEx($aReq,$address,$sock,$error,$state,ByRef $buffer)
+	 Call($_HTTP_Event_Debug,StringFormat("HTTP: Error %s (%s) during %s on host %s (%s) socket %s. Buffer size: %s. Inetreadmode: %s", _
+	 $error, Hex($error), $state, $aReq[0], $address, StringLen($buffer),$_INETREAD_MODE))
+EndFunc
 
 
 
