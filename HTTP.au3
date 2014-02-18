@@ -144,7 +144,7 @@ EndFunc
 
 Func _TCP_Error($error,$state,$addr,$port,$sock,$len,$flag)
 	Call($_HTTP_Event_Debug,StringFormat("TCP: Error %s (%s) During %s on host %s:%s. socket %s. Buffer size: %s. Flag: %s", _
-	$error,Hex($error),$addr,$port,$sock,$len,$flag))
+	$error,Hex($error),$state,$addr,$port,$sock,$len,$flag))
 EndFunc
 Func _HTTP_Error($aReq,$address,$sock,$error,$state)
 	Local $buffer=""
@@ -152,7 +152,7 @@ Func _HTTP_Error($aReq,$address,$sock,$error,$state)
 EndFunc
 Func _HTTP_ErrorEx($aReq,$address,$sock,$error,$state,ByRef $buffer)
 	 Call($_HTTP_Event_Debug,StringFormat("HTTP: Error %s (%s) during %s on host %s (%s) socket %s. Buffer size: %s. Inetreadmode: %s", _
-	 $error, Hex($error), $state, $aReq[0], $address, StringLen($buffer),$_INETREAD_MODE))
+	 $error, Hex($error), $state, $aReq[0], $address, $sock, StringLen($buffer),$_INETREAD_MODE))
 EndFunc
 
 
