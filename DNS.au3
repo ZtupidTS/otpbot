@@ -1,5 +1,6 @@
 ;#########################################################################################################################################
 #Region DNS UDFs
+;Courtesy ProgAndy
 #include-once
 Global Const $tagDNS_RECORD = "ptr pNext; ptr pName; WORD wType; WORD wDataLength; DWORD Flags; DWORD dwTtl; DWORD dwReserved; ptr Data"
 Global Const $DNS_TYPE_A    = 0x0001
