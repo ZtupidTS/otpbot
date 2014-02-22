@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.6.0.104
+#AutoIt3Wrapper_Res_Fileversion=6.6.0.107
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crash_demons
 #AutoIt3Wrapper_Res_Language=1033
@@ -28,6 +28,7 @@
 #include "Dialer.au3"
 #include "shorturl.au3"
 #include "userinfo.au3"
+#include "DNSHelper.au3"
 #include "otphostcore.au3"
 #include "phpbb_scrape.au3"
 #include "NicheFunctions.au3"
@@ -147,7 +148,7 @@ EndIf
 
 
 Global $ConnTimer=0
-$ADDR = TCPNameToIP($SERV)
+$ADDR = _TCPNameToIP($SERV)
 Msg('START')
 Open()
 If $STATE < $S_INIT Then Msg('FAIL')
@@ -226,7 +227,7 @@ Func Process_Message($who, $where, $what); called by Process() which parses IRC 
 			;			'Pastebin Decoder commands: bluehill elpaso littlemissouri | ' & _
 			;			'Coordinates: UTM LL coord | NATO Decoding: 5GramFind 5Gram WORM | Other: ITA2 ITA2S lengthstobits flipbits ztime calc'
 			Case 'version'
-				Return "OTPBOT v" & $VERSION & " - Crash_Demons | UTM - Nadando | " & $VersionInfoExt
+				Return "OTPBOT v" & $VERSION & " - Crash_Demons | UTM - Nadando | DNS - Progandy" & $VersionInfoExt
 			Case 'updatechan', 'update_chan'
 				Return OTP22News_Read()
 			Case 'update'
@@ -632,7 +633,7 @@ Func Open()
 	EndIf
 	If $SOCK >= 0 Then Return SetError(9999, 0, "")
 	$BUFF = ''
-	$ADDR = TCPNameToIP($SERV)
+	$ADDR = _TCPNameToIP($SERV)
 	$SOCK = _TCPConnect($ADDR, 6667)
 	If @error Then
 		Msg("Conn Error " & @error,1)
