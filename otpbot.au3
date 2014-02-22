@@ -632,6 +632,7 @@ Func Open()
 	EndIf
 	If $SOCK >= 0 Then Return SetError(9999, 0, "")
 	$BUFF = ''
+	$ADDR = TCPNameToIP($SERV)
 	$SOCK = TCPConnect($ADDR, 6667)
 	If @error Then
 		Msg("Conn Error " & @error,1)
