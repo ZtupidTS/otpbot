@@ -494,7 +494,7 @@ EndFunc   ;==>Quit
 Func Read()
 	If $TestMode Then Return True
 	If $SOCK < 0 Then Return SetError(9999, 0, "")
-	$BUFF &= TCPRecv($SOCK, 10000)
+	$BUFF &= _TCPRecv($SOCK, 10000)
 	If @error Then
 		Msg('Recv Error [' & @error & ',' & @extended & ']',1)
 		Close()
@@ -633,7 +633,7 @@ Func Open()
 	If $SOCK >= 0 Then Return SetError(9999, 0, "")
 	$BUFF = ''
 	$ADDR = TCPNameToIP($SERV)
-	$SOCK = TCPConnect($ADDR, 6667)
+	$SOCK = _TCPConnect($ADDR, 6667)
 	If @error Then
 		Msg("Conn Error " & @error,1)
 		State($S_OFF)
@@ -693,7 +693,7 @@ Func Cmd($scmd,$debugforce=False)
 	If $TestMode Then Return Msg('OT=' & $scmd)
 	If $SOCK < 0 Then Return SetError(9999, 0, "")
 	If $STATE < $S_CHAT Or $debugforce Then Msg('OT=' & $scmd)
-	TCPSend($SOCK, $scmd & @CRLF)
+	_TCPSend($SOCK, $scmd & @CRLF)
 	If @error Then
 		Msg('Send Error [' & @error & ',' & @extended & ']',1)
 		Close()

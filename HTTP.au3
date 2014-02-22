@@ -108,14 +108,14 @@ Func __HTTP_Transfer(ByRef $aReq, ByRef $sRecv_Out, $limit = 0, $timeout=0)
 		$sRecv_Out &= $recv
 		If $error <> 0 Then
 			;MsgBox(0,0,$error)
-			If $error<>-1 Then _HTTP_ErrorEx($aReq,$addr,$SOCK,$error,'ReceiveResponseLoop',$sRecv_Out)
-			TCPCloseSocket($SOCK)
-			$SOCK = -1
+			If $error<>-1 And $error<>0xB33F And $error<>0xBEEF Then _HTTP_ErrorEx($aReq,$addr,$SOCK,$error,'ReceiveResponseLoop',$sRecv_Out)
+			;If $SOCK<>-1 Then TCPCloseSocket($SOCK)
+			;$SOCK = -1
 			ExitLoop
 		EndIf
 		;Sleep(50)
 	WEnd
-	TCPCloseSocket($SOCK)
+	If $SOCK<>-1 Then TCPCloseSocket($SOCK)
 	;ConsoleWrite('HTTPSockError: '&$error&@CRLF)
 EndFunc   ;==>__HTTP_Transfer
 
@@ -126,14 +126,20 @@ Func _TCPConnect($addr,$port)
 	If @error<>0 Then _TCP_Error($e,"Connect",$addr,$port,$r,0,0)
 	Return SetError($e,$x,$r)
 EndFunc
-Func _TCPRecv($sock,$len,$flag=0)
+Func _TCPRecv(ByRef $sock,$len,$flag=0)
+	If $sock=-1 Then Return
 	Local $r=TCPRecv($sock,$len,$flag)
 	Local $e=@error
 	Local $x=@extended
-	If @error<>0 Then _TCP_Error($e,"Recv",'','',$sock,StringLen($r)&'/'&$len,$flag)
+	If $e<>0 And $e<>-1 Then _TCP_Error($e,"Recv",'','',$sock,StringLen($r)&'/'&$len,$flag)
+	If $e=-1 Then
+		TCPCloseSocket($sock)
+		$sock=-1
+	EndIf
 	Return SetError($e,$x,$r)
 EndFunc
 Func _TCPSend($sock,$data)
+	If $sock=-1 Then Return
 	Local $r=TCPSend($sock,$data)
 	Local $e=@error
 	Local $x=@extended
