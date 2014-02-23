@@ -15,6 +15,7 @@ Global $_DNS_IDX=0
 
 _Help_RegisterGroup("DNS")
 _Help_Register("host","<hostname/address> [option]","Performs either a DNS Lookup or a Reverse lookup depending on the input. The option parameter is passed to the Lookup command, if used. See %!%HELP LOOKUP and %!%HELP REVERSE.")
+_Help_Register("servers","<hostname>","Produces a named list of servers available for an input hostname. This is similar to %!%lookup <hostname> A")
 _Help_Register("lookup","<hostname> [recordType]","Retrieves DNS records for a hostname. RecordType defaults to * when not supplied - using * will output all records.")
 _Help_Register("reverse","<IP Address>","Retrieves hostname records for a given IP.")
 
@@ -24,16 +25,35 @@ Func COMMAND_host($hostoraddress,$option="*")
 	If StringRegExp($hostoraddress,"[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+") Then Return COMMAND_reverse($hostoraddress)
 	Return COMMAND_lookup($hostoraddress,$option)
 EndFunc
-
+Func COMMAND_servers($hostname)
+	_Dns_Request_Any($hostname,False)
+	Local $i=_Dns_Cache_Find($hostname)
+	If $i=-1 Then Return "Servers: an internal error has occured."
+	Local $response=$_DNS_CACHE[$i][1]
+	If Not IsArray($response) Then Return 'Servers: no information available.'
+	Local $output
+	For $i = 1 To $response[0][0]
+		If $response[$i][1] = $DNS_TYPE_A Or $response[$i][1] = $DNS_TYPE_AAAA  Then
+			Local $addr=$response[$i][2]
+			Local $host=_TCPIpToName($addr)
+			If $host="" Or $host=$hostname Then
+				$output&=$addr&' | '
+			Else
+				$output&=$host&' ('&$addr&') | '
+			EndIf
+		EndIf
+	Next
+	Return $output
+EndFunc
 Func COMMAND_lookup($hostname,$recordType='*')
 	If Not StringRegExp($recordType,'^[\w*]+$') Then Return "Lookup: Invalid record type format."
 	Local $seltype=Eval('DNS_TYPE_'&$recordType)
 	Local $typeerror=@error<>0
 	If $recordType='*' Or $recordType='ALL' Then $seltype='*'
 	If (Not ($seltype='*')) And $typeerror Then Return "Lookup: Unknown record type: "&$seltype
-	_Dns_Request_Any($hostname,False)
-	Local $i=_Dns_Cache_Find($hostname)
-	If $i=-1 Then Return "Lookup: an internal error has occured."
+	;_Dns_Request_Any($hostname,False)
+	;Local $i=_Dns_Cache_Find($hostname)
+	;If $i=-1 Then Return "Lookup: an internal error has occured."
 
 	Local $typeArr=$_DNS_LOOKUPS
 	If Not ($recordType='*') Then $typeArr=$_DNS_TYPES
@@ -57,7 +77,7 @@ Func COMMAND_lookup($hostname,$recordType='*')
 	Return $output
 EndFunc
 Func COMMAND_reverse($ip)
-	Local $arr=_TCPIpToName('74.125.227.230',1)
+	Local $arr=_TCPIpToName($ip,1)
 	If Not IsArray($arr) Then Return "Reverse: lookup failed for "&$ip
 	Local $out=""
 	For $i=1 To UBound($arr)-1
