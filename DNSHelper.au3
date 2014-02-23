@@ -1,23 +1,31 @@
 #include-once
 #include "DNS.au3"
+#include <Inet.au3>
 #include "GeneralCommands.au3"
+
+Local $_DNS_TYPES[62]=["A","NS","MD","MF","CNAME","SOA","MB","MG","MR","NULL","WKS","PTR","HINFO","MINFO","MX","TEXT","RP","AFSDB","X25","ISDN","RT","NSAP","NSAPPTR","SIG","KEY","PX","GPOS","AAAA","LOC","NXT","EID","NIMLOC","SRV","ATMA","NAPTR","KX","CERT","A6","DNAME","SINK","OPT","DS","RRSIG","NSEC","DNSKEY","DHCID","UINFO","UID","GID","UNSPEC","ADDRS","TKEY","TSIG","IXFR","AXFR","MAILB","MAILA","ALL","ANY","WINS","WINSR","NBSTAT"]
+Local $_DNS_LOOKUPS[20]=["A","AAAA","MX","CNAME","NS","DNAME","ALL"]
+
 Global Const $_DNS_ENTRIES=50
 Global $_DNS_CACHE[$_DNS_ENTRIES][3]; we only cache these so that we can cycle through
 Global $_DNS_IDX=0
-ConsoleWrite(_TCPNameToIP('irc.icq.com')&@CRLF)
-ConsoleWrite(_TCPNameToIP('irc.icq.com')&@CRLF)
-ConsoleWrite(_TCPNameToIP('irc.icq.com')&@CRLF)
-ConsoleWrite(_TCPNameToIP('irc.icq.com')&@CRLF)
-ConsoleWrite(_TCPNameToIP('irc.icq.com')&@CRLF)
-ConsoleWrite(_TCPNameToIP('irc.icq.com')&@CRLF)
-ConsoleWrite(_TCPNameToIP('irc.icq.com')&@CRLF)
-ConsoleWrite(_TCPNameToIP('irc.icq.com')&@CRLF)
-ConsoleWrite(_TCPNameToIP('irc.icq.com')&@CRLF)
-ConsoleWrite(_TCPNameToIP('irc.icq.com')&@CRLF)
+;TCPStartup()
+
+
+
 _Help_RegisterGroup("DNS")
-_Help_Register("lookup","<hostname> [recordType]","Retrieves DNS records for a hostname. RecordType defaults to A when not supplied - using * will output all records.")
+_Help_Register("host","<hostname/address> [option]","Performs either a DNS Lookup or a Reverse lookup depending on the input. The option parameter is passed to the Lookup command, if used. See %!%HELP LOOKUP and %!%HELP REVERSE.")
+_Help_Register("lookup","<hostname> [recordType]","Retrieves DNS records for a hostname. RecordType defaults to * when not supplied - using * will output all records.")
 _Help_Register("reverse","<IP Address>","Retrieves hostname records for a given IP.")
-Func COMMAND_lookup($hostname,$recordType='A')
+
+
+
+Func COMMAND_host($hostoraddress,$option="*")
+	If StringRegExp($hostoraddress,"[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+") Then Return COMMAND_reverse($hostoraddress)
+	Return COMMAND_lookup($hostoraddress,$option)
+EndFunc
+
+Func COMMAND_lookup($hostname,$recordType='*')
 	If Not StringRegExp($recordType,'^[\w*]+$') Then Return "Lookup: Invalid record type format."
 	Local $seltype=Eval('DNS_TYPE_'&$recordType)
 	Local $typeerror=@error<>0
@@ -26,21 +34,37 @@ Func COMMAND_lookup($hostname,$recordType='A')
 	_Dns_Request_Any($hostname,False)
 	Local $i=_Dns_Cache_Find($hostname)
 	If $i=-1 Then Return "Lookup: an internal error has occured."
-	Local $response=$_DNS_CACHE[$i][1]
-	If IsArray($response) Then
-		Local $entries=$response[0][0]
-		Local $output=$entries&' total records | '
-		For $i = 1 To $entries
-			If $response[$i][1] = $seltype Or $seltype='*' Then
-				$output&=$response[$i][0]&' '&__dnstypegetname($response[$i][1])&' '&$response[$i][2]&' | '
-			EndIf
-		Next
-		Return $output
-	Else
-		Return "Lookup: No DNS records were found for "&$hostname
-	EndIf
+
+	Local $typeArr=$_DNS_LOOKUPS
+	If Not ($recordType='*') Then $typeArr=$_DNS_TYPES
+
+	Local $output="Records for "&$hostname&': '
+	For $j=0 To UBound($typeArr)-1
+		;ConsoleWrite($j&@CRLF)
+		If $typeArr[$j]=$recordType Or $recordType='*' Then
+			Local $iType=Eval("DNS_TYPE_"&$typeArr[$j])
+			Local $response = _Dns_Query($hostname, $iType)
+			If Not IsArray($response) Then ContinueLoop
+			For $i = 1 To $response[0][0]
+				If $response[$i][1] = $iType  Then
+					If $response[$i][2]="[[NOT IMPL]]" Then $response[$i][2]="<Not Supported>"
+					If Not ($hostname=$response[$i][0]) Then $output&=$response[$i][0]&' '
+					$output&=__dnstypegetname($response[$i][1])&' '&$response[$i][2]&' | '
+				EndIf
+			Next
+		EndIf
+	Next
+	Return $output
 EndFunc
 Func COMMAND_reverse($ip)
+	Local $arr=_TCPIpToName('74.125.227.230',1)
+	If Not IsArray($arr) Then Return "Reverse: lookup failed for "&$ip
+	Local $out=""
+	For $i=1 To UBound($arr)-1
+		If $i=1 Then $out&='Hostname: '&$arr[$i]&' | '
+		If $i>1 Then $out&='Alias: '&$arr[$i]&' | '
+	Next
+	Return $out
 EndFunc
 ;-----------------------------------------------------------------
 Func _Dns_Cache_Cycle($i)
@@ -81,9 +105,9 @@ EndFunc
 ;-----------------------------------------------------------------
 Func _Dns_Request_New($hostname)
 	;ConsoleWrite($hostname&@CRLF)
-	Local $response = _Dns_Query($hostname, $DNS_TYPE_ALL)
+	Local $response = _Dns_Query($hostname, $DNS_TYPE_A)
 	;ConsoleWrite($hostname&@CRLF)
-	_ArrayDisplay($response)
+	;_ArrayDisplay($response)
 	Local $i=_Dns_Cache_Update($hostname,$response)
 	If $i=-1 Then Return SetError(3,'','')
 	If IsArray($response) Then
@@ -127,9 +151,8 @@ Func __dnsgetfirstrecord(ByRef $response)
 	Return -1
 EndFunc
 Func __dnstypegetname($iType)
-	Local $types[62]=["A","NS","MD","MF","CNAME","SOA","MB","MG","MR","NULL","WKS","PTR","HINFO","MINFO","MX","TEXT","RP","AFSDB","X25","ISDN","RT","NSAP","NSAPPTR","SIG","KEY","PX","GPOS","AAAA","LOC","NXT","EID","NIMLOC","SRV","ATMA","NAPTR","KX","CERT","A6","DNAME","SINK","OPT","DS","RRSIG","NSEC","DNSKEY","DHCID","UINFO","UID","GID","UNSPEC","ADDRS","TKEY","TSIG","IXFR","AXFR","MAILB","MAILA","ALL","ANY","WINS","WINSR","NBSTAT"]
-	For $i=0 To UBound($types)-1
-		If Eval("DNS_TYPE_"&$types[$i])=$iType Then Return $types[$i]
+	For $i=0 To UBound($_DNS_TYPES)-1
+		If Eval("DNS_TYPE_"&$_DNS_TYPES[$i])=$iType Then Return $_DNS_TYPES[$i]
 	Next
 	Return SetError(1,0,"UNKNOWN")
 EndFunc

@@ -1,6 +1,9 @@
 ;#########################################################################################################################################
 #Region DNS UDFs
 ;Courtesy ProgAndy
+;crashdemons:
+;	patched Array bound error
+;	added AAAA type.
 #include-once
 Global Const $tagDNS_RECORD = "ptr pNext; ptr pName; WORD wType; WORD wDataLength; DWORD Flags; DWORD dwTtl; DWORD dwReserved; ptr Data"
 Global Const $DNS_TYPE_A    = 0x0001
@@ -68,6 +71,8 @@ Global Const $DNS_TYPE_NBSTAT    = $DNS_TYPE_WINSR
 
 Global Const $tagDNS_MX_DATA = "ptr pNameExchange; WORD  wPreference; WORD  Pad;"
 Global Const $tagDNS_A_DATA = "dword IpAddress"
+Global Const $tagDNS_AAAA_DATA = "byte IpAddress[16];";dword IpAddress[4];
+Global Const $tagDNS_PTR_DATA = "ptr pNameHost;";dword IpAddress[4];
 ;... more DNS_..._DATA structures come here
 
 Global Const $DNS_QUERY_BYPASS_CACHE = 0x00000008
@@ -93,16 +98,24 @@ Func _Dns_Query($sOwner, $wType, $nOptions=0)
         $tDNS = DllStructCreate($tagDNS_RECORD, $pNext)
 
 		;crashdemons - Array variable has incorrect number of subscripts or subscript dimension range exceeded.: $aResult[$i][0]
-		ConsoleWrite($i&' '&UBound($aResult)&@CRLF)
+		;ConsoleWrite($i&' '&UBound($aResult)&@CRLF)
         $aResult[$i][0] = __Dns_PtrStringRead(DllStructGetData($tDNS, 'pName'));
         $aResult[$i][1] = DllStructGetData($tDNS, 'wType')
+		Local $pData=DllStructGetPtr($tDNS, "Data")
         Switch $aResult[$i][1]
             Case $DNS_TYPE_A
-                $aResult[$i][2] = __Dns_Inet_ntoa(DllStructGetData(DllStructCreate($tagDNS_A_DATA, DllStructGetPtr($tDNS, "Data")), 'IpAddress'))
+                $aResult[$i][2] = __Dns_Inet_ntoa(DllStructGetData(DllStructCreate($tagDNS_A_DATA, $pData), 'IpAddress'))
+            Case $DNS_TYPE_AAAA
+                $aResult[$i][2] = __Dns_binToIP6(DllStructGetData(DllStructCreate($tagDNS_AAAA_DATA, $pData), 'IpAddress'))
             Case $DNS_TYPE_MX
-                $tData = DllStructCreate($tagDNS_MX_DATA, DllStructGetPtr($tDNS, "Data"))
-                Local $aSubRes[2] = [__Dns_PtrStringRead(DllStructGetData($tData, 'pNameExchange')), DllStructGetData($tData, 'wPreference')]
-                $aResult[$i][2] = $aSubRes
+                $tData = DllStructCreate($tagDNS_MX_DATA, $pData)
+				$aResult[$i][2]=__Dns_PtrStringRead(DllStructGetData($tData, 'pNameExchange'))&','&DllStructGetData($tData, 'wPreference')
+               ; Local $aSubRes[2] = [__Dns_PtrStringRead(DllStructGetData($tData, 'pNameExchange')), DllStructGetData($tData, 'wPreference')]
+               ; $aResult[$i][2] = $aSubRes
+			Case $DNS_TYPE_CNAME, $DNS_TYPE_NS, $DNS_TYPE_DNAME
+
+                $tData = DllStructCreate($tagDNS_PTR_DATA, $pData)
+				$aResult[$i][2]=__Dns_PtrStringRead(DllStructGetData($tData, 'pNameHost'))
             ; cases for other types would be here
             Case Else
                 $aResult[$i][2] = "[[NOT IMPL]]"
@@ -112,9 +125,63 @@ Func _Dns_Query($sOwner, $wType, $nOptions=0)
         $pNext = DllStructGetData($tDNS, 'pNext')
     WEnd
     DllCall($hDNSAPI_DLL, "none", "DnsRecordListFree", "ptr", $aRes[5], "dword", 1)
+	$tData=0
     ReDim $aResult[$aResult[0][0]+1][3]
     Return $aResult
 EndFunc
+
+Func __Dns_binToIP6($bin)
+	Local $hex=StringTrimLeft($bin,2)
+	Local $out=""
+	For $i=1 To 32 Step 4
+		$out&=StringMid($hex,$i,4)
+		If $i<(32-4) Then $out&=":"
+	Next
+	Return __Dns_CompressIP6($out);$out
+	;DllStructCreate($tagDNS_MX_DATA, DllStructGetPtr($tDNS, "Data"))
+EndFunc
+Func __Dns_CompressIP6($sIP6)
+	Local $a=StringSplit($sIP6,':')
+	Local $last=UBound($a)-1
+	For $i=1 To $last
+		;ConsoleWrite($a[$i]&' '&StringFormat("%x",$a[$i])&@CRLF)
+		$a[$i]=StringFormat("%x",Dec($a[$i])); remove preceeding zeros, 0000->0
+
+	Next
+
+	;find the longest section of zeros in the IPv6 and replace it with ::
+	Local $zeroes_high_count,$zeroes_high_pos
+	Local $zeroes_curr_count=0,$zeroes_curr_pos=-1
+
+	For $i=1 To $last
+		Local $value=Dec($a[$i])
+		If $value=0 Then
+			If $zeroes_curr_pos=0 Then $zeroes_curr_pos=$i;first in a line of zeroes.
+			$zeroes_curr_count+=1
+			If $zeroes_curr_count>$zeroes_high_count Then; the current count of zeroes is higher than the previous highest, replace values.
+				$zeroes_high_count=$zeroes_curr_count
+				$zeroes_high_pos=$zeroes_curr_pos
+			EndIf
+		Else
+			$zeroes_curr_pos=0
+			$zeroes_curr_count=0
+		EndIf
+	Next
+
+
+	Local $out=""
+	For $i=1 To $last
+		If $i>=$zeroes_high_pos And $i<($zeroes_high_pos+$zeroes_high_count) And $zeroes_high_count>1 Then
+			If $i=$zeroes_high_pos Then $out&=":"
+		Else
+			$out&=$a[$i]
+			If $i<$last Then $out&=":"
+		EndIf
+
+	Next
+	Return $out
+EndFunc
+
 
 Func __Dns_Inet_ntoa($nIP)
     ; Author: ProgAndy
