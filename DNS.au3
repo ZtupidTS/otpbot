@@ -80,17 +80,21 @@ Func _Dns_Query($sOwner, $wType, $nOptions=0)
     Local Static $hDNSAPI_DLL = DllOpen("Dnsapi.dll")
     Local $aRes = DllCall($hDNSAPI_DLL, "dword", "DnsQuery_W", "wstr", $sOwner, "WORD", $wType, "DWORD", $nOptions, 'ptr', 0,   "ptr*", 0, "ptr", 0)
     If @error Then Return SetError (1,0,0)
-    Local $aResult[21][3] = [[0]], $iSize = 20, $i, $pNext = $aRes[5], $tDNS, $tData
+	;crashdemons - [21][3] originally
+    Local $aResult[21][3] = [[0]], $i, $pNext = $aRes[5], $tDNS, $tData
     If $aRes[0] <> 0 Then Return SetError(2,$aRes[0],0)
     While $pNext
         $i = $aResult[0][0]+1
         $aResult[0][0]=$i
-        If $i > $iSize Then
-            $iSize += 20
-            ReDim $aResult[$i][3]
+        If $i > (UBound($aResult)-1) Then;$iSize Then
+            ;$iSize += 21
+            ReDim $aResult[UBound($aResult)+21][3]
         EndIf
         $tDNS = DllStructCreate($tagDNS_RECORD, $pNext)
-        $aResult[$i][0] = __Dns_PtrStringRead(DllStructGetData($tDNS, 'pName'))
+
+		;crashdemons - Array variable has incorrect number of subscripts or subscript dimension range exceeded.: $aResult[$i][0]
+		ConsoleWrite($i&' '&UBound($aResult)&@CRLF)
+        $aResult[$i][0] = __Dns_PtrStringRead(DllStructGetData($tDNS, 'pName'));
         $aResult[$i][1] = DllStructGetData($tDNS, 'wType')
         Switch $aResult[$i][1]
             Case $DNS_TYPE_A
