@@ -45,11 +45,8 @@ Global $_Calc_Whitelist[256] = [ _
 $_Calc_Whitelist=''
 _Calc_LoadWhitelist($_Calc_Whitelist, "calc_whitelist.txt")
 _ArraySort($_Calc_Whitelist);sort the array alphabetically.
-;_ArrayDisplay($_Calc_Whitelist)
 _Calc_SaveWhitelist($_Calc_Whitelist, "calc_whitelist.txt");save alphabetically sorted version
-_ArraySort_UserDefined($_Calc_Whitelist, '__cmp_length', 0, -1, False); sort the array by length (shortest first) this is necessary to prevent overlapping matches.
-;_ArrayDisplay($_Calc_Whitelist)
-MsgBox(0,0,_Calc_Sanitize("string + stringregexp + exp"))
+MsgBox(0,0,_Calc_Sanitize("string + stringregexp + exp +1 +2 +3 / 2 /$ac/$exp"))
 
 Func _Calc_LoadWhitelist(ByRef $arr, $filename)
 	$filename=@ScriptDir&'\'&$filename
@@ -81,36 +78,6 @@ Func _Calc_SaveWhitelist(ByRef $arr, $filename); copy $arr to local scope.
 EndFunc
 
 
-Func _ArraySort_UserDefined(ByRef $a, $cmpfunc, $iStart=0, $iEnd=-1, $bEmptyStringTerminatesArray=False)
-	; sorts an array based on a function $cmpfunc that takes two elements a,b
-	; if the function returns +1, A is sorted down, if the function returns -1, A is sorted UP (relative to B)
-	If $iEnd=-1 Then $iEnd=UBound($a)-1
-
-	If $bEmptyStringTerminatesArray Then
-		For $i=$iStart To $iEnd
-			If $a[$i]="" Then
-				$iEnd=$i-1; do not include the empty string in comparisons.
-				ExitLoop
-			EndIf
-		Next
-	EndIf
-
-	Local $swaps
-	Do
-		$swaps=0
-		For $i=$iStart To $iEnd-1; go to the next to last, since we compare two items iterated by 1 eg:  [12]34, 1[23]4, 12[34] ...
-			If Call($cmpfunc,$a[$i],$a[$i+1])=1 Then
-				_ArraySwap($a[$i],$a[$i+1]); sort A down from B, which really just swaps the items - since sorting UP leaves them in-order.
-				$swaps+=1
-			EndIf
-		Next
-	Until $swaps=0
-
-EndFunc
-Func __cmp_length($a,$b)
-	If StringLen($a)>StringLen($b) Then Return -1
-	Return +1
-EndFunc
 
 
 Func COMMANDX_Cstr($who, $where, $what, $acmd)
