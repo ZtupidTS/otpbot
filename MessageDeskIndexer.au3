@@ -10,6 +10,9 @@ Global $_MDI_URL = 'http://sukasa.rustedlogic.net/MD/'
 Global $_MDI_ReportFunc=''
 
 
+Func COMMAND_MDIDebug()
+	Return $_MDI_LastTS&' : '&$_MDI_ReportFunc
+EndFunc
 
 Func _MDI_Report_NewEntries()
 	Local $s=_MDI_GetNewEntriesString()
