@@ -12,11 +12,7 @@
 
 #include-once
 #include "GeneralCommands.au3"
-
-
-_Help_Register("calc","<AutoIt or Numeric Expression>","Performs a calculation or executes an expression. Input strings are sanitized against a whitelist of function names.")
-_Help_Register("cstr","<AutoIt or Numeric Expression>","Sanitizes an expression against a whitelist of function names and returns the sanitized version. Used to debug expressions. See `%!%help calc`")
-
+#include "ArrayEx.au3"
 
 Global Const $srQuote = '["' & "']"
 Global Const $srSlash = '[\\/]'
@@ -24,9 +20,20 @@ Global Const $srNQuote = '[^"' & "']"
 Global Const $srNSlash = '[^\\/]'
 
 Global $_Calc_Whitelist[1]=[''];whitelist nothing by default if nothing gets loaded - prevent array errors.
+
+;------------------------------------
+
+_Help_Register("calc","<AutoIt or Numeric Expression>","Performs a calculation or executes an expression. Input strings are sanitized against a whitelist of function names.")
+_Help_Register("cstr","<AutoIt or Numeric Expression>","Sanitizes an expression against a whitelist of function names and returns the sanitized version. Used to debug expressions. See `%!%help calc`")
+_Help_Register("calcraw","<AutoIt or Numeric Expression>","Performs a calculation or executes an expression like %!%CALC, but with full type information and formatting.")
+
 _Calc_LoadWhitelist($_Calc_Whitelist, "calc_whitelist.txt")
 _ArraySort($_Calc_Whitelist);sort the array alphabetically.
 _Calc_SaveWhitelist($_Calc_Whitelist, "calc_whitelist.txt");save alphabetically sorted version
+;------------------------------------
+
+
+
 
 Func _Calc_LoadWhitelist(ByRef $arr, $filename)
 	$filename=@ScriptDir&'\'&$filename
@@ -68,18 +75,28 @@ Func COMMANDX_Calc($who, $where, $what, $acmd)
 	$s = StringTrimLeft($what, StringInStr($what, " "))
 	Return _Calc_Evaluate($s)
 EndFunc   ;==>COMMANDX_Calc
+Func COMMANDX_CalcRaw($who, $where, $what, $acmd)
+	$s = StringTrimLeft($what, StringInStr($what, " "))
+	Return _Calc_Evaluate($s,'full')
+EndFunc   ;==>COMMANDX_Calc
 
 
 
-Func _Calc_Evaluate($s)
+Func _Calc_Evaluate($s,$fmtstyle='default')
+	Local $style=$ArrayFmt_Default
+	If $fmtstyle='quick' Then $style=$ArrayFmt_Quick
+	If $fmtstyle='full' Then $style=$ArrayFmt_Full
+
 	Local $ret = Execute(_Calc_Sanitize($s))
 	Local $err = @error
 	Local $ext = @extended
-	Local $typ = VarGetType($ret)
+	;Local $typ = VarGetType($ret)
+	Local $fmt=_ValueFmt($ret,$style)
 
 	If $err <> 0 Then Return SetError(3, $err, 'Expression Syntax Incorrect');since we only allow simple expressions, this can only be an input error.
-	If $ext <> 0 Then Return SetError(0, $ext, StringFormat("(%s) %s | extended=%s", $typ, $ret, $ext))
-	Return SetError(0, 0, StringFormat("(%s) %s", $typ, $ret))
+	If $ext <> 0 Then Return SetError(0, $ext, StringFormat($fmt&" | extended=%s", $ext))
+	;Return SetError(0, 0, StringFormat("(%s) %s", $typ, $ret))
+	Return SetError(0,0,$fmt)
 EndFunc   ;==>_Calc_Evaluate
 
 

@@ -22,7 +22,7 @@ _Help_Register("more","","Provides more text from the end of a previous post tha
 #include "stats.au3"; have to put this here because of initialization code using globals.
 #include "Calc.au3"
 
-
+Global Enum $_CMD_TOKEN_COUNT=0,$_CMD_START=1,$_CMD_NAME=1,$_CMD_PARAM_START=2
 
 
 ;---------------------------------------
@@ -77,7 +77,7 @@ Func _Cmd_HasParamsExact(ByRef $acmd,$num)
 	Return $num = ($acmd[0]-1)
 EndFunc
 Func _Cmd_GetParameter(ByRef $acmd,$index)
-	Return $acmd[$index+2]
+	Return $acmd[$index+$_CMD_PARAM_START]
 EndFunc
 
 

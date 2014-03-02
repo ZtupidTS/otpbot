@@ -76,8 +76,8 @@ stringformat
 stringinstr
 stringleft
 stringlen
-stringlower
 Stringlower
+stringlower
 stringmid
 stringregexp
 stringregexpreplace
@@ -99,6 +99,7 @@ timerdiff
 timerinit
 true
 UBound
+var_dump
 vargettype
 void
 while
