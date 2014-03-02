@@ -23,30 +23,10 @@ Global Const $srSlash = '[\\/]'
 Global Const $srNQuote = '[^"' & "']"
 Global Const $srNSlash = '[^\\/]'
 
-Global $_Calc_Whitelist[256] = [ _
-		'factor', 'StringToBinary', 'TCPNameToIP', 'TCPIpToName', _
-		'BaseToBase', _
-		'Degree', 'Radian', _
-		'vargettype', 'timerinit', 'timerdiff', _
-		'binarytostring', 'binarylen', 'binarymid', 'UBound', _
-		'ArrayToString', 'ArrayAdd', 'ArrayDelete', 'ArraySearch', 'ArraySort', 'ArrayPop', 'ArrayPush', _
-		'stringtohex', 'hextostring', 'stringreverse', 'stringencrypt', _
-		'StringSplit', 'stringinstr', 'stringformat', 'Stringlower', 'stringupper', _
-		'stringlen', 'stringlower', 'stringleft', 'stringright', 'stringtrimleft', _
-		'stringtrimright', 'stringmid', 'stringregexp', 'stringreplace', 'stringregexpreplace','stringreverse', _
-		'binary', 'string', 'float', 'while', 'return', 'fraction', _
-		'bitand', 'bitnot', 'bitor', 'bitrotate', 'bitshift', 'bitxor', _
-		'srandom', 'string', 'number', 'random', 'round', 'floor', 'ceiling', 'false', 'Default', _
-		'reduce', 'frac', 'comb', 'perm', 'fact', 'void', 'asin', 'acos', 'atan', 'sqrtV', 'sqrt', 'true', _
-		'int', 'gcf', 'chrw', 'chr', 'asc', 'dec', 'hex', 'mod', 'abs', 'exp', 'log', _
-		'sin', 'cos', 'tan', 'min', 'max', _
-		'not', 'and', 'or','StringStripWS', _
-		'' ]
-$_Calc_Whitelist=''
+Global $_Calc_Whitelist[1]=[''];whitelist nothing by default if nothing gets loaded - prevent array errors.
 _Calc_LoadWhitelist($_Calc_Whitelist, "calc_whitelist.txt")
 _ArraySort($_Calc_Whitelist);sort the array alphabetically.
 _Calc_SaveWhitelist($_Calc_Whitelist, "calc_whitelist.txt");save alphabetically sorted version
-MsgBox(0,0,_Calc_Sanitize("string + stringregexp + exp +1 +2 +3 / 2 /$ac/$exp"))
 
 Func _Calc_LoadWhitelist(ByRef $arr, $filename)
 	$filename=@ScriptDir&'\'&$filename
