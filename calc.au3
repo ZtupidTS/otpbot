@@ -67,14 +67,14 @@ EndFunc
 
 
 
-Func COMMANDX_Calc_sanitize($who, $where, $what, $acmd)
-	$s = StringTrimLeft($what, StringInStr($what, " "))
-	Return _Calc_Sanitize($s)
-EndFunc   ;==>COMMANDX_Cstr
 Func COMMANDX_Calc($who, $where, $what, $acmd)
 	$s = StringTrimLeft($what, StringInStr($what, " "))
 	Return _Calc_Evaluate($s)
 EndFunc   ;==>COMMANDX_Calc
+Func COMMANDX_Calc_sanitize($who, $where, $what, $acmd)
+	$s = StringTrimLeft($what, StringInStr($what, " "))
+	Return _Calc_Sanitize($s)
+EndFunc   ;==>COMMANDX_Cstr
 Func COMMANDX_Calc_dump($who, $where, $what, $acmd)
 	$s = StringTrimLeft($what, StringInStr($what, " "))
 	Return _Calc_Evaluate($s,'full')
