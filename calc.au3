@@ -24,8 +24,8 @@ Global $_Calc_Whitelist[1]=[''];whitelist nothing by default if nothing gets loa
 ;------------------------------------
 
 _Help_Register("calc","<AutoIt or Numeric Expression>","Performs a calculation or executes an expression. Input strings are sanitized against a whitelist of function names.")
-_Help_Register("cstr","<AutoIt or Numeric Expression>","Sanitizes an expression against a whitelist of function names and returns the sanitized version. Used to debug expressions. See `%!%help calc`")
-_Help_Register("calcraw","<AutoIt or Numeric Expression>","Performs a calculation or executes an expression like %!%CALC, but with full type information and formatting.")
+_Help_Register("calc_sanitize","<AutoIt or Numeric Expression>","Sanitizes an expression against a whitelist of function names and returns the sanitized version. Used to debug expressions. See `%!%help calc`")
+_Help_Register("calc_dump","<AutoIt or Numeric Expression>","Performs a calculation or executes an expression like %!%CALC, but with full type information and formatting.")
 
 _Calc_LoadWhitelist($_Calc_Whitelist, "calc_whitelist.txt")
 _ArraySort($_Calc_Whitelist);sort the array alphabetically.
@@ -67,7 +67,7 @@ EndFunc
 
 
 
-Func COMMANDX_Cstr($who, $where, $what, $acmd)
+Func COMMANDX_Calc_sanitize($who, $where, $what, $acmd)
 	$s = StringTrimLeft($what, StringInStr($what, " "))
 	Return _Calc_Sanitize($s)
 EndFunc   ;==>COMMANDX_Cstr
@@ -75,7 +75,7 @@ Func COMMANDX_Calc($who, $where, $what, $acmd)
 	$s = StringTrimLeft($what, StringInStr($what, " "))
 	Return _Calc_Evaluate($s)
 EndFunc   ;==>COMMANDX_Calc
-Func COMMANDX_CalcRaw($who, $where, $what, $acmd)
+Func COMMANDX_Calc_dump($who, $where, $what, $acmd)
 	$s = StringTrimLeft($what, StringInStr($what, " "))
 	Return _Calc_Evaluate($s,'full')
 EndFunc   ;==>COMMANDX_Calc
