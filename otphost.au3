@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_icon=host.ico
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
-#AutoIt3Wrapper_Res_Fileversion=2.1.0.59
+#AutoIt3Wrapper_Res_Fileversion=2.1.0.60
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_Language=1033
 #AutoIt3Wrapper_Res_requestedExecutionLevel=requireAdministrator
@@ -412,6 +412,7 @@ Func update()
 	Sleep(5000)
 
 	updatefile('Readme.txt')
+	updatefile('calc_whitelist.txt')
 	updatefile('otpbot.exe')
 	;updatefile('otpbot.ini')
 	updatefile('otphost.exe')

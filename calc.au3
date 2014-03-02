@@ -23,7 +23,7 @@ Global Const $srSlash = '[\\/]'
 Global Const $srNQuote = '[^"' & "']"
 Global Const $srNSlash = '[^\\/]'
 
-Global $_Calc_Whitelist[97] = [ _
+Global $_Calc_Whitelist[256] = [ _
 		'factor', 'StringToBinary', 'TCPNameToIP', 'TCPIpToName', _
 		'BaseToBase', _
 		'Degree', 'Radian', _
@@ -40,9 +40,76 @@ Global $_Calc_Whitelist[97] = [ _
 		'reduce', 'frac', 'comb', 'perm', 'fact', 'void', 'asin', 'acos', 'atan', 'sqrtV', 'sqrt', 'true', _
 		'int', 'gcf', 'chrw', 'chr', 'asc', 'dec', 'hex', 'mod', 'abs', 'exp', 'log', _
 		'sin', 'cos', 'tan', 'min', 'max', _
-		'not', 'and', 'or', '' _
-		]
+		'not', 'and', 'or','StringStripWS', _
+		'' ]
+$_Calc_Whitelist=''
+_Calc_LoadWhitelist($_Calc_Whitelist, "calc_whitelist.txt")
+_ArraySort($_Calc_Whitelist);sort the array alphabetically.
+;_ArrayDisplay($_Calc_Whitelist)
+_Calc_SaveWhitelist($_Calc_Whitelist, "calc_whitelist.txt");save alphabetically sorted version
+_ArraySort_UserDefined($_Calc_Whitelist, '__cmp_length', 0, -1, False); sort the array by length (shortest first) this is necessary to prevent overlapping matches.
+;_ArrayDisplay($_Calc_Whitelist)
 
+Func _Calc_LoadWhitelist(ByRef $arr, $filename)
+	$filename=@ScriptDir&'\'&$filename
+	Local $str=FileRead($filename)
+	$str=StringStripCR($str)
+	$arr=StringSplit($str,@LF,2);flag = 2, disable the return the count in the first element - effectively makes the array 0-based (must use UBound() to get the size in this case).
+
+	Local $iEnd=UBound($arr)-1
+	For $i=0 To $iEnd;remove invalid items from the array
+		;ConsoleWrite($i&', end='&$iEnd&@CRLF)
+		$arr[$i]=StringStripWS($arr[$i],1+2);1 = strip leading white space, 2 = strip trailing white space
+		If $arr[$i]=""  Then;match blank lines ;;;and comment lines  Or StringLeft($arr[$i],1)='#'
+			;ConsoleWrite('   del '&$i&', end='&$iEnd&@CRLF)
+			_ArrayDelete($arr,$i)
+			If $i=$iEnd Then ExitLoop
+			$iEnd=UBound($arr)-1
+			$i-=1; repeat this iteration on next loop since the other elements have moved up.
+		EndIf
+	Next
+	;MsgBox(0,0,$str)
+EndFunc
+
+Func _Calc_SaveWhitelist(ByRef $arr, $filename); copy $arr to local scope.
+	$filename=@ScriptDir&'\'&$filename
+	Local $str=_ArrayToString($arr,@CRLF)
+	Local $fh=FileOpen($filename,2); 2 = Write mode (erase previous contents)
+	FileWrite($fh,$str)
+	FileClose($fh)
+EndFunc
+
+
+Func _ArraySort_UserDefined(ByRef $a, $cmpfunc, $iStart=0, $iEnd=-1, $bEmptyStringTerminatesArray=False)
+	; sorts an array based on a function $cmpfunc that takes two elements a,b
+	; if the function returns +1, A is sorted down, if the function returns -1, A is sorted UP (relative to B)
+	If $iEnd=-1 Then $iEnd=UBound($a)-1
+
+	If $bEmptyStringTerminatesArray Then
+		For $i=$iStart To $iEnd
+			If $a[$i]="" Then
+				$iEnd=$i-1; do not include the empty string in comparisons.
+				ExitLoop
+			EndIf
+		Next
+	EndIf
+
+	Local $swaps
+	Do
+		$swaps=0
+		For $i=$iStart To $iEnd-1; go to the next to last, since we compare two items iterated by 1 eg:  [12]34, 1[23]4, 12[34] ...
+			If Call($cmpfunc,$a[$i],$a[$i+1])=1 Then
+				_ArraySwap($a[$i],$a[$i+1]); sort A down from B, which really just swaps the items - since sorting UP leaves them in-order.
+				$swaps+=1
+			EndIf
+		Next
+	Until $swaps=0
+
+EndFunc
+Func __cmp_length($a,$b)
+	If StringLen($a)>StringLen($b) Then Return +1
+	Return -1
+EndFunc
 
 
 Func COMMANDX_Cstr($who, $where, $what, $acmd)

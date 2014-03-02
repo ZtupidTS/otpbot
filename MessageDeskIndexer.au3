@@ -45,7 +45,7 @@ Func _MDI_GetNewEntries()
 	$update = StringSplit($data, @LF, 2); Format is line-delimited:  0=newTS, 1=Count 2=Entries 3=Entries ...
 	If UBound($update) < 2 Then Return SetError(2, 0, 0); we require at least the NewTS and Count fields.
 
-	$_MDI_LastTS = $update[0];use this new one for the next request
+	$_MDI_LastTS = StringStripWS($update[0],8);use this new one for the next request
 	$count = Int($update[1])
 	If $count<1 Then Return SetError(0,0,0); there were no new entries - return no results array, no error.
 
