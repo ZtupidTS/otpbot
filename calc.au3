@@ -49,6 +49,7 @@ _ArraySort($_Calc_Whitelist);sort the array alphabetically.
 _Calc_SaveWhitelist($_Calc_Whitelist, "calc_whitelist.txt");save alphabetically sorted version
 _ArraySort_UserDefined($_Calc_Whitelist, '__cmp_length', 0, -1, False); sort the array by length (shortest first) this is necessary to prevent overlapping matches.
 ;_ArrayDisplay($_Calc_Whitelist)
+MsgBox(0,0,_Calc_Sanitize("string + stringregexp + exp"))
 
 Func _Calc_LoadWhitelist(ByRef $arr, $filename)
 	$filename=@ScriptDir&'\'&$filename
@@ -107,8 +108,8 @@ Func _ArraySort_UserDefined(ByRef $a, $cmpfunc, $iStart=0, $iEnd=-1, $bEmptyStri
 
 EndFunc
 Func __cmp_length($a,$b)
-	If StringLen($a)>StringLen($b) Then Return +1
-	Return -1
+	If StringLen($a)>StringLen($b) Then Return -1
+	Return +1
 EndFunc
 
 
