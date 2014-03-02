@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_icon=host.ico
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
-#AutoIt3Wrapper_Res_Fileversion=2.1.0.56
+#AutoIt3Wrapper_Res_Fileversion=2.1.0.59
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_Language=1033
 #AutoIt3Wrapper_Res_requestedExecutionLevel=requireAdministrator
@@ -74,6 +74,7 @@ Global $RemoteVer = 0
 Global $PID = 0
 Global $LastVerCmp = ""
 Global $isRestarting=False
+Global $guiRestartDisable=False
 
 
 
@@ -242,63 +243,59 @@ EndFunc
 
 Func guiUpdate();update information.
 	Global $timerLog, $timerVersions
+	Global $guiRestartDisable
 
 
 	If $isGuiOpen Then
-
-		If $isRestarting Then
-			GUICtrlSetState($buttonRestart,$GUI_DISABLE)
-		Else
-			GUICtrlSetState($buttonRestart,$GUI_ENABLE)
+		If Not ($isRestarting=$guiRestartDisable) Then; do not change reset the button state unless it changes.
+			$guiRestartDisable=$isRestarting
+			If $isRestarting Then
+				GUICtrlSetState($buttonRestart,$GUI_DISABLE)
+			Else
+				GUICtrlSetState($buttonRestart,$GUI_ENABLE)
+			EndIf
 		EndIf
 
-		If TimerDiff($UpdateTimer)<(10*1000) Or TimerDiff($timerVersions)<(10*1000) Then
+
+		If TimerDiff($UpdateTimer)<(10*1000) Or TimerDiff($timerVersions)<(10*1000) Then;if the update/version timer was <10s ago, make the version Bold
 			GUICtrlSetFont ($labelRemoteVersion,8.5,800)
-		Else
+		ElseIf TimerDiff($UpdateTimer)<(11*1000) Or  TimerDiff($timerVersions)<(11*1000) Then; return the text to non-bold after 1 second of bold. prevents unneeded font resets.
 			GUICtrlSetFont ($labelRemoteVersion,8.5)
 		EndIf
 
 
-		_GUICtrlEdit_BeginUpdate($hEdit1)
-		Local $doLogUpdate=False
-		Switch $radioSelected
-			Case $radioStatus
-				$doLogUpdate=TimeElapsed($timerLog,1*1000)
+		Local $doLogUpdate=False;determines if the GUI Edit control for log text is going to be updated.
+		Local $replaceText="no"; do not set new Edit text by default - "" is an allowed replacement value.
+		Switch $radioSelected; collect our replacement text values and determine the if a log update is needed.
+			Case $radioStatus; otphost Status
+				$doLogUpdate=TimeElapsed($timerLog,1*1000); seconds between Status log updates
 				If $doLogUpdate Then
 					Local $sRunning="Running"
 					If $PID=0 Then $sRunning="Not Running"
 					If $isRestarting Then $sRunning="Restarting"
-					Local $text="OtpHost Uptime: "&TimerDiffString($HostTimer)&@CRLF& _
+					$replaceText="OtpHost Uptime: "&TimerDiffString($HostTimer)&@CRLF& _
 					"OtpBot Uptime: "&TimerDiffString($BotTimer)&@CRLF& _
 					"Bot status: "&$sRunning&" --- Last Responded: "&TimerDiffString($KeepAliveTimer)&" ago"&@CRLF& _
 					@CRLF& _
 					"Ping/Restart: Last: "&TimerDiffString($PingTimer)&" ago;  Next: in "&TimeString($PingTimeout-TimerDiff($PingTimer))&@CRLF& _
 					"Update Check: Last: "&TimerDiffString($UpdateTimer)&" ago;  Next: in "&TimeString($UpdateTimeout-TimerDiff($UpdateTimer))&@CRLF
-					GUICtrlSetData($Edit1,$text)
 				EndIf
-
-			Case $radioBotCon
-			Case $radioHostCon
+			Case $radioBotCon; Bot Console - this case handled externally by OtpBot->OtpHost Log command via OtpHostCore Command Callback. see OnBotConsole
+			Case $radioHostCon; Host Console - this case handled externally by OtpHostCore console-write callback. see OnHostConsole
 				;
-			Case $radioLog
-				$doLogUpdate=TimeElapsed($timerLog,5*60*1000)
-
-				If $doLogUpdate Then
-					Local $s1=GUICtrlRead($Edit1)
-					Local $s2=FileRead(@ScriptDir&'\otplog.txt')
-					If $s1=$s2 Then
-						$doLogUpdate=False
-					Else
-						GUICtrlSetData($Edit1,$s2)
-					EndIf
-				EndIf
+			Case $radioLog; shared error log file.
+				$doLogUpdate=TimeElapsed($timerLog,1*60*1000);minutes
+				If $doLogUpdate Then $replaceText=FileRead(@ScriptDir&'\otplog.txt')
 		EndSwitch
+		If $doLogUpdate And ($replaceText="no" Or GUICtrlRead($Edit1)=$replaceText) Then $doLogUpdate=False; don't do an update if there's nothing to update with.
 		If $doLogUpdate Then
-			For $i=1 To _GUICtrlEdit_GetLineCount($hEdit1)
+			_GUICtrlEdit_BeginUpdate($hEdit1);lock the edit control from redrawing
+			If Not ($replaceText="no") Then GUICtrlSetData($Edit1,$replaceText);set any new text
+			For $i=1 To _GUICtrlEdit_GetLineCount($hEdit1);scroll to the bottom of the Edit - there was a better way to do this, but it doesn't work anymore.
 				_GUICtrlEdit_Scroll($hEdit1, $SB_LINEDOWN)
 			Next
+			_GUICtrlEdit_EndUpdate($hEdit1);unlock the edit control
 		EndIf
-		_GUICtrlEdit_EndUpdate($hEdit1)
 	EndIf
 EndFunc
 Func OnHostConsole($s)
