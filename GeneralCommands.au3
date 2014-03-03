@@ -1,6 +1,7 @@
 #include-once
 #include <String.au3>
 #include <Array.au3>
+#include "AutoItHelp.au3"
 
 
 
@@ -89,6 +90,11 @@ Func _Help_RegisterGroup($group)
 	_ArrayAdd($_Help_Usage,"<none>")
 	_ArrayAdd($_Help_Descriptions,"This is a command group.")
 EndFunc
+Func _Help_Set($i,$command,$usage="[parameters unknown]",$description="No help infomation is available for this command.")
+	$_Help_Commands[$i]=$command
+	$_Help_Usage[$i]=$usage
+	$_Help_Descriptions[$i]=$description
+EndFunc
 Func _Help_Register($command,$usage="[parameters unknown]",$description="No help infomation is available for this command.")
 	_ArrayAdd($_Help_Commands,$command)
 	_ArrayAdd($_Help_Usage,$usage)
@@ -136,16 +142,25 @@ Func _Help_ListCommands($group)
 	Return $s&" ||| Use the command form `%!%help commandname` for information about a specific command. (eg: `%!%help more`)"
 EndFunc
 
-
-Func _Help_Command($command,$subcommand="")
+Func _Help_FindCommand($command,$subcommand="")
 	If StringRegExp(StringLeft($command,1),'^\W$') Then $command=StringTrimLeft($command,1)
 	If StringLen($subcommand) Then $command&=" "&$subcommand
 	For $i=0 To UBound($_Help_Commands)-1
-		If $_Help_Commands[$i]=$command Then
-			Return StringUpper('%!%'&$_Help_Commands[$i])&' '&$_Help_Usage[$i]&' - '&$_Help_Descriptions[$i]
-		EndIf
+		If $_Help_Commands[$i]=$command Then Return $i
 	Next
-	Return 'help: No information available for the command `%!%'&$command&'`.'
+	Return -1
+EndFunc
+Func _Help_Command($command,$subcommand="")
+	Local $i=_Help_FindCommand($command,$subcommand)
+	If StringRegExp(StringLeft($command,1),'^\W$') Then $command=StringTrimLeft($command,1)
+	If StringLen($subcommand) Then $command&=" "&$subcommand
+	If $i=-1 Then Return 'help: No information available for the command `%!%'&$command&'`.'
+
+
+
+	If $_Help_Descriptions[$i] = "###autoit###" Then _Au3_UpdateHelpEntry($i,$command)
+
+	Return StringUpper('%!%'&$_Help_Commands[$i])&' '&$_Help_Usage[$i]&' - '&$_Help_Descriptions[$i]
 EndFunc
 Func COMMAND_Help($command="",$subcommand="")
 	If $command="" Then Return _Help_ListGroups()

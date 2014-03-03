@@ -87,13 +87,14 @@ Func _Calc_Evaluate($s,$fmtstyle='default')
 	If $fmtstyle='quick' Then $style=$ArrayFmt_Quick
 	If $fmtstyle='full' Then $style=$ArrayFmt_Full
 
-	Local $ret = Execute(_Calc_Sanitize($s))
+	Local $san=_Calc_Sanitize($s)
+	Local $ret = Execute($san)
 	Local $err = @error
 	Local $ext = @extended
 	;Local $typ = VarGetType($ret)
 	Local $fmt=_ValueFmt($ret,$style)
 
-	If $err <> 0 Then Return SetError(3, $err, 'Expression Syntax Incorrect');since we only allow simple expressions, this can only be an input error.
+	If $err <> 0 Then Return SetError(3, $err, 'Expression Syntax Incorrect: '&$san)
 	If $ext <> 0 Then Return SetError(0, $ext, StringFormat($fmt&" | extended=%s", $ext))
 	;Return SetError(0, 0, StringFormat("(%s) %s", $typ, $ret))
 	Return SetError(0,0,$fmt)
