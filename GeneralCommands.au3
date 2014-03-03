@@ -1,7 +1,6 @@
 #include-once
 #include <String.au3>
 #include <Array.au3>
-#include "AutoItHelp.au3"
 
 
 
@@ -13,6 +12,10 @@ Global $_Help_Descriptions[1]=['']
 Global $_More_Entries=10
 Global $_More_Buffer[$_More_Entries][2]; session name[0] and buffered overflow text[1]
 Global $_More_NextEntry=0
+
+#include "AutoItHelp.au3"
+_Au3_Startup($_Help_Commands,$_Help_Usage,$_Help_Descriptions)
+
 
 
 _Help_Register("help","[command name]",'Lists and provides help information for registered commands. '& _
@@ -126,6 +129,7 @@ Func _Help_ListCommands($group)
 	Local $group_started=False
 	Local $group_ended=False
 	For $i=0 To UBound($_Help_Commands)-1
+		If StringLen($_Help_Commands[$i])=0 Then ContinueLoop
 		Local $isGroup=(StringLeft($_Help_Commands[$i],4)='GRP:')
 		Local $sGroup=StringTrimLeft($_Help_Commands[$i],4)
 		If $isGroup Then
@@ -159,6 +163,7 @@ Func _Help_Command($command,$subcommand="")
 
 
 	If $_Help_Descriptions[$i] = "###autoit###" Then _Au3_UpdateHelpEntry($i,$command)
+	If $_Help_Descriptions[$i] = "###udf###" Then _Au3_UpdateHelpEntryUDF($i,$command)
 
 	Return StringUpper('%!%'&$_Help_Commands[$i])&' '&$_Help_Usage[$i]&' - '&$_Help_Descriptions[$i]
 EndFunc

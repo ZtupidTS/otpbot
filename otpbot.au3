@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.6.2.115
+#AutoIt3Wrapper_Res_Fileversion=6.6.2.116
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crash_demons
 #AutoIt3Wrapper_Res_Language=1033
@@ -41,7 +41,7 @@ Opt('TrayOnEventMode',1)
 
 
 #region ;------------CONFIG
-Global $TestMode = 0
+Global $TestMode = 1
 Global $SERV = Get("server", "irc.freenode.net", "config")
 Global $PORT = Get("port", 6667, "config")
 Global $CHANNEL = Get("channel", "#ARG", "config");persistant channel, will rejoin. can be invited to others (not persistant)
@@ -285,7 +285,11 @@ Func OnStateChange($oldstate, $newstate)
 				Msg(Process_Message('who', 'where', '@sort length a bbbbbbbbbbbbbbbb ccd "x y z"'))
 				Msg(Process_Message('who', 'where', '@typedebug'))
 				Msg(Process_Message('who', 'where', '@calcraw StringSplit("abc","")'))
-				Msg(Process_Message('who', 'where', '@var_dump(123)'))
+				Msg(Process_Message('who', 'where', '@help atan'))
+				Msg(Process_Message('who', 'where', '@help _ArrayDisplay'))
+				Msg(Process_Message('who', 'where', '@help General'))
+				Msg(Process_Message('who', 'where', '@help AutoIt'))
+				Msg(Process_Message('who', 'where', '@help UDF'))
 				;Msg(Process_Message('who', 'where', "@wiki agent system"))
 				;COMMAND_tinyurl('http://google.com/y4')
 				;COMMAND_tinyurl('http://google.com/y5')
