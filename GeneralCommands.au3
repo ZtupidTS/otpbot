@@ -23,10 +23,19 @@ _Help_Register("help","[command name]",'Lists and provides help information for 
 'The Usage information for each command displays the parameters you can use for the command. Brackets like [] incidate the parameter is optional. Nested brackets may imply that a series of optional parameters requires each previous one to be used first.')
 _Help_Register("more","","Provides more text from the end of a previous post that was cut off. Using `%!%more` will not clear the original text held unless the new text is also too long or the text held is the oldest cached entry. Note: `%!%more` results are specific to PM username and channel name.")
 
+_Help_Register("tokens","",'Returns the tokenized version of the command string, accounting for parameters containing spaces as marked with " ".')
+
+
+
 #include "stats.au3"; have to put this here because of initialization code using globals.
 #include "Calc.au3"
 
 Global Enum $_CMD_TOKEN_COUNT=0,$_CMD_START=1,$_CMD_NAME=1,$_CMD_PARAM_START=2
+
+
+Func COMMANDX_tokens($who,$what,$where,$acmd)
+	Return $acmd
+EndFunc
 
 
 ;---------------------------------------
@@ -52,7 +61,7 @@ Func _Cmd_Tokenize($what,$maxParameters=256)
 		EndIf
 
 		If $doAppend Then $sToken&=$c
-		If $isEnd And StringLen($sToken)Then
+		If $isEnd And  ($c='"' Or ($c=' ' And StringLen($sToken))) Then; append token if A: end of unquoted token with any text B: end of any quoted token, empty or not.
 			_ArrayAdd($aCmd,$sToken)
 			$aCmd[0]+=1
 			$sToken=""
