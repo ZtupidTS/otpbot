@@ -3,6 +3,7 @@
 #include <Array.au3>
 #include "HTTP.au3"
 #include "GeneralCommands.au3"
+#include "calc.au3"
 
 ;Opt('TrayIconDebug',1)
 Global $_Au3_Funcs[1]=['']
@@ -19,6 +20,9 @@ Func _Au3_Startup (ByRef $commands,ByRef $usage,ByRef $desc)
 	$_Udf_Funcs=StringSplit(StringStripCR(FileRead(@ScriptDir&"\libfunctions.txt")),@LF,2)
 	;_ArrayDisplay($_Au3_Funcs)
 
+	_Calc_Startup()
+
+
 	Local $size=UBound($_Au3_Funcs)+UBound($_Udf_Funcs)+5
 	Local $cmd[$size]
 	Local $usg[$size]
@@ -28,8 +32,10 @@ Func _Au3_Startup (ByRef $commands,ByRef $usage,ByRef $desc)
 	Local $nStart=$n
 	For $i=0 To UBound($_Au3_Funcs)-1
 		;ConsoleWrite($i&'/'&$size&@CRLF)
-		$cmd[$i+$nStart]=$_Au3_Funcs[$i]
-		$dsc[$i+$nStart]="###autoit###"
+		If Not StringInStr(_Calc_Sanitize($_Au3_Funcs[$i]),'_REF_') Then
+			$cmd[$i+$nStart]=$_Au3_Funcs[$i]
+			$dsc[$i+$nStart]="###autoit###"
+		EndIf
 		$n+=1
 		;_Help_Register($func,'',"###autoit###")
 	Next
@@ -38,8 +44,10 @@ Func _Au3_Startup (ByRef $commands,ByRef $usage,ByRef $desc)
 	$nStart=$n
 	For $i=0 To UBound($_Udf_Funcs)-1
 		;ConsoleWrite($i&'/'&($i+$nStart)&'/'&$size&@CRLF)
-		$cmd[$i+$nStart]=$_Udf_Funcs[$i]
-		$dsc[$i+$nStart]="###udf###"
+		If Not StringInStr(_Calc_Sanitize($_Udf_Funcs[$i]),'_REF_') Then
+			$cmd[$i+$nStart]=$_Udf_Funcs[$i]
+			$dsc[$i+$nStart]="###udf###"
+		EndIf
 		$n+=1
 		;_Help_Register($func,'',"###autoit###")
 	Next
@@ -47,6 +55,8 @@ Func _Au3_Startup (ByRef $commands,ByRef $usage,ByRef $desc)
 	$commands=$cmd
 	$usage=$usg
 	$desc=$dsc
+	_Calc_RegisterHelp();since we overwrote everything.
+	;_ArrayDisplay($commands)
 EndFunc
 Func _Au3_UpdateHelpEntry($i,$sfunc)
 	;Global $_Au3_Funcs, $_Udf_Funcs

@@ -23,15 +23,26 @@ Global $_Calc_Whitelist[1]=[''];whitelist nothing by default if nothing gets loa
 
 ;------------------------------------
 
-_Help_Register("calc","<AutoIt or Numeric Expression>","Performs a calculation or executes an expression. Input strings are sanitized against a whitelist of function names.")
-_Help_Register("calc_sanitize","<AutoIt or Numeric Expression>","Sanitizes an expression against a whitelist of function names and returns the sanitized version. Used to debug expressions. See `%!%help calc`")
-_Help_Register("calc_dump","<AutoIt or Numeric Expression>","Performs a calculation or executes an expression like %!%CALC, but with full type information and formatting.")
-
-_Calc_LoadWhitelist($_Calc_Whitelist, "calc_whitelist.txt")
-_ArraySort($_Calc_Whitelist);sort the array alphabetically.
-_Calc_SaveWhitelist($_Calc_Whitelist, "calc_whitelist.txt");save alphabetically sorted version
+_Calc_Startup()
+_Calc_RegisterHelp()
 ;------------------------------------
 
+
+Func _Calc_Startup()
+	If IsDeclared('CALC_STARTUP') Then Return
+	Assign('CALC_STARTUP',1,2)
+
+	Global $_Calc_Whitelist
+	_Calc_LoadWhitelist($_Calc_Whitelist, "calc_whitelist.txt")
+	_ArraySort($_Calc_Whitelist);sort the array alphabetically.
+	_Calc_SaveWhitelist($_Calc_Whitelist, "calc_whitelist.txt");save alphabetically sorted version
+EndFunc
+
+Func _Calc_RegisterHelp()
+	_Help_Register("calc","<AutoIt or Numeric Expression>","Performs a calculation or executes an expression. Input strings are sanitized against a whitelist of function names.")
+	_Help_Register("calc_sanitize","<AutoIt or Numeric Expression>","Sanitizes an expression against a whitelist of function names and returns the sanitized version. Used to debug expressions. See `%!%help calc`")
+	_Help_Register("calc_dump","<AutoIt or Numeric Expression>","Performs a calculation or executes an expression like %!%CALC, but with full type information and formatting.")
+EndFunc
 
 
 
