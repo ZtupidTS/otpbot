@@ -579,6 +579,7 @@ Func Process()
 					Msg('IN=' & $cmd)
 					Switch $cmdtype
 						Case 'JOIN';:crashdemons!crashdemons@6D6517.5668E6.7585CE.B49C62 JOIN :##hell
+							If $acmd[2]=$_Logger_Channel Then _Logger_Append($fromShort,"joined "&$acmd[2],2)
 							If $fromShort = $NICK And StringLeft($acmd[2], 1) = "#" Then
 								$HOSTNAME = NameGetHostname($from)
 								State($S_CHAT)
@@ -587,11 +588,14 @@ Func Process()
 				Case $S_CHAT
 					Switch $cmdtype
 						Case 'JOIN';:crashdemons!crashdemons@6D6517.5668E6.7585CE.B49C62 JOIN :##hell
+							If $acmd[2]=$_Logger_Channel Then _Logger_Append($fromShort,"joined "&$acmd[2],2)
 							If StringLeft($acmd[2], 1) = "#" Then
 								;$fromShort
 								Cmd("WHOIS " & $fromShort, True); queue a WHOIS request so we can retrieve the Accountname later.
 							EndIf
 						Case 'PART','QUIT';:crashdemons!~crashdemo@unaffiliated/crashdemons PART #ARG
+							If $cmdtype='QUIT'                               Then _Logger_Append($fromShort,"quit",3,$acmd[2])
+							If $cmdtype='PART' And $acmd[2]=$_Logger_Channel Then _Logger_Append($fromShort,"left "&$acmd[2],2)
 							_UserInfo_Forget($fromShort)
 					EndSwitch
 			EndSwitch
@@ -634,6 +638,7 @@ Func Process()
 						PRIVMSG($where, "I am a bot. I was invited here by: " & $who)
 					EndIf
 				Case 'KICK';:WiZ!jto@tolsun.oulu.fi KICK #Finnish John
+					If $where=$_Logger_Channel Then _Logger_Append($who,"kicked "&$what&" from "&$where,2)
 					If $where = $CHANNEL And $what = $NICK Then State($S_ON)
 			EndSwitch
 		EndIf

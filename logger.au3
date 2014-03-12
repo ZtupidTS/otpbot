@@ -6,13 +6,12 @@ Global $_Logger_Posts=''
 Global $_Logger_Channel=''
 
 
-Func _Logger_Append($sUser,$sText, $fAction=False, $sActionText="")
+Func _Logger_Append($sUser,$sText, $fAction=0, $sTextEx="")
 	If Not $_Logger_Enable Then Return
 	Local $fmtPost="%s:%s <%s> %s"
-	If $fAction Then
-		$fmtPost="%s:%s %s* %s"
-		If StringLen($sActionText) Then $fmtPost="%s:%s %s "&$sActionText&" (%s)"
-	EndIf
+	If $fAction=1 Then $fmtPost="%s:%s %s* %s"
+	If $fAction=2 Then $fmtPost="%s:%s %s %s"
+	If $fAction=3 Then $fmtPost="%s:%s %s %s ("&$sTextEx&")"
 	Local $line=StringFormat($fmtPost,@HOUR,@MIN,$sUser,$sText)
 	$_Logger_Posts&=$line&@CRLF
 EndFunc

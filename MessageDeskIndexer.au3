@@ -3,16 +3,76 @@
 #include "shorturl.au3"
 #include "HTTP.au3"
 #include "Wiki.au3"
+#include "GeneralCommands.au3"
 #include-once
 
 Global $_MDI_LastTS = -1;initial request without a TS, just acquires the current TS
 Global $_MDI_URL = 'http://sukasa.rustedlogic.net/MD/'
 Global $_MDI_ReportFunc=''
 
+Global $_MDI_ResponseTypes[9]=['Hang Up','Coordinates','Referral','Named Location','Book','Number','Pointless Response','Return Call Request','Unknown']
+Global $_MDI_ResponseTypes2[9]=['Hangup','Coord','Referral','location','Book','Number','Pointless','Return','Unknown']
+
+
+
+Global Const $_MDI_VIEWSTATE=''
+Global Const $_MDI_EVENTVALIDATION=''
+
+_Help_RegisterGroup("MessageDesk")
+_Help_RegisterCommand("md","<input code> <response type> <response> [notes]","Submits an entry to the Message Desk Indexer noting the outcome of a call to Message Desk that you made"& _
+' with an input and a response. . If you need to use spaces in any of the fields, surround the text with "double quotes".'& _
+'The Response Type can be one of the following: '&_ArrayToString($_MDI_ResponseTypes2,',')&' - However, some partial matches are accepted also.')
+_Help_RegisterCommand("MDIDebug","",'Returns internal state information about MessageDeskIndexer polling.')
+
 
 Func COMMAND_MDIDebug()
 	Return $_MDI_LastTS&' : '&$_MDI_ReportFunc
 EndFunc
+
+;TCPStartup()
+;_MDI_Submit('DUMMY','Bot Test','notes','Named Location')
+
+;MsgBox(0,0,COMMAND_MD('DUMMY','loc','resp','notes'))
+
+Func COMMAND_MD($input,$type,$response,$notes="")
+	Local $ret=_MDI_UserInput($input,$response,$notes,$type)
+	Local $err=@error
+	Switch @error
+		Case 0
+			Return "Message Desk Indexer entry submitted. You can find it at: http://sukasa.rustedlogic.net/MD/?Details="&_URIEncode($input)
+		Case 1
+			Return "MD: Your Response Type was not understood, try one of the following: "&_ArrayToString($_MDI_ResponseTypes2,',')
+		Case Else
+			Return "MD: An unknown error has occured."
+	EndSwitch
+EndFunc
+
+
+Func _MDI_UserInput($input,$response,$notes,$type)
+	Local $iType=-1
+	For $i=0 To UBound($_MDI_ResponseTypes)-1
+		If $type=$_MDI_ResponseTypes[$i] Or $type=StringReplace($_MDI_ResponseTypes[$i],' ','') Then $iType=$i
+	Next
+	If StringLen($type)>=3 Then $iType=_ArraySearch($_MDI_ResponseTypes,$type,0,0,0,1);partial search
+	If $iType=-1 Then Return SetError(1,0,'')
+	Local $ret=_MDI_Submit(StringLeft($input,256),StringLeft($response,1024),StringLeft($notes,1024),$_MDI_ResponseTypes[$iType])
+	Local $err=@error
+	Return SetError($err,0,$ret)
+	;If $type="coord" Or $type="coords" Then $iType=_ArraySearch(
+EndFunc
+
+Func _MDI_Submit($input,$response,$notes,$type)
+	Local $headers='Referer: http://sukasa.rustedlogic.net/MD/Index.aspx'&@CRLF&'Content-Type: application/x-www-form-urlencoded'&@CRLF
+	Local $text=''
+	Local $aReq=__HTTP_Req('POST','http://sukasa.rustedlogic.net/MD/Index.aspx', _
+		StringFormat("__EVENTTARGET=&__EVENTARGUMENT=&__VIEWSTATE=%s&__EVENTVALIDATION=%s&txtCode=%s&txtResponse=%s&txtNotes=%s&lstResponseTypes=%s&btnSave=Save&txtPassword=U", _
+			_URIEncode($_MDI_VIEWSTATE),_URIEncode($_MDI_EVENTVALIDATION), _
+			_URIEncode($input),_URIEncode($response),_URIEncode($notes),_URIEncode($type)) _
+		,$headers)
+	__HTTP_Transfer($aReq,$text,5000)
+EndFunc
+
+
 
 Func _MDI_Report_NewEntries()
 	Local $s=_MDI_GetNewEntriesString()
