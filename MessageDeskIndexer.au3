@@ -15,8 +15,6 @@ Global $_MDI_ResponseTypes2[9]=['Hangup','Coord','Referral','location','Book','N
 
 
 
-Global Const $_MDI_VIEWSTATE=''
-Global Const $_MDI_EVENTVALIDATION=''
 
 _Help_RegisterGroup("MessageDesk")
 _Help_RegisterCommand("md","<input code> <response type> <response> [notes]","Submits an entry to the Message Desk Indexer noting the outcome of a call to Message Desk that you made"& _
@@ -65,8 +63,7 @@ Func _MDI_Submit($input,$response,$notes,$type)
 	Local $headers='Referer: http://sukasa.rustedlogic.net/MD/Index.aspx'&@CRLF&'Content-Type: application/x-www-form-urlencoded'&@CRLF
 	Local $text=''
 	Local $aReq=__HTTP_Req('POST','http://sukasa.rustedlogic.net/MD/Index.aspx', _
-		StringFormat("__EVENTTARGET=&__EVENTARGUMENT=&__VIEWSTATE=%s&__EVENTVALIDATION=%s&txtCode=%s&txtResponse=%s&txtNotes=%s&lstResponseTypes=%s&btnSave=Save&txtPassword=U", _
-			_URIEncode($_MDI_VIEWSTATE),_URIEncode($_MDI_EVENTVALIDATION), _
+		StringFormat("txtCode=%s&txtResponse=%s&txtNotes=%s&lstResponseTypes=%s&btnSave=Save&txtPassword=U", _
 			_URIEncode($input),_URIEncode($response),_URIEncode($notes),_URIEncode($type)) _
 		,$headers)
 	__HTTP_Transfer($aReq,$text,5000)
