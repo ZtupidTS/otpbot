@@ -24,7 +24,7 @@ Func _Logger_SubmitLogs(); Return value: True (log submit succeeded) False (subm
 		StringFormat("key=%s&channel=%s&posts=", _URIEncode($_Logger_Key), _URIEncode($_Logger_Channel))&_URIEncode($_Logger_Posts) _
 		, $headers)
 	__HTTP_Transfer($aReq,$text,5000)
-	;ConsoleWrite(">>>"&$text&"<<<"&@CRLF)
+	ConsoleWrite(">>>"&$text&"<<<"&@CRLF)
 	_HTTP_StripToContent($text)
 	$text=StringStripWS($text,8);all Whitespace stripped
 	If $text=="no"  Then

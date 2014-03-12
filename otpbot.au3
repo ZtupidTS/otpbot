@@ -608,7 +608,31 @@ Func Process()
 
 			Switch $cmdtype
 				Case 'PRIVMSG', 'NOTICE'
-					If $where=$_Logger_Channel Then _Logger_Append($who,$what)
+					Local $isCTCP=0
+					Local $ctcpCommand=""
+					Local $ctcpContent=""
+					If StringLeft($what,1)=Chr(1) And StringRight($what,1)=Chr(1) Then
+						$isCTCP=1
+						Local $tmp=StringTrimRight(StringTrimLeft($what,1),1)
+						Local $pSpace=StringInStr($tmp,' ')
+						If $pSpace Then
+							$ctcpCommand=StringLeft($tmp,$pSpace-1)
+							$ctcpContent=StringMid($tmp,$pSpace+1)
+						Else
+							$ctcpCommand=$tmp
+						EndIf
+						If $ctcpCommand='ACTION' Then
+							If $where=$_Logger_Channel Then _Logger_Append($who,$ctcpContent,1)
+						Else
+							If $where=$_Logger_Channel Then _Logger_Append($who,'CTCP '&$tmp,2)
+						EndIf
+					Else
+						If $where=$_Logger_Channel Then _Logger_Append($who,$what)
+					EndIf
+
+
+
+
 					Global $tsLastWHOIS
 					Global $strLastWHOIS
 					Local $strAcct=_UserInfo_Whois($who)
