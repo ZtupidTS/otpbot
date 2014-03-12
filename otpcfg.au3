@@ -42,6 +42,8 @@ Global $Settings[100][3] = [ _
 		['utility', 'forumtopicid', 'Topid ID# of the thread to watch for replies'], _
 		['utility', 'forumchecktime', 'New-reply check interval for a forum (ms)'], _
 		['utility', 'mdichecktime', 'Check interval for the Message Desk Indexer (ms)'], _
+		['utility', 'logger', 'Enable chat-logging (0=Disabled, 1=Enabled)'], _
+		['utility', 'logkey', 'Log server access key'], _
 		['', '', '']]
 
 

@@ -21,21 +21,43 @@ Global Const $srNSlash = '[^\\/]'
 
 Global $_Calc_Whitelist[1]=[''];whitelist nothing by default if nothing gets loaded - prevent array errors.
 
+Global $_Calc_HangTimer=0
+Global $_Calc_HangLimit=60*1000
+Global $_Calc_HangExec=''
+
 ;------------------------------------
 
 _Calc_Startup()
 _Calc_RegisterHelp()
 ;------------------------------------
 
+Func _REF_TakeTooMuchTime()
+	Sleep(10*60*1000)
+EndFunc
+
 
 Func _Calc_Startup()
 	If IsDeclared('CALC_STARTUP') Then Return
 	Assign('CALC_STARTUP',1,2)
+	AdlibRegister('_Calc_HangDetector',1000)
 
 	Global $_Calc_Whitelist
 	_Calc_LoadWhitelist($_Calc_Whitelist, "calc_whitelist.txt")
 	_ArraySort($_Calc_Whitelist);sort the array alphabetically.
 	_Calc_SaveWhitelist($_Calc_Whitelist, "calc_whitelist.txt");save alphabetically sorted version
+EndFunc
+
+Func _Calc_HangDetector()
+	If $_Calc_HangTimer<>0 And TimerDiff($_Calc_HangTimer)>$_Calc_HangLimit Then
+		Execute($_Calc_HangExec)
+		Exit
+	EndIf
+EndFunc
+Func _Calc_StartHangTimer()
+	$_Calc_HangTimer=TimerInit()
+EndFunc
+Func _Calc_StopHangTimer()
+	$_Calc_HangTimer=0
 EndFunc
 
 Func _Calc_RegisterHelp()
@@ -98,10 +120,12 @@ Func _Calc_Evaluate($s,$fmtstyle='default')
 	If $fmtstyle='quick' Then $style=$ArrayFmt_Quick
 	If $fmtstyle='full' Then $style=$ArrayFmt_Full
 
+	_Calc_StartHangTimer()
 	Local $san=_Calc_Sanitize($s)
 	Local $ret = Execute($san)
 	Local $err = @error
 	Local $ext = @extended
+	_Calc_StopHangTimer()
 	;Local $typ = VarGetType($ret)
 	Local $fmt=_ValueFmt($ret,$style)
 

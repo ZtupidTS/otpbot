@@ -37,7 +37,7 @@ Func _InetRead_Manual($url,$opt=0)
 	If StringLen($sRecv_Out)=0 Then Return SetError(1,0,'')
 
 	;ConsoleWrite(@CRLF&$sRecv_Out&@CRLF)
-
+#cs
 	Local $iPos=StringInStr($sRecv_Out,@LF&@LF)+2
 	If $iPos<=2 Then $iPos=StringInStr($sRecv_Out,@CRLF&@CRLF)+4
 	If $iPos>4 Then
@@ -45,10 +45,22 @@ Func _InetRead_Manual($url,$opt=0)
 	Else
 		$sRecv_Out=""
 	EndIf
+#ce
+	_HTTP_StripToContent($sRecv_Out)
 
 
 	Return StringToBinary($sRecv_Out)
 EndFunc
+Func _HTTP_StripToContent(ByRef $sRecvd)
+	Local $iPos=StringInStr($sRecvd,@LF&@LF)+2
+	If $iPos<=2 Then $iPos=StringInStr($sRecvd,@CRLF&@CRLF)+4
+	If $iPos>4 Then
+		$sRecvd=StringMid($sRecvd,$iPos)
+	Else
+		$sRecvd=""
+	EndIf
+EndFunc
+
 
 Func __HTTP_Req($Method = 'GET', $url = 'http://example.com/', $Content = '', $extraHeaders = '')
 	Local $aRet[4]

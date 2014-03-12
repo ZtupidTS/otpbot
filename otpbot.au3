@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.6.2.118
+#AutoIt3Wrapper_Res_Fileversion=6.6.2.121
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crash_demons
 #AutoIt3Wrapper_Res_Language=1033
@@ -25,6 +25,7 @@
 #include "5gram.au3"
 #include "Stats.au3"
 #include "coords.au3"
+#include "logger.au3"
 #include "Dialer.au3"
 #include "shorturl.au3"
 #include "userinfo.au3"
@@ -73,6 +74,11 @@ Global $news_entries=Get("newsentries",5);last 5 updates from News wiki page.
 
 Global $mdi_checktime = Get("mdichecktime", 5 * 60 * 1000);5 minutes
 
+
+$_Logger_Enable = Get("logger",0)=="1";logger disabled by default
+$_Logger_Key = Get("logkey","")
+$_Logger_Channel=$CHANNEL
+
 #endregion ;------------CONFIG
 
 #region ;------------------INTERNAL VARIABLES
@@ -91,6 +97,7 @@ Global $STATE = $S_OFF
 
 ;library configuration variables
 ReDim $otp22_waves[$otp22_wavemax][2]
+$_Calc_HangExec='Restart("Internal hang detected - Restarting.")'
 $dialer_reportfunc = 'SendPrimaryChannel'
 $PHPBB_ReportFunc = 'SendPrimaryChannel'
 $_MDI_ReportFunc = 'SendPrimaryChannel'
@@ -135,6 +142,7 @@ FileChangeDir(@ScriptDir)
 AdlibRegister("otp22_dialler_report", $dialer_checktime)
 AdlibRegister("phpbb_report_NewPostsAndLink", $forum_checktime)
 AdlibRegister("_MDI_Report_NewEntries", $mdi_checktime)
+AdlibRegister("_Logger_SubmitLogs", 1*60*1000)
 OnAutoItExitRegister("Quit")
 
 
@@ -277,19 +285,15 @@ Func OnStateChange($oldstate, $newstate)
 			Cmd('JOIN ' & $CHANNEL)
 		Case $S_CHAT
 			If $TestMode Then; whatever needs debugging at the moment.
-				otp22_getentries()
-				ConsoleWrite(@CRLF&@error&@CRLF)
-				Msg(Process_Message('who', 'where', "@VERIFY http://pastebin.com/sJiGQEPM"))
-				Msg(COMMAND_VERIFY("@VERIFY http://pastebin.com/sJiGQEPM"))
-				Msg(Process_Message('who', 'where', "~forumdebug"))
-				Msg(Process_Message('who', 'where', '@sort length a bbbbbbbbbbbbbbbb ccd "x y z"'))
-				Msg(Process_Message('who', 'where', '@typedebug'))
-				Msg(Process_Message('who', 'where', '@calcraw StringSplit("abc","")'))
-				Msg(Process_Message('who', 'where', '@help atan'))
-				Msg(Process_Message('who', 'where', '@help _ArrayDisplay'))
+				;otp22_getentries()
 				Msg(Process_Message('who', 'where', '@help General'))
 				Msg(Process_Message('who', 'where', '@help AutoIt'))
 				Msg(Process_Message('who', 'where', '@help UDF'))
+				ConsoleWrite(@CRLF&"----------------------"&@CRLF)
+				_Help_OutputWikiListing(0)
+				ConsoleWrite(@CRLF&"----------------------"&@CRLF)
+				_Help_OutputWikiListing(1)
+				ConsoleWrite(@CRLF&"----------------------"&@CRLF)
 				;Msg(Process_Message('who', 'where', "@wiki agent system"))
 				;COMMAND_tinyurl('http://google.com/y4')
 				;COMMAND_tinyurl('http://google.com/y5')
@@ -486,18 +490,38 @@ Func Get($key, $default = "", $section = "utility")
 EndFunc   ;==>Get
 
 
-Func Quit()
+Func QuitNoExit($s="")
+	If $s="" Then $s=$QuitText
 	Opt('TrayIconHide',1)
 	Msg('QUITTING')
-	Cmd('QUIT :' & $QuitText)
+	Cmd('QUIT :' & $s)
 	;Sleep(1000);having issues with socket closing before message arrives.
 	Close()
 	_OtpHost_Destroy($_OtpHost)
 	_OtpHost_flog('Quitting OtpBot')
 	OnAutoItExitUnRegister("Quit"); no repeat events.
+EndFunc
+Func Quit($sIn="")
+	QuitNoExit($sIn)
 	Exit
 EndFunc   ;==>Quit
-
+Func Restart($sInput)
+	QuitNoExit($sInput)
+	If @Compiled Then
+		Run(FilepathQuote(@ScriptFullPath))
+	Else
+		Run(FilepathQuote(@AutoItExe)&' '&FilepathQuote(@ScriptFullPath))
+	EndIf
+	Exit
+EndFunc
+Func FilepathQuote($fp)
+	If Not (StringLeft($fp,1)='"') Then
+		If StringInStr($fp,' ') Then
+			Return StringFormat('"%s"',$fp)
+		EndIf
+	EndIf
+	Return $fp
+EndFunc
 
 
 Func Read()
@@ -580,8 +604,7 @@ Func Process()
 
 			Switch $cmdtype
 				Case 'PRIVMSG', 'NOTICE'
-
-
+					If $where=$_Logger_Channel Then _Logger_Append($who,$what)
 					Global $tsLastWHOIS
 					Global $strLastWHOIS
 					Local $strAcct=_UserInfo_Whois($who)
