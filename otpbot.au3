@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.6.2.121
+#AutoIt3Wrapper_Res_Fileversion=6.6.2.122
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crash_demons
 #AutoIt3Wrapper_Res_Language=1033
@@ -142,7 +142,7 @@ FileChangeDir(@ScriptDir)
 AdlibRegister("otp22_dialler_report", $dialer_checktime)
 AdlibRegister("phpbb_report_NewPostsAndLink", $forum_checktime)
 AdlibRegister("_MDI_Report_NewEntries", $mdi_checktime)
-AdlibRegister("_Logger_SubmitLogs", 1*60*1000)
+AdlibRegister("_Logger_SubmitLogs", 10*60*1000)
 OnAutoItExitRegister("Quit")
 
 
