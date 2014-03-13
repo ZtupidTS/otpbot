@@ -436,6 +436,7 @@ Func PRIVMSG($where, $what)
 		$what = StringTrimRight($what, $lenOver) & $notifier
 	EndIf
 
+	If $where=$_Logger_Channel Then _Logger_Append($NICK,$what);log bots own posts! derp
 	Cmd("PRIVMSG " & $where & " :" & $what)
 EndFunc   ;==>PRIVMSG
 
