@@ -5,9 +5,15 @@ Global $_Logger_Key=''
 Global $_Logger_Posts=''
 Global $_Logger_Channel=''
 
+Func _Logger_Strip(ByRef $sIn)
+	$sIn=StringRegExpReplace($sIn,"([^[:print:][:graph:]])"," ");
+	;StringRegexp("abc d!"&Chr(1),"^[[:print:][:graph:]]+$"); rgx replace NOT group to " "
+EndFunc
 
 Func _Logger_Append($sUser,$sText, $fAction=0, $sTextEx="")
 	If Not $_Logger_Enable Then Return
+	;ConsoleWrite("logged"&@CRLF)
+	_Logger_Strip($sText)
 	Local $fmtPost="%s:%s <%s> %s"
 	If $fAction=1 Then $fmtPost="%s:%s %s* %s"
 	If $fAction=2 Then $fmtPost="%s:%s %s %s"

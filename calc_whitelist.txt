@@ -76,8 +76,8 @@ stringformat
 stringinstr
 stringleft
 stringlen
-stringlower
 Stringlower
+stringlower
 stringmid
 stringregexp
 stringregexpreplace

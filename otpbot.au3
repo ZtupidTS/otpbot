@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.6.2.122
+#AutoIt3Wrapper_Res_Fileversion=6.6.2.123
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crash_demons
 #AutoIt3Wrapper_Res_Language=1033
@@ -555,7 +555,8 @@ Func Process()
 		Local $isMessage = (UBound($acmd) >= 4);     :from COMMAND to payload ...
 
 
-		;Msg('IN=' & $cmd & " | "&UBound($acmd))
+		;;;;Msg('IN=' & $cmd & " | "&UBound($acmd))
+		;;ConsoleWrite(_ValueFmt($acmd,$ArrayFmt_Default)&@CRLF)
 
 		If $isBasic Then
 			If $acmd[0] = "PING" Then Return Cmd(StringReplace($cmd, 'PING ', 'PONG '));because laziness but also to prevent losing the ":"
