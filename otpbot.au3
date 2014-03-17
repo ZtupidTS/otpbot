@@ -27,6 +27,7 @@
 #include "coords.au3"
 #include "logger.au3"
 #include "Dialer.au3"
+#include "convert.au3"
 #include "shorturl.au3"
 #include "userinfo.au3"
 #include "DNSHelper.au3"
@@ -42,7 +43,7 @@ Opt('TrayOnEventMode',1)
 
 
 #region ;------------CONFIG
-Global $TestMode = 0
+Global $TestMode = 1
 Global $SERV = Get("server", "irc.freenode.net", "config")
 Global $PORT = Get("port", 6667, "config")
 Global $CHANNEL = Get("channel", "#ARG", "config");persistant channel, will rejoin. can be invited to others (not persistant)
@@ -235,7 +236,7 @@ Func Process_Message($who, $where, $what); called by Process() which parses IRC 
 			;			'Pastebin Decoder commands: bluehill elpaso littlemissouri | ' & _
 			;			'Coordinates: UTM LL coord | NATO Decoding: 5GramFind 5Gram WORM | Other: ITA2 ITA2S lengthstobits flipbits ztime calc'
 			Case 'version'
-				Return "OTPBOT v" & $VERSION & " - Crash_Demons | UTM - Nadando | DNS - Progandy" & $VersionInfoExt
+				Return "OTPBOT v" & $VERSION & " - Crash_Demons | UTM - Nadando | DNS - Progandy | BigNum - Eukalyptus" & $VersionInfoExt
 			Case 'updatechan', 'update_chan'
 				Return OTP22News_Read()
 			Case 'update'
@@ -286,13 +287,13 @@ Func OnStateChange($oldstate, $newstate)
 		Case $S_CHAT
 			If $TestMode Then; whatever needs debugging at the moment.
 				;otp22_getentries()
-				Msg(Process_Message('who', 'where', '@help General'))
-				Msg(Process_Message('who', 'where', '@help AutoIt'))
-				Msg(Process_Message('who', 'where', '@help UDF'))
+				;Msg(Process_Message('who', 'where', '@help General'))
+				;Msg(Process_Message('who', 'where', '@help AutoIt'))
+				Msg(Process_Message('who', 'where', '@convert 1 MB to KB'))
 				ConsoleWrite(@CRLF&"----------------------"&@CRLF)
-				_Help_OutputWikiListing(0)
+				;_Help_OutputWikiListing(0)
 				ConsoleWrite(@CRLF&"----------------------"&@CRLF)
-				_Help_OutputWikiListing(1)
+				;_Help_OutputWikiListing(1)
 				ConsoleWrite(@CRLF&"----------------------"&@CRLF)
 				;Msg(Process_Message('who', 'where', "@wiki agent system"))
 				;COMMAND_tinyurl('http://google.com/y4')
@@ -363,6 +364,7 @@ EndFunc   ;==>COMMAND_test
 
 Func TryCommandFunc($who, $where, $what, ByRef $acmd)
 	Local $paramn = UBound($acmd) - 2
+	Local $paramstr=StringTrimLeft($what,StringLen($acmd[1])+1)
 	If Not (StringLeft($what, 1) == $CommandChar) Then Return ""
 	If $paramn < 0 Then Return "Error processing command."
 	Local $ret = ""
@@ -388,6 +390,11 @@ Func TryCommandFunc($who, $where, $what, ByRef $acmd)
 	EndSwitch
 	If $err = 0xDEAD And $ext = 0xBEEF Then; no simple command exists, try an extended command, which takes all the parameters.
 		$ret = Call('COMMANDX_' & $acmd[1], $who, $where, $what, $acmd)
+		$err = @error
+		$ext = @extended
+	EndIf
+	If $err = 0xDEAD And $ext = 0xBEEF Then; no simple command exists, try an extended command, which takes all the parameters.
+		$ret = Call('COMMANDV_' & $acmd[1], $paramstr)
 		$err = @error
 		$ext = @extended
 	EndIf
@@ -491,11 +498,11 @@ Func Get($key, $default = "", $section = "utility")
 EndFunc   ;==>Get
 
 
-Func QuitNoExit($s="")
-	If $s="" Then $s=$QuitText
+Func QuitNoExit($sSend="")
+	If $sSend="" Then $sSend=$QuitText
 	Opt('TrayIconHide',1)
 	Msg('QUITTING')
-	Cmd('QUIT :' & $s)
+	Cmd('QUIT :' & $sSend)
 	;Sleep(1000);having issues with socket closing before message arrives.
 	Close()
 	_OtpHost_Destroy($_OtpHost)
@@ -503,7 +510,12 @@ Func QuitNoExit($s="")
 	OnAutoItExitUnRegister("Quit"); no repeat events.
 EndFunc
 Func Quit($sIn="")
-	QuitNoExit($sIn)
+	;Dim $sIn
+	If Not IsDeclared('sIn') Then
+		QuitNoExit('')
+	Else
+		QuitNoExit($sIn)
+	EndIf
 	Exit
 EndFunc   ;==>Quit
 Func Restart($sInput)
