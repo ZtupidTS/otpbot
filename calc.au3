@@ -29,6 +29,8 @@ Global $_Calc_HangExec=''
 
 _Calc_Startup()
 _Calc_RegisterHelp()
+
+#include "convert.au3"
 ;------------------------------------
 
 Func _REF_TakeTooMuchTime()

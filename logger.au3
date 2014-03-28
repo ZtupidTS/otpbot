@@ -5,19 +5,26 @@ Global $_Logger_Key=''
 Global $_Logger_Posts=''
 Global $_Logger_Channel=''
 
+_Logger_Start()
+
+
 Func _Logger_Strip(ByRef $sIn)
 	$sIn=StringRegExpReplace($sIn,"([^[:print:][:graph:]])"," ");
 	;StringRegexp("abc d!"&Chr(1),"^[[:print:][:graph:]]+$"); rgx replace NOT group to " "
+EndFunc
+
+Func _Logger_Start()
+	$_Logger_Posts&=StringFormat("Log Session Start: %s-%s-%s %s:%s:%s"&@CRLF, @YEAR, @MON, @MDAY,  @HOUR, @MIN, @SEC)
 EndFunc
 
 Func _Logger_Append($sUser,$sText, $fAction=0, $sTextEx="")
 	If Not $_Logger_Enable Then Return
 	;ConsoleWrite("logged"&@CRLF)
 	_Logger_Strip($sText)
-	Local $fmtPost="%s:%s <%s> %s"
-	If $fAction=1 Then $fmtPost="%s:%s %s* %s"
-	If $fAction=2 Then $fmtPost="%s:%s %s %s"
-	If $fAction=3 Then $fmtPost="%s:%s %s %s ("&$sTextEx&")"
+	Local $fmtPost="[%s:%s] <%s> %s"
+	If $fAction=1 Then $fmtPost="[%s:%s] %s* %s"
+	If $fAction=2 Then $fmtPost="[%s:%s] %s %s"
+	If $fAction=3 Then $fmtPost="[%s:%s] %s %s ("&$sTextEx&")"
 	Local $line=StringFormat($fmtPost,@HOUR,@MIN,$sUser,$sText)
 	$_Logger_Posts&=$line&@CRLF
 EndFunc

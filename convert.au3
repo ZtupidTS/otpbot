@@ -1,6 +1,7 @@
 #include-once
 #include <Array.au3>
 #include "BigNum.au3"
+#include "GeneralCommands.au3"
 
 Global $_CONV_PI=3.14159265359
 Global $_CONV_RADDEG=180/$_CONV_PI
@@ -118,6 +119,8 @@ Next
 
 
 ;-----------------------------------
+_Help_RegisterCommand("convert","<number> <unit> [to] <unit>","Convert a value from one unit to another.")
+
 Func COMMANDV_Convert($sInput)
 	Return _Convert_String($sInput)
 EndFunc

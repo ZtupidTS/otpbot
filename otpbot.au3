@@ -43,7 +43,7 @@ Opt('TrayOnEventMode',1)
 
 
 #region ;------------CONFIG
-Global $TestMode = 1
+Global $TestMode = 0
 Global $SERV = Get("server", "irc.freenode.net", "config")
 Global $PORT = Get("port", 6667, "config")
 Global $CHANNEL = Get("channel", "#ARG", "config");persistant channel, will rejoin. can be invited to others (not persistant)
