@@ -613,8 +613,8 @@ Func Process()
 								Cmd("WHOIS " & $fromShort, True); queue a WHOIS request so we can retrieve the Accountname later.
 							EndIf
 						Case 'PART','QUIT';:crashdemons!~crashdemo@unaffiliated/crashdemons PART #ARG
-							If $cmdtype='QUIT'                               Then _Logger_Append($fromShort&' ('&$from&')',"quit",3,$acmd[2])
-							If $cmdtype='PART' And $acmd[2]=$_Logger_Channel Then _Logger_Append($fromShort&' ('&$from&')',"left "&$acmd[2],2)
+							If $cmdtype='QUIT'                               Then _Logger_Append($fromShort&' ('&$hostLogDisplay&')',"quit",3,$acmd[2])
+							If $cmdtype='PART' And $acmd[2]=$_Logger_Channel Then _Logger_Append($fromShort&' ('&$hostLogDisplay&')',"left "&$acmd[2],2)
 							_UserInfo_Forget($fromShort)
 					EndSwitch
 			EndSwitch
