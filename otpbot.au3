@@ -243,7 +243,7 @@ Func Process_Message($who, $where, $what); called by Process() which parses IRC 
 				Reply_Message($who, $who, OTP22News_Read());redirect reply to PM
 				Return '';disable any automatic reply
 			Case 'debug'
-				Return StringFormat("DBG: WHO=%s WHERE=%s WHAT=%s Compiled=%s OTPHOST=%s data.bin=%s elpaso.bin=%s littlemissouri.bin=%s p1.txt=%s p2.txt=%s p3.txt=%s p4.txt=%s Log=%s UserInfo=%s", $who, $where, $what, @Compiled, $_OtpHost_Info, _
+				Return StringFormat("DBG: WHO=%s WHERE=%s WHAT=%s | NICK=%s USER=%s HOST=%s | Compiled=%s OTPHOST=%s data.bin=%s elpaso.bin=%s littlemissouri.bin=%s p1.txt=%s p2.txt=%s p3.txt=%s p4.txt=%s Log=%s UserInfo=%s", $NICK,$USERNAME,$HOSTNAME, $who, $where, $what, @Compiled, $_OtpHost_Info, _
 						FileGetSize('data.bin'), FileGetSize('elpaso.bin'), FileGetSize('littlemissouri.bin'), _
 						FileGetSize('p1.txt'), FileGetSize('p2.txt'), FileGetSize('p3.txt'), FileGetSize('p4.txt'), FileGetSize('otplog.txt'), FileGetSize('userinfo.ini'))
 
@@ -580,9 +580,9 @@ Func Process()
 			Local $fromShort = NameShorten($from)
 			Local $cmdtype = $acmd[1]
 
-			Local $nickName,$userName,$hostName
-			NameSplit($from, $nickName,$userName,$hostName)
-			Local $hostLogDisplay=$userName&'@'&$hostName
+			Local $nickName,$userName,$hostString
+			NameSplit($from, $nickName,$userName,$hostString)
+			Local $hostLogDisplay=$userName&'@'&$hostString
 
 
 
@@ -625,8 +625,8 @@ Func Process()
 			Local $where = $acmd[2]
 			Local $what = $acmd[3]
 
-			Local $nickName,$userName,$hostName
-			NameSplit($acmd[0], $nickName,$userName,$hostName)
+			Local $nickName,$userName,$hostMask
+			NameSplit($acmd[0], $nickName,$userName,$hostMask)
 
 			Switch $cmdtype
 				Case 'PRIVMSG', 'NOTICE'
@@ -818,7 +818,7 @@ Func Split($scmd)
 	Return $parts
 EndFunc   ;==>Split
 
-Func NameSplit($name, ByRef $nickName, ByRef $userName, ByRef $hostName)
+Func NameSplit($name, ByRef $nickName, ByRef $userString, ByRef $hostString)
 	If StringLeft($name, 1) = ':' Then $name = StringTrimLeft($name, 1)
 	Local $pBang = StringInStr($name, '!')
 	If $pBang Then
@@ -827,10 +827,17 @@ Func NameSplit($name, ByRef $nickName, ByRef $userName, ByRef $hostName)
 	EndIf
 	Local $pAt = StringInStr($name, '@')
 	If $pAt Then
-		$userName=StringLeft($name, $pAt - 1)
+		$userString=StringLeft($name, $pAt - 1)
 		$name=StringTrimLeft($name, $pAt)
 	EndIf
-	$hostName=$name
+	$hostString=$name
+
+	If $nickName=$NICK Then
+		$USERNAME=$userString
+		$HOSTNAME=$hostString
+	EndIf
+
+
 EndFunc
 Func NameShorten($name)
 	If StringLeft($name, 1) = ':' Then $name = StringTrimLeft($name, 1)
