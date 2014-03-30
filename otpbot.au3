@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.6.3.127
+#AutoIt3Wrapper_Res_Fileversion=6.6.3.128
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crash_demons
 #AutoIt3Wrapper_Res_Language=1033
@@ -580,6 +580,11 @@ Func Process()
 			Local $fromShort = NameShorten($from)
 			Local $cmdtype = $acmd[1]
 
+			Local $nickName,$userName,$hostName
+			NameSplit($from, $nickName,$userName,$hostName)
+			Local $hostLogDisplay=$userName&'@'&$hostName
+
+
 
 			If $cmdtype = "372" Then Return;server spamming us.
 			If Int($cmdtype) > 001 And Int($cmdtype)<>330 Then Return;server spamming us.
@@ -593,7 +598,7 @@ Func Process()
 					Msg('IN=' & $cmd)
 					Switch $cmdtype
 						Case 'JOIN';:crashdemons!crashdemons@6D6517.5668E6.7585CE.B49C62 JOIN :##hell
-							If $acmd[2]=$_Logger_Channel Then _Logger_Append($fromShort&' ('&$from&')',"joined "&$acmd[2],2)
+							If $acmd[2]=$_Logger_Channel Then _Logger_Append($fromShort&' ('&$hostLogDisplay&')',"joined "&$acmd[2],2)
 							If $fromShort = $NICK And StringLeft($acmd[2], 1) = "#" Then
 								$HOSTNAME = NameGetHostname($from)
 								State($S_CHAT)
@@ -602,7 +607,7 @@ Func Process()
 				Case $S_CHAT
 					Switch $cmdtype
 						Case 'JOIN';:crashdemons!crashdemons@6D6517.5668E6.7585CE.B49C62 JOIN :##hell
-							If $acmd[2]=$_Logger_Channel Then _Logger_Append($fromShort&' ('&$from&')',"joined "&$acmd[2],2)
+							If $acmd[2]=$_Logger_Channel Then _Logger_Append($fromShort&' ('&$hostLogDisplay&')',"joined "&$acmd[2],2)
 							If StringLeft($acmd[2], 1) = "#" Then
 								;$fromShort
 								Cmd("WHOIS " & $fromShort, True); queue a WHOIS request so we can retrieve the Accountname later.
@@ -619,6 +624,9 @@ Func Process()
 			Local $cmdtype = $acmd[1]
 			Local $where = $acmd[2]
 			Local $what = $acmd[3]
+
+			Local $nickName,$userName,$hostName
+			NameSplit($acmd[0], $nickName,$userName,$hostName)
 
 			Switch $cmdtype
 				Case 'PRIVMSG', 'NOTICE'
@@ -810,7 +818,20 @@ Func Split($scmd)
 	Return $parts
 EndFunc   ;==>Split
 
-
+Func NameSplit($name, ByRef $nickName, ByRef $userName, ByRef $hostName)
+	If StringLeft($name, 1) = ':' Then $name = StringTrimLeft($name, 1)
+	Local $pBang = StringInStr($name, '!')
+	If $pBang Then
+		$nickName=StringLeft($name, $pBang - 1)
+		$name=StringTrimLeft($name, $pBang)
+	EndIf
+	Local $pAt = StringInStr($name, '@')
+	If $pAt Then
+		$userName=StringLeft($name, $pAt - 1)
+		$name=StringTrimLeft($name, $pAt)
+	EndIf
+	$hostName=$name
+EndFunc
 Func NameShorten($name)
 	If StringLeft($name, 1) = ':' Then $name = StringTrimLeft($name, 1)
 	Local $pExcl = StringInStr($name, '!')
