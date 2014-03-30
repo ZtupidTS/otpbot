@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.7.3.130
+#AutoIt3Wrapper_Res_Fileversion=6.7.3.131
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crash_demons
 #AutoIt3Wrapper_Res_Language=1033
@@ -243,7 +243,7 @@ Func Process_Message($who, $where, $what); called by Process() which parses IRC 
 				Reply_Message($who, $who, OTP22News_Read());redirect reply to PM
 				Return '';disable any automatic reply
 			Case 'debug'
-				Return StringFormat("DBG: WHO=%s WHERE=%s WHAT=%s | NICK=%s USER=%s HOST=%s | Compiled=%s OTPHOST=%s data.bin=%s elpaso.bin=%s littlemissouri.bin=%s p1.txt=%s p2.txt=%s p3.txt=%s p4.txt=%s Log=%s UserInfo=%s", $NICK,$USERNAME,$HOSTNAME, $who, $where, $what, @Compiled, $_OtpHost_Info, _
+				Return StringFormat("DBG: WHO=%s WHERE=%s WHAT=%s | NICK=%s USER=%s HOST=%s | Compiled=%s OTPHOST=%s data.bin=%s elpaso.bin=%s littlemissouri.bin=%s p1.txt=%s p2.txt=%s p3.txt=%s p4.txt=%s Log=%s UserInfo=%s", $who, $where, $what, $NICK,$USERNAME,$HOSTNAME, @Compiled, $_OtpHost_Info, _
 						FileGetSize('data.bin'), FileGetSize('elpaso.bin'), FileGetSize('littlemissouri.bin'), _
 						FileGetSize('p1.txt'), FileGetSize('p2.txt'), FileGetSize('p3.txt'), FileGetSize('p4.txt'), FileGetSize('otplog.txt'), FileGetSize('userinfo.ini'))
 
