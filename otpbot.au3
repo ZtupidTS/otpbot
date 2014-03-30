@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.6.3.125
+#AutoIt3Wrapper_Res_Fileversion=6.6.3.126
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crash_demons
 #AutoIt3Wrapper_Res_Language=1033
@@ -593,7 +593,7 @@ Func Process()
 					Msg('IN=' & $cmd)
 					Switch $cmdtype
 						Case 'JOIN';:crashdemons!crashdemons@6D6517.5668E6.7585CE.B49C62 JOIN :##hell
-							If $acmd[2]=$_Logger_Channel Then _Logger_Append($fromShort,"joined "&$acmd[2],2)
+							If $acmd[2]=$_Logger_Channel Then _Logger_Append($fromShort&' ('&$from&')',"joined "&$acmd[2],2)
 							If $fromShort = $NICK And StringLeft($acmd[2], 1) = "#" Then
 								$HOSTNAME = NameGetHostname($from)
 								State($S_CHAT)
@@ -602,14 +602,14 @@ Func Process()
 				Case $S_CHAT
 					Switch $cmdtype
 						Case 'JOIN';:crashdemons!crashdemons@6D6517.5668E6.7585CE.B49C62 JOIN :##hell
-							If $acmd[2]=$_Logger_Channel Then _Logger_Append($fromShort,"joined "&$acmd[2],2)
+							If $acmd[2]=$_Logger_Channel Then _Logger_Append($fromShort&' ('&$from&')',"joined "&$acmd[2],2)
 							If StringLeft($acmd[2], 1) = "#" Then
 								;$fromShort
 								Cmd("WHOIS " & $fromShort, True); queue a WHOIS request so we can retrieve the Accountname later.
 							EndIf
 						Case 'PART','QUIT';:crashdemons!~crashdemo@unaffiliated/crashdemons PART #ARG
-							If $cmdtype='QUIT'                               Then _Logger_Append($fromShort,"quit",3,$acmd[2])
-							If $cmdtype='PART' And $acmd[2]=$_Logger_Channel Then _Logger_Append($fromShort,"left "&$acmd[2],2)
+							If $cmdtype='QUIT'                               Then _Logger_Append($fromShort&' ('&$from&')',"quit",3,$acmd[2])
+							If $cmdtype='PART' And $acmd[2]=$_Logger_Channel Then _Logger_Append($fromShort&' ('&$from&')',"left "&$acmd[2],2)
 							_UserInfo_Forget($fromShort)
 					EndSwitch
 			EndSwitch

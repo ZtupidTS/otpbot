@@ -116,7 +116,7 @@ For $i=0 To UBound($_CONV_IEC)-1
 	$_CONV_IEC[$i][0]=_BigNum_Parse($_CONV_IEC[$i][0])
 Next
 
-
+MsgBox(0,0, _Convert_Basic(2,'Galactic Year','year',0))
 
 ;-----------------------------------
 _Help_RegisterCommand("convert","<number> <unit> [to] <unit>","Convert a value from one unit to another.")
@@ -133,9 +133,14 @@ Func _CONV__Farenheit_Celsius($f)
 	Return ($f  -  32)  *  (5/9)
 EndFunc
 Func _CONV__Time($vA,$sA,$sB,$invert=False)
+	ConsoleWrite("Time "&$sA&" "&$sB&@CRLF)
 	Local $vTmp=_Convert_Basic($vA,$sA,'second',$invert,True)
-	If @error Then Return SetError(1,0,$vTmp)
+	Local $e=@error
+	ConsoleWrite($e&@CRLF)
+	__TRACE(@ScriptLineNumber,$e,@extended,'Time:ConvertToSecond')
+	If $e Then Return SetError(1,0,$vTmp)
 	Local $vB=_Convert_Basic($vTmp,'second',$sB,$invert,True)
+	__TRACE(@ScriptLineNumber,$e,@extended,'Time:ConvertFromSecond')
 	If @error Then Return SetError(2,0,$vTmp)
 	Return SetError(1,0,$vB)
 EndFunc
@@ -365,11 +370,13 @@ Func _Convert_IsBasic($sUnit)
 	Return False
 EndFunc
 Func _Convert_ResolveBasic($sUnit)
-	;ConsoleWrite($sUnit&@CRLF)
+	ConsoleWrite("RB "&$sUnit&@CRLF)
 	If _Convert_IsBasic($sUnit) Then Return SetError(0,0,$sUnit)
 	Local $sUnitR=_Convert_ResolveBasicExact($sUnit)
 	Local $e=@error
+		ConsoleWrite($e&' '&(  StringRight($sUnit,1)= 's'  )&' '&StringTrimRight($sUnit,1)&@CRLF)
 	If $e And StringRight($sUnit,1)= 's' Then
+		ConsoleWrite(">>"&@CRLF)
 		$sUnitR=_Convert_ResolveBasic(StringTrimRight($sUnit,1))
 		$e=@error
 	EndIf
@@ -392,12 +399,13 @@ Func _Convert_ResolveBasicExact($sUnit)
 EndFunc
 Func _Convert_Basic($vA,$sA,$sB,$invert=False,$timeCall=False)
 	$vA = StringRegExpReplace($vA, "(?i)[abcdfghijklmnopqrstuvwxyz]", "~"); remove the possibility of malicious Execute strings. (E allowed)
-	ConsoleWrite($vA&' '&$sA&' '&$sB&@CRLF)
+	ConsoleWrite('BasicConvert '&$vA&' '&$sA&' '&$sB&' '&$timeCall&@CRLF)
 	Local $e=0
 	$sA=_Convert_ResolveBasic($sA)
 	$e+=@error
 	$sB=_Convert_ResolveBasic($sB)
 	$e+=@error
+	__TRACE(@ScriptLineNumber,$e,@extended,'COnvertBasic:ResolveBasicTypes '&$sA&'|'&$sB)
 	If $sA=$sB Then Return $vA
 
 	If $e Then Return SetError(1,0,"UnsupportedConversion:Types:["&$sA&"]:["&$sB&"]")
@@ -416,12 +424,14 @@ Func _Convert_Basic($vA,$sA,$sB,$invert=False,$timeCall=False)
 	Next
 
 	If $vFA=0 And $vFB=0 Then; no basic conversion factors, fall back to a predefined function
-		ConsoleWrite('!'&$sA&' '&$sB&@CRLF)
+		ConsoleWrite('Basic - SpecialCase: '&$sA&' '&$sB&@CRLF)
 		Local $ret=Call('_CONV__'&$sA&'_'&$sB,$vA)
 		$e=@error
+		__TRACE(@ScriptLineNumber,$e,@extended,'SpecialCaseA')
 		If $e Then ; no factors or function - fail.
 			If $timeCall=False Then $ret=_CONV__Time($vA,$sA,$sB,$invert)
 			$e=@error
+			__TRACE(@ScriptLineNumber,$e,@extended,'SpecialCaseB')
 			If $e Then Return SetError(2,0,"UnsupportedConversion:Incompatible:["&$sA&"]:["&$sB&"]"); no factors or function - fail.
 		EndIf
 		Return $ret
@@ -442,4 +452,8 @@ Func _Convert_Basic($vA,$sA,$sB,$invert=False,$timeCall=False)
 		Return SetError(0,0, $value1)
 		;Return SetError(0,0,($vFB/$vFA)*$vA)
 	EndIf
+EndFunc
+
+Func __TRACE($l, $e, $x="", $comment="")
+	If $e<>0 Then ConsoleWrite("! "&$comment&" - Line "&$l&" Error "&$e&" Extended "&$x&@CRLF)
 EndFunc
