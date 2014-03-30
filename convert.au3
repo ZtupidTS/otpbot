@@ -119,6 +119,7 @@ Next
 ;MsgBox(0,0, _Convert_Basic(2,'Galactic Year','year',0))
 
 ;-----------------------------------
+_Help_RegisterGroup("conversions")
 _Help_RegisterCommand("convert","<number> <unit> [to] <unit>","Convert a value from one unit to another.")
 
 Func COMMANDV_Convert($sInput)

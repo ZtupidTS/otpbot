@@ -1,12 +1,53 @@
 #include "HTTP.au3"
+#include "GeneralCommands.au3"
 
 Global $_Logger_Enable=False
 Global $_Logger_Key=''
 Global $_Logger_Posts=''
 Global $_Logger_Channel=''
 
+_Help_RegisterGroup("log")
+_Help_RegisterCommand("last","<search>","Find the last posts containing a phrase in the logs.")
+_Help_RegisterCommand("lastby","<user> [search]","Find the last posts by a user in the logs. Optionally, you may supply a search phrase to narrow the results.")
+
 _Logger_Start()
 
+
+Func COMMANDV_last($search)
+	Return _Logger_FindPosts($search)
+EndFunc
+Func COMMANDV_lastby($input)
+	Local $p=StringInStr($input,' ')
+	Local $search=""
+	Local $user=""
+	If $p Then
+		$user=StringLeft($input,$p-1)
+		$search=StringMid($input,$p+1)
+	Else
+		$user=$input
+	EndIf
+	Return _Logger_FindPosts($search,$user)
+EndFunc
+
+
+Func _Logger_FindPosts($search,$username="")
+	Local $action=1
+	If StringLen($username) Then $action=2
+
+	Local $url='http://mirror.otp22.com/logapi.php'
+	Local $arg=StringFormat("key=%s&action=%s&year=%s&text=%s&nick=%s", _URIEncode($_Logger_Key), _URIEncode($action), @YEAR, _URIEncode($search), _URIEncode($username))
+
+	Local $headers='Content-Type: application/x-www-form-urlencoded'&@CRLF
+	Local $text=''
+	Local $aReq=__HTTP_Req('POST',$url, $arg, $headers)
+	__HTTP_Transfer($aReq,$text,5000)
+	ConsoleWrite(">>>"&$text&"<<<"&@CRLF)
+	_HTTP_StripToContent($text)
+
+	$text=StringStripWS($text,1+2+4)
+
+	Return $text
+EndFunc
 
 Func _Logger_Strip(ByRef $sIn)
 	$sIn=StringRegExpReplace($sIn,"([^[:print:][:graph:]])"," ");
