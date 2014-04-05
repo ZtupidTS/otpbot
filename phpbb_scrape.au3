@@ -75,8 +75,11 @@ EndFunc
 Func phpbb_get_newpostinfo($url,$topicid,$lastpostcount)
 	$PHPBB_TopicURL=phpbb_url_viewtopic($url,$topicid)
 	$PHPBB_TopicHTML=BinaryToString(_InetRead($PHPBB_TopicURL,1))
-	$PHPBB_TopicPostCount=phpbb_scrape_postcount($PHPBB_TopicHTML)
+	Local $tmpCount=phpbb_scrape_postcount($PHPBB_TopicHTML)
 
+	If $tmpCount<=0 Then Return SetError(0xBAD,0,0)
+
+	$PHPBB_TopicPostCount=$tmpCount
 	Local $newposts=$PHPBB_TopicPostCount-$lastpostcount
 
 	If $newposts<=0 Then Return SetError(0xF00D,0,0)
