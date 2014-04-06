@@ -5,6 +5,7 @@ Global $_Logger_Enable=False
 Global $_Logger_Key=''
 Global $_Logger_Posts=''
 Global $_Logger_Channel=''
+Global $_Logger_AppID='Undefined_AutoIt'
 
 _Help_RegisterGroup("log")
 _Help_RegisterCommand("last","<search>","Find the last posts containing a phrase in the logs.")
@@ -34,7 +35,7 @@ Func _Logger_FindPosts($search,$username="")
 	Local $action=1
 	If StringLen($username) Then $action=2
 
-	Local $url='http://mirror.otp22.com/logapi.php'
+	Local $url='http://mirror.otp22.com/logapi.php?APPID='&_URIEncode($_Logger_AppID)
 	Local $arg=StringFormat("key=%s&action=%s&year=%s&text=%s&nick=%s", _URIEncode($_Logger_Key), _URIEncode($action), @YEAR, _URIEncode($search), _URIEncode($username))
 
 	Local $headers='Content-Type: application/x-www-form-urlencoded'&@CRLF
@@ -74,7 +75,7 @@ Func _Logger_SubmitLogs(); Return value: True (log submit succeeded) False (subm
 	If Not $_Logger_Enable Then Return SetError(1,0,False)
 	Local $headers='Content-Type: application/x-www-form-urlencoded'&@CRLF
 	Local $text=''
-	Local $aReq=__HTTP_Req('POST','http://mirror.otp22.com/logger.php', _
+	Local $aReq=__HTTP_Req('POST','http://mirror.otp22.com/logger.php?APPID='&_URIEncode($_Logger_AppID), _
 		StringFormat("key=%s&channel=%s&posts=", _URIEncode($_Logger_Key), _URIEncode($_Logger_Channel))&_URIEncode($_Logger_Posts) _
 		, $headers)
 	__HTTP_Transfer($aReq,$text,5000)

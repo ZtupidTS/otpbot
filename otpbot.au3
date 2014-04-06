@@ -79,6 +79,7 @@ Global $mdi_checktime = Get("mdichecktime", 5 * 60 * 1000);5 minutes
 $_Logger_Enable = Get("logger",0)=="1";logger disabled by default
 $_Logger_Key = Get("logkey","")
 $_Logger_Channel=$CHANNEL
+$_Logger_AppID='OtpBot'
 
 #endregion ;------------CONFIG
 
