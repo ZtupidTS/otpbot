@@ -90,8 +90,8 @@ EndFunc
 Func _Logger_SubmitLogs(); Return value: True (log submit succeeded) False (submit failed);  @error=1: Logged disabled 2:Key rejected 3:Unknown error.
 	If Not $_Logger_Enable Then Return SetError(1,0,False)
 
-	If $_Logger_Post_Count=0 And StringLen($_Logger_Posts)>=$_Logger_MinSize_NoPosts Then Return SetError(0,1,True);we don't submit null logs under 256 bytes
-	If $_Logger_Post_Count>0 And StringLen($_Logger_Posts)>=$_Logger_MinSize_Posts   Then Return SetError(0,2,True);we don't submit any logs under 16 bytes
+	If $_Logger_Post_Count=0 And StringLen($_Logger_Posts)<$_Logger_MinSize_NoPosts Then Return SetError(0,1,True);we don't submit null logs under 256 bytes
+	If $_Logger_Post_Count>0 And StringLen($_Logger_Posts)<$_Logger_MinSize_Posts   Then Return SetError(0,2,True);we don't submit any logs under 16 bytes
 
 
 	Local $headers='Content-Type: application/x-www-form-urlencoded'&@CRLF
