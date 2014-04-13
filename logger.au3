@@ -7,6 +7,8 @@ Global $_Logger_Posts=''
 Global $_Logger_Channel=''
 Global $_Logger_AppID='Undefined_AutoIt'
 
+Global Enum $_Logger_Type_Post=0, $_Logger_Type_Action, $_Logger_Type_Command, $_Logger_Type_CommandEx
+
 _Help_RegisterGroup("log")
 _Help_RegisterCommand("last","<search>","Find the last posts containing a phrase in the logs.")
 _Help_RegisterCommand("lastby","<user> [search]","Find the last posts by a user in the logs. Optionally, you may supply a search phrase to narrow the results.")
@@ -46,6 +48,7 @@ Func _Logger_FindPosts($search,$username="")
 	_HTTP_StripToContent($text)
 
 	$text=StringStripWS($text,1+2+4)
+	$text=StringReplace($text,@LF,'|')
 
 	Return $text
 EndFunc
@@ -66,8 +69,9 @@ Func _Logger_Append($sUser,$sText, $fAction=0, $sTextEx="")
 	Local $fmtPost="[%s:%s] <%s> %s"
 	If $fAction=1 Then $fmtPost="[%s:%s] %s* %s"
 	If $fAction=2 Then $fmtPost="[%s:%s] %s %s"
-	If $fAction=3 Then $fmtPost="[%s:%s] %s %s ("&$sTextEx&")"
+	If $fAction=3 Then $fmtPost="[%s:%s] %s %s";deprecated option
 	Local $line=StringFormat($fmtPost,@HOUR,@MIN,$sUser,$sText)
+	If StringLen($sTextEx) Then $line&=" ("&$sTextEx&")"
 	$_Logger_Posts&=$line&@CRLF
 EndFunc
 

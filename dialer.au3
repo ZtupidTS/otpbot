@@ -27,6 +27,8 @@ Global $otp22_downloadMax=50000
 
 Global $dialer_reportfunc = ''
 
+Global $dial_event = ''
+
 
 Global $dialer_numbers[7]=[ _
 "+1 202-999-3335", _
@@ -148,6 +150,7 @@ Func COMMANDX_dial($who, $where, $what, $acmd)
 	dialer_userdial($who,$number,$agent)
 	Switch @error
 		Case 0;userdial success
+			If StringLen($dial_event) Then Call($dial_event,$who,$where,$what)
 			Return "Queued Request for agent number "&$agent&" on line "&dialer_getShortName($iLine)&" ("&$dialer_numbers[$iLine]&") with your password."
 		Case 1;userdial not recognized
 			Return "You must be logged in to NickServ to use this command. If you think you are logged in, you might try the IDENTIFY command to refresh your information."
@@ -167,7 +170,6 @@ Func dialer_userdial($who,$line=1,$agent="")
 	If Not $isRecognized Then Return SetError(1,0,0)
 	Local $pass=_UserInfo_GetOptValue($iAcct, 'dialerpass')
 	If $pass="" Then Return SetError(2,0,0)
-
 
 	Local $ret=dialer_dial($line,$agent,$pass)
 	Local $err=@error

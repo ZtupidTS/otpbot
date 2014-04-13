@@ -10,6 +10,8 @@ Global $_MDI_LastTS = -1;initial request without a TS, just acquires the current
 Global $_MDI_URL = 'http://sukasa.rustedlogic.net/MD/'
 Global $_MDI_ReportFunc=''
 
+Global $_MDI_PostEvent=''
+
 Global $_MDI_ResponseTypes[9]=['Hang Up','Coordinates','Referral','Named Location','Book','Number','Pointless Response','Return Call Request','Unknown']
 Global $_MDI_ResponseTypes2[9]=['Hangup','Coord','Referral','location','Book','Number','Pointless','Return','Unknown']
 
@@ -37,6 +39,7 @@ Func COMMAND_MD($input,$type,$response,$notes="")
 	Local $err=@error
 	Switch @error
 		Case 0
+			;NOT IMPLEMENTED!: If StringLen($_MDI_PostEvent) Then Call($_MDI_PostEvent,$who,$where,$what)
 			Return "Message Desk Indexer entry submitted. You can find it at: http://sukasa.rustedlogic.net/MD/?Details="&_URIEncode($input)
 		Case 1
 			Return "MD: Your Response Type was not understood, try one of the following: "&_ArrayToString($_MDI_ResponseTypes2,',')

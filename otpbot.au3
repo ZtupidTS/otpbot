@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.7.3.135
+#AutoIt3Wrapper_Res_Fileversion=6.7.3.136
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crash_demons
 #AutoIt3Wrapper_Res_Language=1033
@@ -81,6 +81,7 @@ $_Logger_Key = Get("logkey","")
 $_Logger_Channel=$CHANNEL
 $_Logger_AppID='OtpBot'
 
+
 #endregion ;------------CONFIG
 
 #region ;------------------INTERNAL VARIABLES
@@ -101,6 +102,7 @@ Global $STATE = $S_OFF
 ReDim $otp22_waves[$otp22_wavemax][2]
 $_Calc_HangExec='Restart("Internal hang detected - Restarting.")'
 $dialer_reportfunc = 'SendPrimaryChannel'
+$dial_event='log_event'
 $PHPBB_ReportFunc = 'SendPrimaryChannel'
 $_MDI_ReportFunc = 'SendPrimaryChannel'
 $_OtpHost_OnCommand = "Process_HostCmd"
@@ -316,6 +318,10 @@ EndFunc
 
 
 #region ;------------------UTILITIES
+
+Func log_event($who,$where,$what)
+	If Not ($where=$CHANNEL) Then _Logger_Append($who, $what, $_Logger_Type_Post, '(to '&$where&')')
+EndFunc
 
 Func COMMANDX_IDENTIFY($who, $where, $what, $acmd)
 	Local $user=__element($acmd,2)
