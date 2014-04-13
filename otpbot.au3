@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.7.3.136
+#AutoIt3Wrapper_Res_Fileversion=6.7.3.137
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crash_demons
 #AutoIt3Wrapper_Res_Language=1033
@@ -320,7 +320,7 @@ EndFunc
 #region ;------------------UTILITIES
 
 Func log_event($who,$where,$what)
-	If Not ($where=$CHANNEL) Then _Logger_Append($who, $what, $_Logger_Type_Post, '(to '&$where&')')
+	If Not ($where=$CHANNEL) Then _Logger_Append($who, $what, $_Logger_Type_Post, 'to '&$where)
 EndFunc
 
 Func COMMANDX_IDENTIFY($who, $where, $what, $acmd)
