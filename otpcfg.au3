@@ -44,6 +44,8 @@ Global $Settings[100][3] = [ _
 		['utility', 'mdichecktime', 'Check interval for the Message Desk Indexer (ms)'], _
 		['utility', 'logger', 'Enable chat-logging (0=Disabled, 1=Enabled)'], _
 		['utility', 'logkey', 'Log server access key'], _
+		['utility', 'wikiuser', 'Wiki bot account'], _
+		['utility', 'wikipass', 'Wiki bot password'], _
 		['', '', '']]
 
 
