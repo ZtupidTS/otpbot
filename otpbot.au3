@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.7.3.138
+#AutoIt3Wrapper_Res_Fileversion=6.8.3.139
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crash_demons
 #AutoIt3Wrapper_Res_Language=1033
@@ -80,6 +80,10 @@ $_Logger_Enable = Get("logger",0)=="1";logger disabled by default
 $_Logger_Key = Get("logkey","")
 $_Logger_Channel=$CHANNEL
 $_Logger_AppID='OtpBot'
+
+
+$Wiki_User=Get("wikiuser","")
+$Wiki_Pass=Get("wikipass","")
 
 
 #endregion ;------------CONFIG
@@ -254,8 +258,8 @@ Func Process_Message($who, $where, $what); called by Process() which parses IRC 
 				;commands that aren't servicable.
 			Case "admins"
 				Return "This bot has no admin-servicable features."
-			Case "newupdate", "new_update"
-				Return "Updates cannot be set from the bot. Please edit this page: http://otp22.referata.com/wiki/News"
+			;Case "newupdate", "new_update"
+			;	Return "Updates cannot be set from the bot. Please edit this page: http://otp22.referata.com/wiki/News"
 			Case 'dialer'
 				otp22_dialler_report(); force recheck for debugging purposes
 				Return "Dialer mode cannot be toggled in this version."

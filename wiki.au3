@@ -8,15 +8,24 @@
 Global $NewsInterval
 Global $OTPNEWS
 Global $OTPNEWSTIMER
+Global $wiki_url='http://otp22.referata.com'
 Global $news_url = "http://otp22.referata.com/wiki/Special:Ask/-5B-5BDisplay-20tag::News-20page-20entry-5D-5D/-3FOTP22-20NI-20full-20date/-3FSummary/format%3Dcsv/limit%3D5/sort%3DOTP22-20NI-20full-20date/order%3Ddescending/offset%3D0"
 Global $news_entries = 5
 Global $query_url = "http://otp22.referata.com/wiki/Special:Ask/%s/format%3D%s/offset%3D0"
 Global $query_formats[3]=['csv','json','broadtable']
 
+Global $Wiki_User=''
+Global $Wiki_Pass=''
+
+Global $wiki_cookies=''
+Global $wiki_edittoken=''
+Global $wiki_login_ts=0
+
 
 _Help_RegisterGroup("Wiki")
 _Help_RegisterCommand("update","","Displays News information and current events.")
 _Help_RegisterCommand("updatechan","","Displays News information and current events - sent to the channel.")
+_Help_RegisterCommand("newupdate","summary","Posts a news update to the wiki. (alias: %!%new_update)  This command can only be used by registered IRC users from the public channel. Your account name will be recorded.")
 _Help_RegisterCommand("query","<query string>","Performs a Semantic-MediaWiki query and results CSV results.")
 _Help_RegisterCommand("page","<page name>","Looks up a page name on the wiki and provides a link. Provides the first title search result if no exact match is found.")
 _Help_RegisterCommand("search","<search terms>","Performs a search of the wiki by title name. If no results are found, a Text search is done.")
@@ -24,6 +33,27 @@ _Help_RegisterCommand("search","<search terms>","Performs a search of the wiki b
 
 ;_UserInfo_Option_Add('notifyupdate')
 
+
+Func COMMANDX_new_update($who, $where, $what, $acmd)
+	Return COMMANDX_newupdate($who, $where, $what, $acmd)
+EndFunc
+
+Func COMMANDX_newupdate($who, $where, $what, $acmd)
+	Local $sAcct=_UserInfo_Whois($who)
+	Local $iAcct=@extended
+	Local $isRecognized=(@error=0)
+	If Not $isRecognized Then Return "You must be logged in to NickServ to use this command. If you think you are logged in, you might try the IDENTIFY command to refresh your information."
+
+	Local $sig=" -- written by: "&$who
+	If Not ($who=$sAcct) Then $sig&=' (Account '&$sAcct&')'
+
+	Local $p=StringInStr($what,' ')
+	If Not $p Then Return 'You must enter text for this update.'
+	If Not (StringLeft($where,1)='#') Then Return 'This command can only be used in the channel.'
+
+	If Wiki_AddNews(StringTrimLeft($what,$p)&$sig) Then Return "Posted news update"
+	Return "News update failed"
+EndFunc
 
 
 Func COMMANDX_query($who, $where, $what, $acmd)
@@ -54,6 +84,122 @@ Func COMMANDX_search($who, $where, $what, $acmd)
 	Return $out
 EndFunc
 
+;----------------------- active functions
+Func Wiki_AddNews($summary)
+	Local $template=	"{{News entry"&@CRLF& _
+						"|date=%s"&@CRLF& _
+						"|time=%s"&@CRLF& _
+						"|summary=%s"&@CRLF& _
+						"}}"
+
+	$summary=StringReplace(StringStripCR($summary),@LF,'')
+	$summary=StringReplace($summary,'|', '/')
+	$summary=StringReplace($summary,'{', '(')
+	$summary=StringReplace($summary,'[', '(')
+	$summary=StringReplace($summary,'}', ')')
+	$summary=StringReplace($summary,']', ')')
+
+	$template=StringFormat($template, @YEAR&'-'&@MON&'-'&@MDAY,  @HOUR&':'&@MIN, $summary)
+
+	Return Wiki_EditPrepend('News/'&@YEAR,$template&@CRLF&@CRLF)
+EndFunc
+
+
+Func Wiki_Edit($title,$text)
+	Wiki_AutoLogin()
+	Local $out=''
+	Local $arg=StringFormat("format=xml&action=edit&title=%s&text=%s&token=%s&bot=1", _URIEncode($title), _URIEncode($text),_URIEncode($wiki_edittoken));nocreate
+	Wiki_API_Request($out,$arg)
+	Return StringInStr($out,'Success')>0
+EndFunc
+Func Wiki_EditPrepend($title,$text,$section='')
+	Wiki_AutoLogin()
+	Local $out=''
+	Local $arg=StringFormat("format=xml&action=edit&title=%s&prependtext=%s&token=%s&bot=1", _URIEncode($title), _URIEncode($text),_URIEncode($wiki_edittoken));nocreate
+	If StringLen($section) Then $arg&='&section='&_URIEncode($section)
+	Wiki_API_Request($out,$arg)
+	Return StringInStr($out,'Success')>0
+EndFunc
+Func Wiki_EditAppend($title,$text)
+	Wiki_AutoLogin()
+	Local $out=''
+	Local $arg=StringFormat("format=xml&action=edit&title=%s&appendtext=%s&token=%s&bot=1", _URIEncode($title), _URIEncode($text),_URIEncode($wiki_edittoken));nocreate
+	Wiki_API_Request($out,$arg)
+	Return StringInStr($out,'Success')>0
+EndFunc
+
+
+Func Wiki_API_Request(ByRef $out,$args,$method='POST')
+	Local $url=Wiki_URL_API()
+	Local $headers='Cookie: '&$wiki_cookies&@CRLF
+	If $method='GET' Then
+		$url&='?'&$args
+		$args=''
+	EndIf
+	If $method='POST' Then $headers&='Content-Type: application/x-www-form-urlencoded'&@CRLF
+	Local $aReq=__HTTP_Req('POST',$url, $args, $headers)
+	__HTTP_Transfer($aReq,$out,5000)
+	Wiki_AddCookies($out)
+	ConsoleWrite(">>>"&$out&"<<<"&@CRLF&@CRLF)
+	ConsoleWrite("COOKIES: "&$wiki_cookies&@CRLF)
+EndFunc
+
+Func Wiki_ClearCookies()
+	$wiki_edittoken=''
+	$wiki_cookies=''
+EndFunc
+Func Wiki_URL_API()
+	Return $wiki_url&'/w/api.php'
+EndFunc
+Func Wiki_AddCookies($text)
+	Local $cookies=_StringBetween($text,'Set-Cookie:',';')
+	For $i=0 To UBound($cookies)-1
+		$wiki_cookies&=$cookies[$i]&'; '
+	Next
+EndFunc
+Func Wiki_IsLoggedIn()
+	Return (StringLen($wiki_cookies) And TimerDiff($wiki_login_ts)<(1000*60*60*24*2) And $wiki_login_ts<>0)
+EndFunc
+Func Wiki_AutoLogin()
+	If Wiki_IsLoggedIn() Then Return SetError(0,0,1)
+	Local $ret=Wiki_Login($Wiki_User,$Wiki_Pass)
+	Local $err=@error
+	Return SetError($err,0,$ret)
+EndFunc
+Func Wiki_Login($user,$pass)
+	Wiki_ClearCookies()
+	Local $text=''
+	Local $arg=StringFormat("format=xml&action=login&lgname=%s&lgpassword=%s", _URIEncode($user), _URIEncode($pass))
+	Wiki_API_Request($text,$arg)
+
+	Local $tokens=_StringBetween($text,'token="','"')
+	Local $token=''
+	If IsArray($tokens) Then $token=$tokens[0]
+
+
+	;_HTTP_StripToContent($text)
+
+	If StringInStr($text,"Success") Then Return SetError(0,0,1)
+
+	If StringInStr($text,"NeedToken") Then
+		$arg&='&lgtoken='&_URIEncode($token)
+		Wiki_API_Request($text,$arg)
+		$wiki_login_ts=TimerInit()
+
+		Local $textb
+		$arg&='format=xml&action=tokens&type=edit'
+		Wiki_API_Request($textb,$arg)
+		$tokens=_StringBetween($textb,'edittoken="','"')
+		If IsArray($tokens) Then $wiki_edittoken=$tokens[0]
+
+		If StringInStr($text,"Success") Then Return SetError(0,0,1)
+	EndIf
+	Wiki_ClearCookies()
+	Return SetError(1,0,0)
+EndFunc
+
+
+;---------------------------------------------passive functions
 Func Wiki_Search($terms,$mode="title");text?
 	Local $url="http://otp22.referata.com/w/api.php?action=query&list=search&srsearch="&__SU_URIEncode($terms)&"&srprop=timestamp&srredirects=true&format=xml&limit=10&srwhat="&__SU_URIEncode($mode)
 	Local $data=_InetRead($url)
