@@ -36,8 +36,7 @@ _Help_RegisterCommand("search","<search terms>","Performs a search of the wiki b
 Func COMMAND_wikidebug()
 	Local $oldts=$wiki_login_ts
 	$wiki_login_ts=0
-	Return "Edit Check: "& Wiki_Edit('OtpBot/Sandbox','debug: '&TimerInit()) &" Last Login: "&TimerDiff($oldts)&"ms.  Login TS forced to expire for testing."
-
+	Return "Edit Check: "& Wiki_Edit('User:OtpBot/Sandbox','debug: '&TimerInit()) &" Last Login: "&TimerDiff($oldts)&"ms.  Login TS forced to expire for testing."
 EndFunc
 Func COMMANDX_new_update($who, $where, $what, $acmd)
 	Return COMMANDX_newupdate($who, $where, $what, $acmd)
