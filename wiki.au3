@@ -33,7 +33,12 @@ _Help_RegisterCommand("search","<search terms>","Performs a search of the wiki b
 
 ;_UserInfo_Option_Add('notifyupdate')
 
+Func COMMAND_wikidebug()
+	Local $oldts=$wiki_login_ts
+	$wiki_login_ts=0
+	Return "Edit Check: "& Wiki_Edit('OtpBot/Sandbox','debug: '&TimerInit()) &" Last Login: "&TimerDiff($oldts)&"ms.  Login TS forced to expire for testing."
 
+EndFunc
 Func COMMANDX_new_update($who, $where, $what, $acmd)
 	Return COMMANDX_newupdate($who, $where, $what, $acmd)
 EndFunc
@@ -44,7 +49,7 @@ Func COMMANDX_newupdate($who, $where, $what, $acmd)
 	Local $isRecognized=(@error=0)
 	If Not $isRecognized Then Return "You must be logged in to NickServ to use this command. If you think you are logged in, you might try the IDENTIFY command to refresh your information."
 
-	Local $sig=" -- written by: "&$who
+	Local $sig=" -- posted by: "&$who
 	If Not ($who=$sAcct) Then $sig&=' (Account '&$sAcct&')'
 
 	Local $p=StringInStr($what,' ')
@@ -52,7 +57,9 @@ Func COMMANDX_newupdate($who, $where, $what, $acmd)
 	If Not (StringLeft($where,1)='#') Then Return 'This command can only be used in the channel.'
 
 	If Wiki_AddNews(StringTrimLeft($what,$p)&$sig) Then Return "Posted news update"
-	Return "News update failed"
+	Local $err=@error
+	Local $ext=@extended
+	Return "News update failed ("&$err&":"&$ext&")"
 EndFunc
 
 
@@ -158,7 +165,7 @@ Func Wiki_AddCookies($text)
 	Next
 EndFunc
 Func Wiki_IsLoggedIn()
-	Return (StringLen($wiki_cookies) And TimerDiff($wiki_login_ts)<(1000*60*60*24*2) And $wiki_login_ts<>0)
+	Return (StringLen($wiki_cookies) And TimerDiff($wiki_login_ts)<(1000*60*60*10) And $wiki_login_ts<>0)
 EndFunc
 Func Wiki_AutoLogin()
 	If Wiki_IsLoggedIn() Then Return SetError(0,0,1)
