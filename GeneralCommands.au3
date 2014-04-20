@@ -90,7 +90,10 @@ Func _Cmd_HasParamsExact(ByRef $acmd,$num)
 	Return $num = ($acmd[0]-1)
 EndFunc
 Func _Cmd_GetParameter(ByRef $acmd,$index)
-	Return $acmd[$index+$_CMD_PARAM_START]
+	Local $iMax=UBound($acmd)-1
+	Local $iWant=$index+$_CMD_PARAM_START
+	If $iWant>$iMax Then Return SetError(1,0,'')
+	Return SetError(0,0,$acmd[$iWant])
 EndFunc
 
 
