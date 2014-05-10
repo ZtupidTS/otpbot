@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.8.3.145
+#AutoIt3Wrapper_Res_Fileversion=6.8.3.148
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crash_demons
 #AutoIt3Wrapper_Res_Language=1033
@@ -519,7 +519,7 @@ Func Get($key, $default = "", $section = "utility")
 	If $value = '""' Then Return ""
 	If $value = '!' Then Return ""
 	If $value = 'none' Then Return ""
-	If $value = 'blank' Then Return ""
+	If $value = 'blank' Then Return "";;;
 	Return $value
 EndFunc   ;==>Get
 
