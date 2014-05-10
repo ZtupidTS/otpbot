@@ -6,6 +6,7 @@
 #include "GeneralCommands.au3"
 #include-once
 
+Global $_MDI_Enable = 1
 Global $_MDI_LastTS = -1;initial request without a TS, just acquires the current TS
 Global $_MDI_URL = 'http://sukasa.rustedlogic.net/MD/'
 Global $_MDI_ReportFunc=''
@@ -35,6 +36,7 @@ EndFunc
 ;MsgBox(0,0,COMMAND_MD('DUMMY','loc','resp','notes'))
 
 Func COMMAND_MD($input,$type,$response,$notes="")
+	If Not $_MDI_Enable Then Return "Error: MessageDeskIndexer support not enabled"
 	Local $ret=_MDI_UserInput($input,$response,$notes,$type)
 	Local $err=@error
 	Switch @error
@@ -80,6 +82,7 @@ Func _MDI_Report_NewEntries()
 EndFunc
 
 Func _MDI_GetNewEntriesString()
+	If Not $_MDI_Enable Then Return ""
 	Local $entries=_MDI_GetNewEntries()
 	Local $count=@extended
 	If $count<1 Then Return ""

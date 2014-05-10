@@ -29,8 +29,10 @@ Global $Settings[100][3] = [ _
 		['config', 'quitmessage', 'IRC Quit message'], _
 		['config', 'commandchar', 'Bot command prefix (eg: @ in @help)'], _
 		['config', 'debuglog', 'Generate Shared Error log (1=On, 0=Off)'], _
+		['config', 'nohostmode', 'Disables OtpHost support and warnings. (1 or 0)'], _
 		['', 'dummy', '---------------------------------------------------------------------------------------'], _
 		['utility', 'defaultkey', 'Default XOR keyfile'], _
+		['utility', 'dialerenable', 'Enable OTP22 Dialer support (1=On, 0=Off)'], _
 		['utility', 'dialersizemin', 'Minimum recording selection size (kb)'], _
 		['utility', 'dialercomparemax', 'Maximum # recording clips to compare'], _
 		['utility', 'dialercomparetime', 'Maximum recording age for comparisons (ms)'], _
@@ -38,12 +40,14 @@ Global $Settings[100][3] = [ _
 		['utility', 'newsinterval', 'Time between Wiki News checks (ms)'], _
 		['utility', 'newsurl', 'Wiki News semantic query URL'], _
 		['utility', 'newsentries', 'Number of Wiki News entries to return'], _
-		['utility', 'forumurl', 'Forum base URL (ending with a /)'], _
+		['utility', 'forumurl', 'Forum base URL (ending with a /). Blank disables.'], _
 		['utility', 'forumtopicid', 'Topid ID# of the thread to watch for replies'], _
 		['utility', 'forumchecktime', 'New-reply check interval for a forum (ms)'], _
+		['utility', 'mdienable', 'Enable Message Desk Indexer support (1=On, 0=Off)'], _
 		['utility', 'mdichecktime', 'Check interval for the Message Desk Indexer (ms)'], _
 		['utility', 'logger', 'Enable chat-logging (0=Disabled, 1=Enabled)'], _
 		['utility', 'logkey', 'Log server access key'], _
+		['utility', 'wikiurl', 'Wiki base URL not ending in a slash. Blank disables.'], _
 		['utility', 'wikiuser', 'Wiki bot account'], _
 		['utility', 'wikipass', 'Wiki bot password'], _
 		['', '', '']]

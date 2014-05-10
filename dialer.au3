@@ -103,7 +103,7 @@ EndFunc
 
 ;Func COMMAND_dial($agent, $number=1)
 Func COMMANDX_call($who, $where, $what, $acmd)
-	If Not $dialer_enable Then "Error: dialer support not enabled"
+	If Not $dialer_enable Then Return "Error: dialer support not enabled"
 	Local $sInLine=__element($acmd,2)
 	Local $iLine=dialer_getIndexFromInput($sInLine)
 	If $iLine=-1 Then Return "call: unknown line to call. Try using a keyword listed in %!%LINES"
@@ -125,7 +125,7 @@ Func COMMANDX_call($who, $where, $what, $acmd)
 	EndSwitch
 EndFunc
 Func COMMANDX_dial($who, $where, $what, $acmd)
-	If Not $dialer_enable Then "Error: dialer support not enabled"
+	If Not $dialer_enable Then Return "Error: dialer support not enabled"
 	Local $agent=__element($acmd,2)
 	If $agent="" Then Return "dial: not eneough parameters.  Usage: %!%DIAL <agentnumber> [line]"
 	Local $sInLine=__element($acmd,3)
@@ -206,7 +206,7 @@ Func otp22_dialler_report()
 EndFunc   ;==>otp22_dialler_report
 
 Func otp22_checknew()
-	If Not $dialer_enable Then ""
+	If Not $dialer_enable Then Return ""
 	If TimerDiff($otp22_timeOld) > $otp22_timeMax Then Return "";;;
 	Local $sNew = "New Entries: "
 	Local $bNew = False

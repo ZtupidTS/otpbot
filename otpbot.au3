@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.8.3.143
+#AutoIt3Wrapper_Res_Fileversion=6.8.3.144
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crash_demons
 #AutoIt3Wrapper_Res_Language=1033
@@ -44,7 +44,7 @@ Opt('TrayOnEventMode',1)
 
 
 #region ;------------CONFIG
-Global $TestMode = 1
+Global $TestMode = 0
 
 Global $SERV = Get("server", "irc.freenode.net", "config")
 Global $PORT = Get("port", 6667, "config")
@@ -80,6 +80,7 @@ Global $news_entries=Get("newsentries",5);last 5 updates from News wiki page.
 
 
 Global $mdi_checktime = Get("mdichecktime", 5 * 60 * 1000);5 minutes
+$_MDI_Enable=Get("mdienable",1)
 
 
 
