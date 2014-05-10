@@ -33,7 +33,7 @@ EndFunc
 Func _InetRead_Manual($url,$opt=0)
 	Local $sRecv_Out=''
 	Local $req=__HTTP_Req('GET', $url)
-	__HTTP_Transfer($req, $sRecv_Out,100000);10s max
+	__HTTP_Transfer($req, $sRecv_Out,100000,100000);10s max
 	If StringLen($sRecv_Out)=0 Then Return SetError(1,0,'')
 
 	;ConsoleWrite(@CRLF&$sRecv_Out&@CRLF)

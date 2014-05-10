@@ -9,9 +9,9 @@ Global $NewsInterval
 Global $OTPNEWS
 Global $OTPNEWSTIMER
 Global $wiki_url='http://otp22.referata.com'
-Global $news_url = "http://otp22.referata.com/wiki/Special:Ask/-5B-5BDisplay-20tag::News-20page-20entry-5D-5D/-3FOTP22-20NI-20full-20date/-3FSummary/format%3Dcsv/limit%3D5/sort%3DOTP22-20NI-20full-20date/order%3Ddescending/offset%3D0"
+Global $news_url = $wiki_url&"/wiki/Special:Ask/-5B-5BDisplay-20tag::News-20page-20entry-5D-5D/-3FOTP22-20NI-20full-20date/-3FSummary/format%3Dcsv/limit%3D5/sort%3DOTP22-20NI-20full-20date/order%3Ddescending/offset%3D0"
 Global $news_entries = 5
-Global $query_url = "http://otp22.referata.com/wiki/Special:Ask/%s/format%3D%s/offset%3D0"
+Global $query_url = $wiki_url&"/wiki/Special:Ask/%s/format%3D%s/offset%3D0"
 Global $query_formats[3]=['csv','json','broadtable']
 
 Global $Wiki_User=''
@@ -206,8 +206,11 @@ EndFunc
 
 
 ;---------------------------------------------passive functions
+Func _Wiki_GetBaseURL()
+	Return $wiki_url&"//wiki/"
+EndFunc
 Func Wiki_Search($terms,$mode="title");text?
-	Local $url="http://otp22.referata.com/w/api.php?action=query&list=search&srsearch="&__SU_URIEncode($terms)&"&srprop=timestamp&srredirects=true&format=xml&limit=10&srwhat="&__SU_URIEncode($mode)
+	Local $url=$wiki_url&"/w/api.php?action=query&list=search&srsearch="&__SU_URIEncode($terms)&"&srprop=timestamp&srredirects=true&format=xml&limit=10&srwhat="&__SU_URIEncode($mode)
 	Local $data=_InetRead($url)
 	If @error<>0 Then
 		Return ""
@@ -218,7 +221,7 @@ EndFunc
 
 Func COMMANDX_page($who, $where, $what, $acmd)
 	$page=StringMid($what,1+StringLen("@wiki "))
-	Local $url="http://otp22.referata.com/w/index.php?title=Special%3ASearch&search="&__SU_URIEncode($page)&"&go=Go"
+	Local $url=$wiki_url&"/w/index.php?title=Special%3ASearch&search="&__SU_URIEncode($page)&"&go=Go"
 	Local $data=_InetRead($url)
 	If @error<>0 Then
 		Return "I couldn't check the page name at this time. Try this: "&_Wiki_Link('/wiki/'&_Wiki_Name($page))
@@ -269,13 +272,14 @@ Func OTP22News_Retrieve()
 	For $i = 1 To $news_entries
 		Local $page = CSV_PopField($s)
 		Local $date = CSV_PopField($s)
-		Local $summary = WikiText_Translate(CSV_PopField($s), "http://otp22.referata.com/wiki/")
+		Local $summary = WikiText_Translate(CSV_PopField($s), $wiki_url&"/wiki/")
 		$out &= $i & '. ' & $summary & '  '
 	Next
 	Return $out & ' - Retrieved ' & @MON & '/' & @MDAY & '/' & @YEAR & ' ' & @HOUR & ':' & @MIN
 EndFunc   ;==>OTP22News_Retrieve
 
-Func WikiText_Translate($s, $BaseWikiURL = "http://otp22.referata.com/wiki/")
+Func WikiText_Translate($s, $BaseWikiURL = "")
+	If $BaseWikiURL="" Then $BaseWikiURL=_Wiki_GetBaseURL()
 	Local $s2 = ""
 	For $i = 1 To StringLen($s)
 		Local $c = StringMid($s, $i, 1)
@@ -294,7 +298,8 @@ Func WikiText_Translate($s, $BaseWikiURL = "http://otp22.referata.com/wiki/")
 	Next
 	Return $s2
 EndFunc   ;==>WikiText_Translate
-Func WikiText_TranslateLink($s, $BaseWikiURL = "http://otp22.referata.com/wiki/")
+Func WikiText_TranslateLink($s, $BaseWikiURL = "")
+	If $BaseWikiURL="" Then $BaseWikiURL=_Wiki_GetBaseURL()
 	Local $url = ""
 	Local $text = ""
 	If StringLeft($s, 1) == '[' Then;internal links [[pagename]] [[pagename|display text]]

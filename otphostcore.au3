@@ -2,6 +2,7 @@
 
 Global $_OtpHost_OnCommand = ""
 Global $_OtpHost_OnLogWrite=""
+Global $_OtpHost_NoHostMode = 0
 Global Const $_OtpHost_Port = 12917
 Global Enum $_OtpHost_Instance_Bot, $_OtpHost_Instance_Host
 
@@ -9,7 +10,11 @@ Global $_OtpHost__Instance=-99999
 
 Func _OtpHost_Create($instance); returns a value of unknown type, to be used as a Handle.  takes an input of an instance type Index.
 	TCPStartup()
-	Local $arr[2]=[$instance,_OtpHost_CreateListener($instance)]
+
+	Local $listener=-1
+	If Not $_OtpHost_NoHostMode Then $listener = _OtpHost_CreateListener($instance)
+
+	Local $arr[2]=[$instance,$listener]
 	_OtpHost_flog("OtpHost_Create ("&$arr[0]&","&$arr[1]&") :: "& ($_OtpHost_Port+$instance) &' '& _OtpHost_GetCompanionPort($instance))
 
 	Return $arr
@@ -28,6 +33,7 @@ Func _OtpHost_GetCompanionPort($instance)
 	Local $port=$_OtpHost_Port+$instance
 EndFunc
 Func _OtpHost_CreateListener($instance=0); user index is the
+	If $_OtpHost_NoHostMode Then Return -1
 	Local $port=$_OtpHost_Port+$instance
 	Local $ret=TCPListen('127.0.0.1', $port)
 	If @error<>0 Then _OtpHost_flog('_OtpHost_CreateListener LISTEN ERROR '&@error)
@@ -39,6 +45,7 @@ Func _OtpHost_OnCommand($cmd, $data, $socket)
 EndFunc   ;==>_OtpHost_OnCommand
 
 Func _OtpHost_Listen($hOtphost, $closeSocket = True)
+	If $_OtpHost_NoHostMode Then Return 0
 	If Not IsArray($hOtphost) Then Return -1
 	Local $skListener=$hOtphost[1]
 	Local $buffer = ""
@@ -60,6 +67,7 @@ Func _OtpHost_Listen($hOtphost, $closeSocket = True)
 	EndIf
 EndFunc   ;==>_OtpHost_Listen
 Func _OtpHost_SendCompanion($hOtphost, $cmd, $data="")
+	If $_OtpHost_NoHostMode Then Return True
 	If Not IsArray($hOtphost) Then Return False
 	Local $instance=$hOtphost[0]
 	Local $port=_OtpHost_GetCompanionPort($instance)

@@ -23,6 +23,7 @@ _Help_RegisterCommand("forumdebug","","forces a new-reply notification with at l
 
 
 Func COMMAND_lastforumpage()
+	If $PHPBB_URL="" Then Return "Error: Forum not set"
 	phpbb_report_NewPostsAndLink();refresh the HTML content.
 	Local $start=phpbb_calc_lastpagestart($PHPBB_TopicPostCount,$PHPBB_PostsPerPage);$PHPBB_TopicPostCount is set by phpbb_get_newpostinfo
 	Local $lastpageurl=phpbb_url_viewtopic($PHPBB_URL,$PHPBB_TopicID,$start)
@@ -30,6 +31,7 @@ Func COMMAND_lastforumpage()
 EndFunc
 
 Func COMMAND_forumdebug()
+	If $PHPBB_URL="" Then Return "Error: Forum not set"
 	Local $old=$PHPBB_TopicPostCount
 	$PHPBB_TopicPostCount-=10
 	Local $new=$PHPBB_TopicPostCount
@@ -46,6 +48,7 @@ Func phpbb_report_NewPostsAndLink()
 EndFunc
 
 Func phpbb_get_NewPostsAndLink($url,$topicid,$postsperpage,$lastpostcount)
+	If $PHPBB_URL="" Then Return SetError(1,0,"")
 	Local $authors=phpbb_get_newpostinfo($url,$topicid,$lastpostcount)
 	Local $newposts=@extended
 	If $newposts=0 Then SetError(1,0,"")

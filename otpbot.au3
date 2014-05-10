@@ -22,6 +22,7 @@
 #include "Calc.au3"
 #include "Wiki.au3"
 #include "HTTP.au3"
+#include "xlate.au3"
 #include "5gram.au3"
 #include "Stats.au3"
 #include "coords.au3"
@@ -43,7 +44,8 @@ Opt('TrayOnEventMode',1)
 
 
 #region ;------------CONFIG
-Global $TestMode = 0
+Global $TestMode = 1
+
 Global $SERV = Get("server", "irc.freenode.net", "config")
 Global $PORT = Get("port", 6667, "config")
 Global $CHANNEL = Get("channel", "#ARG", "config");persistant channel, will rejoin. can be invited to others (not persistant)
@@ -51,11 +53,14 @@ Global $NICK = Get("nick", "OTPBot22", "config")
 Global $PASS = Get("password", "", "config"); If not blank, sends password both as server command and Nickserv identify; not tested though.
 Global $USERNAME = Get("username", $NICK, "config");meh
 
+$_OtpHost_NoHostMode = Int(Get("nohostmode", 0, "config"))
+
+
 Global $ReconnectTime = Get("reconnecttime", 5 * 60 * 1000, "config")
 Global $VersionInfoExt = Get("versioncomment", "", "config")
 Global $QuitText = Get("quitmessage", "EOM", "config")
 Global $CommandChar = StringLeft(Get("commandchar", "@", "config"), 1); Command character prefix - limit to 1 char
-
+;-------------------------------------------------------------
 Global $AutoDecoderKeyfile = Get("defaultkey", "elpaso.bin")
 Global $NewsInterval = Get("newsinterval", 15 * 60 * 1000); 15 minutes = 900000ms
 
@@ -63,6 +68,7 @@ Global $otp22_sizeMin = Get("dialersizemin", 0);300;kb
 Global $otp22_wavemax = Get("dialercomparemax", 20)
 Global $otp22_timeMax = Get("dialercomparetime", 5 * 60 * 1000);5 minutes
 Global $dialer_checktime = Get("dialerchecktime", 2 * 60 * 1000);2 minutes
+Global $dialer_enable = Get("dialerenable", 1);2 minutes
 
 
 $PHPBB_URL = Get("forumurl", "http://forums.unfiction.com/forums/")
@@ -76,12 +82,14 @@ Global $news_entries=Get("newsentries",5);last 5 updates from News wiki page.
 Global $mdi_checktime = Get("mdichecktime", 5 * 60 * 1000);5 minutes
 
 
+
 $_Logger_Enable = Get("logger",0)=="1";logger disabled by default
 $_Logger_Key = Get("logkey","")
 $_Logger_Channel=$CHANNEL
 $_Logger_AppID='OtpBot'
 
 
+$wiki_url=Get("wikiurl",'http://otp22.referata.com')
 $Wiki_User=Get("wikiuser","")
 $Wiki_Pass=Get("wikipass","")
 
@@ -147,16 +155,18 @@ _OtpHost_flog('Starting')
 ;TCPStartup()
 _ShortUrl_Startup()
 FileChangeDir(@ScriptDir)
-AdlibRegister("otp22_dialler_report", $dialer_checktime)
-AdlibRegister("phpbb_report_NewPostsAndLink", $forum_checktime)
-AdlibRegister("_MDI_Report_NewEntries", $mdi_checktime)
-AdlibRegister("_Logger_SubmitLogs", 1*60*1000)
+If $dialer_checktime<>0 Then AdlibRegister("otp22_dialler_report", $dialer_checktime)
+If $forum_checktime<>0 Then AdlibRegister("phpbb_report_NewPostsAndLink", $forum_checktime)
+If $mdi_checktime<>0 Then AdlibRegister("_MDI_Report_NewEntries", $mdi_checktime)
+If $_Logger_Enable<>0 Then AdlibRegister("_Logger_SubmitLogs", 1*60*1000)
 OnAutoItExitRegister("Quit")
 
 
 $_OtpHost_OnLogWrite=""
 Global $_OtpHost = _OtpHost_Create($_OtpHost_Instance_Bot)
-If $_OtpHost < 1 Then
+
+;$nohostmode
+If $_OtpHost < 1 And (Not $_OtpHost_NoHostMode) Then
 	MsgBox(48, 'OTPBot', 'Warning: Could not listen locally for OtpHost commands.' & @CRLF & 'This Means the bot will not Quit properly when updated')
 Else
 	_OtpHost_SendCompanion($_OtpHost,"info_request"); request version comparison information from OtpHost right off the bat.
@@ -302,7 +312,7 @@ Func OnStateChange($oldstate, $newstate)
 				ConsoleWrite(@CRLF&"----------------------"&@CRLF)
 				;_Help_OutputWikiListing(1)
 				ConsoleWrite(@CRLF&"----------------------"&@CRLF)
-				;Msg(Process_Message('who', 'where', "@wiki agent system"))
+				Msg(Process_Message('who', 'where', "@lastforumpage"))
 				;COMMAND_tinyurl('http://google.com/y4')
 				;COMMAND_tinyurl('http://google.com/y5')
 				;COMMAND_tinyurl('http://google.com/y6')

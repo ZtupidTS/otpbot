@@ -54,7 +54,7 @@ Func _Logger_FindPosts($search,$username="")
 	ConsoleWrite(">>>"&$text&"<<<"&@CRLF)
 	_HTTP_StripToContent($text)
 
-	$text=StringStripWS($text,1+2+4)
+	$text=StringStripWS($text,1+2)
 	$text=StringReplace($text,@LF,'|')
 
 	Return $text
