@@ -516,10 +516,10 @@ Func Get($key, $default = "", $section = "utility")
 	Local $value = IniRead(@ScriptDir & '\otpbot.ini', $section, $key, $default)
 	If IsNumeric($value) Then Return Number($value);base type conversion
 	If StringLen($value) = 0 Then Return $default
-	If StringLen($value) = '""' Then Return ""
-	If StringLen($value) = '!' Then Return ""
-	If StringLen($value) = 'none' Then Return ""
-	If StringLen($value) = 'blank' Then Return ""
+	If $value = '""' Then Return ""
+	If $value = '!' Then Return ""
+	If $value = 'none' Then Return ""
+	If $value = 'blank' Then Return ""
 	Return $value
 EndFunc   ;==>Get
 
