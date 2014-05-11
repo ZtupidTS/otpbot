@@ -7,7 +7,6 @@ Global $_CONV_PI=3.14159265359
 Global $_CONV_RADDEG=180/$_CONV_PI
 Global $_CONV_DEGRAD=$_CONV_PI/180
 
-
 ;unit name resolutions, but all basic units must be listed at least once here in the righthand column
 Global $_CONV_NAMES[30][3]=[ _
 ['mi','mile'], _
@@ -115,6 +114,12 @@ Next
 For $i=0 To UBound($_CONV_IEC)-1
 	$_CONV_IEC[$i][0]=_BigNum_Parse($_CONV_IEC[$i][0])
 Next
+
+
+
+;ConsoleWrite(_BigNum_Div('10','5')&@CRLF)
+;ConsoleWrite(_BigNum_Parse('1800/60')&@CRLF)
+;ConsoleWrite(_Convert_String('1800 seconds to minutes')&@CRLF)
 
 ;MsgBox(0,0, _Convert_Basic(2,'Galactic Year','year',0))
 

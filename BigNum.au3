@@ -237,7 +237,11 @@ Func _BigNum_Div($sX, $sY, $iD = -1)
 	If _BigNum_Compare($sY,0)=0 Then Return SetError(1,0,'ERROR_DIVISOR')
 	If Not __BigNum_IsValid($sX, $sY) Then Return SetError(1, 0, 'ERROR_INVALIDINPUT')
 	Local $iNeg = __BigNum_CheckNegative($sX, $sY), $sNeg = ""
+
 	If $iD = -1 Then $iD = StringLen($sX) + StringLen($sY)
+	If $iD<32 Then $iD=32
+
+
 	Local $iDec = __BigNum_StringIsDecimal($sX, $sY), $sMod
 	If $sX = 0 Or $sY = 0 Then Return "0"
 	If $sY = "1" Then Return $sNeg & $sX
