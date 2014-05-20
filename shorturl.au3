@@ -13,10 +13,6 @@ $_ShortUrl_CreateURL='http://otp22.com/l/?url='
 _Help_RegisterGroup("ShortUrl")
 _Help_RegisterCommand("tinyurl","<link>","Generates a shortened link using a preset url-shortening service. (not necessarily tinyurl) Resulting URLs are cached.")
 
-TCPStartup()
-_ShortUrl_Startup()
-ConsoleWrite(_ShortUrl_Retrieve('http://www.reddit.com/r/technology/comments/25wgl1/us_government_begins_rollout_of_its_drivers/'))
-
 
 
 Func COMMAND_tinyurl($url)
