@@ -5,8 +5,17 @@
 
 Global $_ShortUrl_Max=100
 Global $_ShortUrl_Idx=0
+
+Global $_ShortUrl_CreateURL='http://is.gd/create.php?format=simple&url='
+$_ShortUrl_CreateURL='http://otp22.com/l/?url='
+
+
 _Help_RegisterGroup("ShortUrl")
 _Help_RegisterCommand("tinyurl","<link>","Generates a shortened link using a preset url-shortening service. (not necessarily tinyurl) Resulting URLs are cached.")
+
+TCPStartup()
+_ShortUrl_Startup()
+ConsoleWrite(_ShortUrl_Retrieve('http://www.reddit.com/r/technology/comments/25wgl1/us_government_begins_rollout_of_its_drivers/'))
 
 
 
@@ -55,7 +64,7 @@ EndFunc
 Func _ShortUrl_Generate($url)
 	$UE_url=__SU_URIEncode($url)
 	;Local $s=InetRead("http://tinyurl.com/api-create.php?url="&$UE_url)
-	Local $s=_InetRead("http://is.gd/create.php?format=simple&url="&$UE_url)
+	Local $s=_InetRead($_ShortUrl_CreateURL&$UE_url)
 	$s=StringStripWS(BinaryToString($s),8)
 	ConsoleWrite($s&@CRLF)
 	If StringLeft($s,5)="http:" Then Return SetError(0,0, $s)
