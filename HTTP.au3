@@ -6,9 +6,6 @@ Global $_HTTP_Event_Debug=''
 Global $_HTTP_Client_Name="UnknownHTTPClient"
 Global $_HTTP_Client_Version="1.0"
 ;TCPStartup()
-
-
-
 Func _InetRead($url,$opt=0)
 	Local $ts=TimerInit()
 	Local $ret,$err,$ext
@@ -28,14 +25,11 @@ Func _InetRead($url,$opt=0)
 	EndIf
 	Return SetError($err,$ext,$ret)
 EndFunc
-
-
 Func _InetRead_Manual($url,$opt=0)
 	Local $sRecv_Out=''
 	Local $req=__HTTP_Req('GET', $url)
 	__HTTP_Transfer($req, $sRecv_Out,100000,100000);10s max
 	If StringLen($sRecv_Out)=0 Then Return SetError(1,0,'')
-
 	;ConsoleWrite(@CRLF&$sRecv_Out&@CRLF)
 #cs
 	Local $iPos=StringInStr($sRecv_Out,@LF&@LF)+2
@@ -47,8 +41,6 @@ Func _InetRead_Manual($url,$opt=0)
 	EndIf
 #ce
 	_HTTP_StripToContent($sRecv_Out)
-
-
 	Return StringToBinary($sRecv_Out)
 EndFunc
 Func _HTTP_StripToContent(ByRef $sRecvd)
@@ -60,21 +52,17 @@ Func _HTTP_StripToContent(ByRef $sRecvd)
 		$sRecvd=""
 	EndIf
 EndFunc
-
-
 Func __HTTP_Req($Method = 'GET', $url = 'http://example.com/', $Content = '', $extraHeaders = '')
 	Local $aRet[4]
 	$url = StringTrimLeft($url, StringInStr($url, '://') + 2)
 	Local $pos = StringInStr($url, '/')
 	Local $HOST = StringLeft($url, $pos - 1)
-
 	Local $PORT = 80
 	Local $pColon = StringInStr($HOST, ':')
 	If $pColon > 0 Then
 		$PORT = StringMid($HOST, $pColon + 1)
 		$HOST = StringLeft($HOST, $pColon - 1)
 	EndIf
-
 	$url = StringMid($url, $pos)
 	Local $HTTPRequest = $Method & ' ' & $url & ' HTTP/1.0' & @CRLF & _
 			'Accept-Language: en-US,en;q=0.5' & @CRLF & _
@@ -101,7 +89,7 @@ Func __HTTP_Transfer(ByRef $aReq, ByRef $sRecv_Out, $limit = 0, $timeout=0)
 	;ConsoleWrite($aReq[2]&@CRLF)
 	$sRecv_Out = ""
 	Local $error = 0
-	Local $addr=TCPNameToIP($aReq[0])
+	Local $addr=_TCPNameToIP($aReq[0])
 	Local $SOCK = _TCPConnect($addr, $aReq[3])
 	If @error<>0 Or $SOCK=-1 Then _HTTP_ErrorEx($aReq,$addr,$SOCK,$error,'Connect',$sRecv_Out)
 	ConsoleWrite($addr&@CRLF)
@@ -130,12 +118,25 @@ Func __HTTP_Transfer(ByRef $aReq, ByRef $sRecv_Out, $limit = 0, $timeout=0)
 	If $SOCK<>-1 Then TCPCloseSocket($SOCK)
 	;ConsoleWrite('HTTPSockError: '&$error&@CRLF)
 EndFunc   ;==>__HTTP_Transfer
-
+Func _TCPNameToIP($hostname)
+	Local $r=TCPNameToIP($hostname)
+	Local $e=@error
+	Local $x=@extended
+	If $e==0 Then
+		Switch StringLeft($r,3)
+			Case '127','10.','239.'
+				$e=0xBADF00D
+				$r=''
+		EndSwitch
+	EndIf
+	If $e<>0 Then _TCP_Error($e,"NameToIP",$hostname,$r,0,0,0)
+	Return SetError($e,$x,$r)
+EndFunc
 Func _TCPConnect($addr,$port)
 	Local $r=TCPConnect($addr,$port)
 	Local $e=@error
 	Local $x=@extended
-	If @error<>0 Then _TCP_Error($e,"Connect",$addr,$port,$r,0,0)
+	If $e<>0 Then _TCP_Error($e,"Connect",$addr,$port,$r,0,0)
 	Return SetError($e,$x,$r)
 EndFunc
 Func _TCPRecv(ByRef $sock,$len,$flag=0)
@@ -155,12 +156,9 @@ Func _TCPSend($sock,$data)
 	Local $r=TCPSend($sock,$data)
 	Local $e=@error
 	Local $x=@extended
-	If @error<>0 Then _TCP_Error($e,"Send",'','',$sock,$r&'/'&StringLen($data),0)
+	If $e<>0 Then _TCP_Error($e,"Send",'','',$sock,$r&'/'&StringLen($data),0)
 	Return SetError($e,$x,$r)
 EndFunc
-
-
-
 Func _TCP_Error($error,$state,$addr,$port,$sock,$len,$flag)
 	Call($_HTTP_Event_Debug,StringFormat("TCP: Error %s (%s) During %s on host %s:%s. socket %s. Buffer size: %s. Flag: %s", _
 	$error,Hex($error),$state,$addr,$port,$sock,$len,$flag))
@@ -173,9 +171,6 @@ Func _HTTP_ErrorEx($aReq,$address,$sock,$error,$state,ByRef $buffer)
 	 Call($_HTTP_Event_Debug,StringFormat("HTTP: Error %s (%s) during %s on host %s (%s) socket %s. Buffer size: %s. Inetreadmode: %s", _
 	 $error, Hex($error), $state, $aReq[0], $address, $sock, StringLen($buffer),$_INETREAD_MODE))
 EndFunc
-
-
-
 ; Thanks Progandy
 Func _URIEncode($sData)
 	; Prog@ndy

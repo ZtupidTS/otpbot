@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.8.3.156
+#AutoIt3Wrapper_Res_Fileversion=6.8.3.158
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crash_demons
 #AutoIt3Wrapper_Res_Language=1033
@@ -122,6 +122,7 @@ $_OtpHost_OnCommand = "Process_HostCmd"
 $_UserInfo_Event_Tell = "PRIVMSG"
 $_UserInfo_Event_Pounce = "PRIVMSG"
 $_HTTP_Event_Debug = '_OtpHost_flog'
+$_DNS_Event_Debug = '_OtpHost_flog'
 $_HTTP_Client_Name = "OtpBot"
 $_HTTP_Client_Version = $VERSION
 Global $_OtpHost_Info = ""
@@ -175,7 +176,7 @@ EndIf
 
 
 Global $ConnTimer = 0
-$ADDR = _TCPNameToIP($SERV)
+$ADDR = _TCPNameToIP_Cycle($SERV)
 Msg('START')
 Open()
 If $STATE < $S_INIT Then Msg('FAIL')
@@ -752,7 +753,7 @@ Func Open()
 	EndIf
 	If $SOCK >= 0 Then Return SetError(9999, 0, "")
 	$BUFF = ''
-	$ADDR = _TCPNameToIP($SERV)
+	$ADDR = _TCPNameToIP_Cycle($SERV)
 	$SOCK = _TCPConnect($ADDR, 6667)
 	If @error Then
 		Msg("Conn Error " & @error, 1)
