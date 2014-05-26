@@ -125,7 +125,7 @@ Func COMMANDX_call($who, $where, $what, $acmd)
 		Case 1;userdial not recognized
 			Return "You must be logged in to NickServ to use this command. If you think you are logged in, you might try the IDENTIFY command to refresh your information."
 		Case 2;userdial password option not set
-			Return "You have not set a dialer password for your account. To do this, Open a Private Message to the bot and use the command OPTION SET DIALERPASS <password> (without brackets).  DO NOT use the password in the chatroom.  Setting your this password lets you use the command easily while you are logged in without exposing sensitive information."
+			Return "You have not set a dialer password for your account. To do this, Open a Private Message to the bot and use the command %!%OPTION SET DIALERPASS <password> (without brackets).  DO NOT use the password in the chatroom.  Setting your this password lets you use the command easily while you are logged in without exposing sensitive information."
 		Case 3;dial rejected
 			Return "Your request was rejected by the server."
 		Case 4;dial failed
@@ -148,7 +148,7 @@ Func COMMANDX_dial($who, $where, $what, $acmd)
 	Local $isRecognized=(@error=0)
 	If Not $isRecognized Then Return "You must be logged in to NickServ to use this command. If you think you are logged in, you might try the IDENTIFY command to refresh your information."
 	Local $pass=_UserInfo_GetOptValue($iAcct, 'dialerpass')
-	If $pass="" Then Return "You have not set a dialer password for your account. To do this, Open a Private Message to the bot and use the command OPTION SET DIALERPASS <password> (without brackets).  DO NOT use the password in the chatroom.  Setting your this password lets you use the command easily while you are logged in without exposing sensitive information."
+	If $pass="" Then Return "You have not set a dialer password for your account. To do this, Open a Private Message to the bot and use the command %!%OPTION SET DIALERPASS <password> (without brackets).  DO NOT use the password in the chatroom.  Setting your this password lets you use the command easily while you are logged in without exposing sensitive information."
 
 
 
@@ -165,7 +165,7 @@ Func COMMANDX_dial($who, $where, $what, $acmd)
 		Case 1;userdial not recognized
 			Return "You must be logged in to NickServ to use this command. If you think you are logged in, you might try the IDENTIFY command to refresh your information."
 		Case 2;userdial password option not set
-			Return "You have not set a dialer password for your account. To do this, Open a Private Message to the bot and use the command OPTION SET DIALERPASS <password> (without brackets).  DO NOT use the password in the chatroom.  Setting your this password lets you use the command easily while you are logged in without exposing sensitive information."
+			Return "You have not set a dialer password for your account. To do this, Open a Private Message to the bot and use the command %!%OPTION SET DIALERPASS <password> (without brackets).  DO NOT use the password in the chatroom.  Setting your this password lets you use the command easily while you are logged in without exposing sensitive information."
 		Case 3;dial rejected
 			Return "Your request was rejected by the server."
 		Case 4;dial failed
