@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.8.3.158
+#AutoIt3Wrapper_Res_Fileversion=6.8.3.160
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crash_demons
 #AutoIt3Wrapper_Res_Language=1033
@@ -52,6 +52,7 @@ Global $CHANNEL = Get("channel", "#ARG", "config");persistant channel, will rejo
 Global $NICK = Get("nick", "OTPBot22", "config")
 Global $PASS = Get("password", "", "config"); If not blank, sends password both as server command and Nickserv identify; not tested though.
 Global $USERNAME = Get("username", $NICK, "config");meh
+Global $restartonerror = Int(Get("restartonerror", 0, "config"))
 
 $_OtpHost_NoHostMode = Int(Get("nohostmode", 0, "config"))
 
@@ -188,7 +189,13 @@ While 1
 	Process()
 	Sleep(50)
 	If $STATE < $S_INIT Then
-		If TCheck($ReconnectTime) Then Open()
+		If TCheck($ReconnectTime) Then
+			If $restartonerror Then
+				Restart("Restart on Error set")
+			Else
+				Open()
+			EndIf
+		EndIf
 	EndIf
 WEnd
 
