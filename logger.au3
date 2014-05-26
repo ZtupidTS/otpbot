@@ -22,9 +22,9 @@ _Help_RegisterCommand("lastby","<user> [search]","Find the last posts by a user 
 
 _Logger_Start()
 
-$s="xxx12 : xxx12xxx34"
-_Logger_Strip($s)
-MsgBox(0,0,_URIEncode($s))
+;$s="xxx12 : xxx12xxx34"
+;_Logger_Strip($s)
+;MsgBox(0,0,_URIEncode($s))
 
 
 Func COMMANDV_last($search)
