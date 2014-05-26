@@ -6,6 +6,10 @@
 Global $_UserInfo_Event_Pounce=""
 Global $_UserInfo_Event_Tell=""
 
+
+Global $_UserInfo_TestUser='! :@test@: !';most invalid username possible, bypasses checks to simulate a good account.
+Global $_UserInfo_TestUserIndex=-1
+
 ;------------------------------------------------
 Global $_USERINFO_OPTIONS[1]=['']
 
@@ -27,6 +31,8 @@ For $i=0 To 0x1F
 	_UserInfo_Option_Add('_tell'&$i)
 	_UserInfo_Option_Add('_pounce'&$i)
 Next
+$_UserInfo_TestUserIndex = _UserInfo_Remember($_UserInfo_TestUser,$_UserInfo_TestUser)
+
 
 ;------------------------------------------------
 _Help_RegisterGroup("Users")
@@ -406,6 +412,7 @@ Func _UserInfo_Remember($nick,$acct)
 	If $isNewEntry Then _UserInfo_NotifyMessages($nick)
 	If $isNewEntry Then _UserInfo_NotifyPounces($nick)
 	If $isNewEntry Then $_USERINFO_IDX=Mod($_USERINFO_IDX+1,$_USERINFO_MAX); cycles 0 to Max forwards, makes sure the oldest entry is always overwritten first.
+	Return $i
 EndFunc
 Func _UserInfo_Forget($nick)
 	Local $i=_UserInfo_GetByNick($nick)
@@ -482,6 +489,7 @@ Func _UserInfo_GetOptValue($i, $option)
 
 	Local $acct=_UserInfo_SanitizeName($_USERINFO_ACCTS[$i])
 	Local $value=IniRead($_USERINFO_INI,$acct,$option_name,"ERR:READ_OPTION_FAILED")
+	If $value=="ERR:READ_OPTION_FAILED" And $i=$_UserInfo_TestUserIndex Then Return "X"
 	If $value=="ERR:READ_OPTION_FAILED" Then Return SetError(3,0,"")
 	Return _UserInfo_DeprepValue($value,$option_ispassword)
 EndFunc
@@ -497,6 +505,7 @@ Func _UserInfo_GetOptValueByAcct($acct, $option)
 
 	$acct=_UserInfo_SanitizeName($acct)
 	Local $value=IniRead($_USERINFO_INI,$acct,$option_name,"ERR:READ_OPTION_FAILED")
+	If $value=="ERR:READ_OPTION_FAILED" And $acct=$_UserInfo_TestUser Then Return "X"
 	If $value=="ERR:READ_OPTION_FAILED" Then Return SetError(3,0,"")
 	Return _UserInfo_DeprepValue($value,$option_ispassword)
 EndFunc
@@ -510,6 +519,7 @@ Func _UserInfo_GetOptValueByAcctRaw($acct, $option)
 
 	;$acct=_UserInfo_SanitizeName($acct)
 	Local $value=IniRead($_USERINFO_INI,$acct,$option_name,"ERR:READ_OPTION_FAILED")
+	If $value=="ERR:READ_OPTION_FAILED" And $acct=$_UserInfo_TestUser Then Return "X"
 	If $value=="ERR:READ_OPTION_FAILED" Then Return SetError(3,0,"")
 	Return _UserInfo_DeprepValue($value,$option_ispassword)
 EndFunc

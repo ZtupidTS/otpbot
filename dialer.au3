@@ -38,7 +38,7 @@ Global $dialer_numbers[8]=[ _
 "+1 888-854-2402", _
 "+1 202-204-2303", _
 "+1 202-999-3337", _
-"+1-720-897-0004"  ]
+"+1 720-897-0004"  ]
 
 Global $dialer_keywords[8]=[ _
 "202|WA|agent|agent system|Washington|two|3335", _
@@ -49,6 +49,12 @@ Global $dialer_keywords[8]=[ _
 "*202|MD|message desk|204|2303", _
 "*202|Controller|Control|Melter|ctrl|3337", _
 "720|AS27|Announcement"]
+
+Global $dialer_defaultline_0b=1
+;Global $dialer_defaultline_1b=$dialer_defaultline_0b+1
+
+
+
 
 Func dialer_getShortName($i)
 	Local $kws=StringSplit($dialer_keywords[$i],"|")
@@ -77,7 +83,7 @@ Func dialer_getIndexFromNumber($num)
 	Return SetError(1,0,-1)
 EndFunc
 Func dialer_getIndexFromInput($in)
-	If $in="" Then Return 0
+	If $in="" Then Return $dialer_defaultline_0b
 	Local $i=dialer_getIndexFromNumber($in)
 	If $i=-1 Then $i=dialer_getIndexFromKeyword($in)
 	If $i=-1 Then Return SetError(1,0,-1)
@@ -167,7 +173,7 @@ Func COMMANDX_dial($who, $where, $what, $acmd)
 	EndSwitch
 EndFunc
 
-Func dialer_userdial($who,$line=1,$agent="")
+Func dialer_userdial($who,$line=2,$agent="")
 	Local $sAcct=_UserInfo_Whois($who)
 	Local $iAcct=@extended
 	Local $isRecognized=(@error=0)
@@ -182,7 +188,7 @@ Func dialer_userdial($who,$line=1,$agent="")
 	Return SetError($err,$ext,$ret)
 EndFunc
 
-Func dialer_dial($line=1,$agent="",$pass="")
+Func dialer_dial($line=2,$agent="",$pass="")
 	;element_2=1&element_1=18004%23&element_3=melter3&form_id=486303&submit=Submit
 	;element_2 == 1(+1 202-999-3335) 2(+1 303-309-0004) 3(+1 709-700-0122) 4(+48 22-307-1061)
 	Local $headers='Referer: http://dialer.otp22.com/live/'&@CRLF&'Content-Type: application/x-www-form-urlencoded'&@CRLF
