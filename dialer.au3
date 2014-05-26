@@ -30,23 +30,25 @@ Global $dialer_reportfunc = ''
 Global $dial_event = ''
 
 
-Global $dialer_numbers[7]=[ _
+Global $dialer_numbers[8]=[ _
 "+1 202-999-3335", _
 "+1 303-309-0004", _
 "+1 709-700-0122", _
 "+48 22-307-1061", _
 "+1 888-854-2402", _
 "+1 202-204-2303", _
-"+1 202-999-3337"  ]
+"+1 202-999-3337", _
+"+1-720-897-0004"  ]
 
-Global $dialer_keywords[7]=[ _
-"202|AS|WA|agent|agent system|Washington|two|3335", _
-"303|CO|Colorado|three|0004", _
+Global $dialer_keywords[8]=[ _
+"202|WA|agent|agent system|Washington|two|3335", _
+"303|AS|AS36|CO|Colorado|three|0004", _
 "709|CA|NF|0122", _
 "48|Poland|concern|1061", _
 "888|FL|MOD|FLL|material desk|material order desk|2402", _
 "*202|MD|message desk|204|2303", _
-"*202|Controller|Control|Melter|ctrl|3337"  ]
+"*202|Controller|Control|Melter|ctrl|3337", _
+"720|AS27|Announcement"]
 
 Func dialer_getShortName($i)
 	Local $kws=StringSplit($dialer_keywords[$i],"|")
