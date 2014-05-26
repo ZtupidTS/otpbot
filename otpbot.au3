@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.8.3.155
+#AutoIt3Wrapper_Res_Fileversion=6.8.3.156
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crash_demons
 #AutoIt3Wrapper_Res_Language=1033
@@ -607,14 +607,17 @@ Func Process()
 			Local $fromShort = NameShorten($from)
 			Local $cmdtype = $acmd[1]
 
-			Local $nickName, $USERNAME, $hostString
-			NameSplit($from, $nickName, $USERNAME, $hostString)
-			Local $hostLogDisplay = $USERNAME & '@' & $hostString
+			Local $nickName, $userString, $hostString
+			NameSplit($from, $nickName, $userString, $hostString)
+			Local $hostLogDisplay = $userString & '@' & $hostString
 
 
 
 			If $cmdtype = "372" Then Return;server spamming us.
 			If Int($cmdtype) > 001 And Int($cmdtype) <> 330 Then Return;server spamming us.
+
+			_UserInfo_RememberByFingerprint($nickName,$userString&'@'&$hostString)
+
 			Switch $STATE
 				Case $S_INIT
 					Switch $cmdtype
@@ -630,6 +633,7 @@ Func Process()
 								$HOSTNAME = NameGetHostname($from)
 								State($S_CHAT)
 							EndIf
+
 					EndSwitch
 				Case $S_CHAT
 					Switch $cmdtype
@@ -652,8 +656,8 @@ Func Process()
 			Local $where = $acmd[2]
 			Local $what = $acmd[3]
 
-			Local $nickName, $USERNAME, $hostMask
-			NameSplit($acmd[0], $nickName, $USERNAME, $hostMask)
+			Local $nickName, $userString, $hostMask
+			NameSplit($acmd[0], $nickName, $userString, $hostMask)
 
 			Switch $cmdtype
 				Case 'PRIVMSG', 'NOTICE'
@@ -679,7 +683,7 @@ Func Process()
 						If $where = $_Logger_Channel Then _Logger_Append($who, $what)
 					EndIf
 
-
+					_UserInfo_RememberByFingerprint($nickName,$userString&'@'&$hostMask)
 
 
 					Global $tsLastWHOIS
@@ -723,6 +727,12 @@ Func Process()
 			Local $acctname = $acmd[4]
 			Msg('IN=' & $cmd)
 			;Local $message = $acmd[5]
+
+
+			;Local $nickName, $USERNAME, $hostMask
+			;NameSplit($acmd[0], $nickName, $USERNAME, $hostMask)
+
+
 			If $cmdtype = "330" Then;:hitchcock.freenode.net 330 AutoBit nickname accountname :is logged in as
 				_UserInfo_Remember($nickName, $acctname)
 			EndIf
@@ -856,6 +866,11 @@ Func NameSplit($name, ByRef $nickName, ByRef $userString, ByRef $hostString)
 	If $pAt Then
 		$userString = StringLeft($name, $pAt - 1)
 		$name = StringTrimLeft($name, $pAt)
+	Else
+		$nickName=$name;
+		$userString=""
+		$hostString=""
+		Return
 	EndIf
 	$hostString = $name
 

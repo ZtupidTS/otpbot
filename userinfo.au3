@@ -21,15 +21,18 @@ Global $_USERINFO_TSUPD[$_USERINFO_MAX]
 ;Global $_USERINFO_TSCRT[$_USERINFO_MAX]
 Global $_USERINFO_INI=@ScriptDir&"\userinfo.ini"
 
+_UserInfo_Option_Add('_acct')
 _UserInfo_Option_Add('_lastposttime')
 _UserInfo_Option_Add('_lastposttext')
 _UserInfo_Option_Add('_firstseentime')
 _UserInfo_Option_Add('_telln')
 _UserInfo_Option_Add('_pouncen')
 _UserInfo_Option_Add('_pouncelist')
+_UserInfo_Option_Add('_fingerprintn')
 For $i=0 To 0x1F
 	_UserInfo_Option_Add('_tell'&$i)
 	_UserInfo_Option_Add('_pounce'&$i)
+	_UserInfo_Option_Add('_fingerprint'&$i)
 Next
 $_UserInfo_TestUserIndex = _UserInfo_Remember($_UserInfo_TestUser,$_UserInfo_TestUser)
 
@@ -391,8 +394,21 @@ Func _UserInfo_Option_IsPassword($i)
 	Return $opt[2]
 EndFunc
 ;------------------------------------------------
-
-Func _UserInfo_Remember($nick,$acct)
+Func _UserInfo_RememberByFingerprint($nick,$fingerprint)
+	ConsoleWrite('@@ (419) :(' & @MIN & ':' & @SEC & ') _UserInfo_RememberByFingerprint('&$nick&','&$fingerprint&')' & @CR) ;### Function Trace
+	If $fingerprint="" Or $fingerprint="@" Then Return -1
+	Local $i=_UserInfo_GetByNick($nick)
+	ConsoleWrite("@@   Nick id: "&$i&@CRLF)
+	If $i<>-1 Then; already recognized.
+		ConsoleWrite("@@   Nick Already recognized: "&$i&" Adding fingerprint"&@CRLF)
+		_UserInfo_FingerPrint_Add($i,$fingerprint);add fingerprint to profile.
+		Return $i
+	EndIf
+	Local $acct=_UserInfo_FingerPrint_GetAcct($fingerprint);pull profile from fingerprint
+	If @error<>0 Then Return -1
+	Return _UserInfo_Remember($nick,$acct);mark this account+nick pair as active.
+EndFunc
+Func _UserInfo_Remember($nick,$acct,$fingerprint='')
 	Local $i=_UserInfo_GetByNick($nick)
 	Local $isNewEntry=False;new SESSION entry
 	If $i=-1 Then
@@ -404,10 +420,14 @@ Func _UserInfo_Remember($nick,$acct)
 	$_USERINFO_ACCTS[$i]=$acct
 	$_USERINFO_TSUPD[$i]=TimerInit()
 	;If $isNewEntry Then $_USERINFO_TSCRT[$i]=TimerInit()
+	_UserInfo_SetOptValue($i, '_acct',$acct)
 	_UserInfo_GetOptValue($i, '_firstseentime')
 	If @error=3 Then; no prior record of this user.
 		_UserInfo_SetOptValue($i, '_firstseentime',TimerInit())
 	EndIf
+	_UserInfo_GetOptValue($i, '_fingerprintn')
+	If @error=3 Then _UserInfo_SetOptValue($i, '_fingerprintn',0)
+	If Not ($fingerprint="" Or $fingerprint="@") Then _UserInfo_FingerPrint_Add($i,$fingerprint)
 
 	If $isNewEntry Then _UserInfo_NotifyMessages($nick)
 	If $isNewEntry Then _UserInfo_NotifyPounces($nick)
@@ -452,7 +472,45 @@ Func _UserInfo_IsValidIndex($i)
 	EndIf
 	Return False
 EndFunc
+;------------------------------------------------------
+Func _UserInfo_FingerPrint_Add($i,$fingerprint)
+	ConsoleWrite('@@ (419) :(' & @MIN & ':' & @SEC & ') _UserInfo_FingerPrint_Add('&$fingerprint&')' & @CR) ;### Function Trace
+	If $fingerprint="" Or $fingerprint="@" Then Return
+	If Not _UserInfo_FingerPrint_Check($i,$fingerprint) Then
+		Local $next=Int(_UserInfo_GetOptValue($i, '_fingerprintn'))
+		_UserInfo_SetOptValue($i, '_fingerprint'&$next, $fingerprint)
+		_UserInfo_SetOptValue($i, '_fingerprintn', Mod($next+1,0x20));overwrite old fingerprints.
+	EndIf
+EndFunc
+Func _UserInfo_FingerPrint_Check($i,$fingerprint)
+	If $fingerprint="" Or $fingerprint="@" Then Return False
+	For $j=0 To 0x1F
+		Local $fp2=_UserInfo_GetOptValue($i, '_fingerprint'&$j)
+		If @error=3 Then ExitLoop
+		If $fp2=$fingerprint And $fp2<>"" Then Return True
+	Next
+	Return False
+EndFunc
+Func _UserInfo_FingerPrint_GetAcct($fingerprint)
+	ConsoleWrite('@@ (419) :(' & @MIN & ':' & @SEC & ') _UserInfo_FingerPrint_GetAcct('&$fingerprint&')' & @CR) ;### Function Trace
+	If $fingerprint="" Or $fingerprint="@" Then Return SetError(3,0,"")
+	Local $accts=IniReadSectionNames ($_USERINFO_INI)
+	For $ia=1 To UBound($accts)-1
+		For $if=0 To 0x1F
+			Local $fp2=_UserInfo_GetOptValueByAcctRaw($accts[$ia], '_fingerprint'&$if)
+			If @error=3 Then ExitLoop
+			If $fp2=$fingerprint Then
 
+				Local $username=_UserInfo_GetOptValueByAcctRaw($accts[$ia], '_acct')
+				If @error=3 Then
+					Return SetError(1,0,$accts[$ia])
+				EndIf
+				Return $username
+			EndIf
+		Next
+	Next
+	Return SetError(2,0,"")
+EndFunc
 ;------------------------------------------------------
 
 Func _UserInfo_SetOptValueByNick($nick, $option,$value)
@@ -542,7 +600,7 @@ EndFunc
 Func _UserInfo_PrepValue($value,$isPassword=False)
 	$value=StringLeft($value,512)
 	If $isPassword Then Return _UserInfo_ObfuscatePassword($value,True)
-	If StringRegExp($value,"[^\w-.]") Or StringInStr($value,@LF) Or StringInStr($value,@CR) Or StringInStr($value,Chr(1)) Then
+	If StringRegExp($value,"[^\w-.@]") Or StringInStr($value,@LF) Or StringInStr($value,@CR) Or StringInStr($value,Chr(1)) Then
 		Return "ESC:"&_StringToHex($value)
 	EndIf
 	Return "TXT:"&$value
