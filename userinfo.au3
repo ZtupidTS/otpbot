@@ -116,7 +116,7 @@ Func _UserInfo_Audit()
 		$ts=Int($ts)
 		Local $diff=TimerDiff($ts)
 		Local $diffdays=$diff/$fact_days
-		ConsoleWrite($sAcct&' '&$diffdays&@CRLF)
+		;ConsoleWrite($sAcct&' '&$diffdays&@CRLF)
 
 		If $diffdays>=7 Then
 
@@ -142,7 +142,7 @@ Func _UserInfo_Audit()
 			If Int(_UserInfo_GetOptValueByAcctRaw($sAcct,'_pouncen'))>0 Then $bHasOptions=True
 			If StringLen(_UserInfo_GetOptValueByAcctRaw($sAcct,'_pouncelist')) Then $bHasOptions=True
 			If Not $bHasOptions Then
-				ConsoleWrite('   No options'&@CRLF)
+				;ConsoleWrite('   No options'&@CRLF)
 				IniDelete($_USERINFO_INI,$sAcct)
 			EndIf
 		EndIf
@@ -395,12 +395,11 @@ Func _UserInfo_Option_IsPassword($i)
 EndFunc
 ;------------------------------------------------
 Func _UserInfo_RememberByFingerprint($nick,$fingerprint)
-	ConsoleWrite('@@ (419) :(' & @MIN & ':' & @SEC & ') _UserInfo_RememberByFingerprint('&$nick&','&$fingerprint&')' & @CR) ;### Function Trace
 	If $fingerprint="" Or $fingerprint="@" Then Return -1
 	Local $i=_UserInfo_GetByNick($nick)
-	ConsoleWrite("@@   Nick id: "&$i&@CRLF)
+	;ConsoleWrite("@@   Nick id: "&$i&@CRLF)
 	If $i<>-1 Then; already recognized.
-		ConsoleWrite("@@   Nick Already recognized: "&$i&" Adding fingerprint"&@CRLF)
+		;ConsoleWrite("@@   Nick Already recognized: "&$i&" Adding fingerprint"&@CRLF)
 		_UserInfo_FingerPrint_Add($i,$fingerprint);add fingerprint to profile.
 		Return $i
 	EndIf
@@ -474,7 +473,6 @@ Func _UserInfo_IsValidIndex($i)
 EndFunc
 ;------------------------------------------------------
 Func _UserInfo_FingerPrint_Add($i,$fingerprint)
-	ConsoleWrite('@@ (419) :(' & @MIN & ':' & @SEC & ') _UserInfo_FingerPrint_Add('&$fingerprint&')' & @CR) ;### Function Trace
 	If $fingerprint="" Or $fingerprint="@" Then Return
 	If Not _UserInfo_FingerPrint_Check($i,$fingerprint) Then
 		Local $next=Int(_UserInfo_GetOptValue($i, '_fingerprintn'))
@@ -492,7 +490,6 @@ Func _UserInfo_FingerPrint_Check($i,$fingerprint)
 	Return False
 EndFunc
 Func _UserInfo_FingerPrint_GetAcct($fingerprint)
-	ConsoleWrite('@@ (419) :(' & @MIN & ':' & @SEC & ') _UserInfo_FingerPrint_GetAcct('&$fingerprint&')' & @CR) ;### Function Trace
 	If $fingerprint="" Or $fingerprint="@" Then Return SetError(3,0,"")
 	Local $accts=IniReadSectionNames ($_USERINFO_INI)
 	For $ia=1 To UBound($accts)-1
