@@ -828,7 +828,7 @@ Func Split($scmd)
 	Local $max = UBound($parts) - 1
 	For $i = 1 To $max
 		If $i > $max Then ExitLoop
-		If $i > 1 And StringLeft($parts[$i], 1) == ':' Then; beginning of string section
+		If $i > 1 And $iStr=0 And StringLeft($parts[$i], 1) == ':' Then; beginning of string section, Index of StringPortion is NOT set yet, and this sectio begins with a colon (marking a string to the end of the command)
 			$parts[$i] = StringTrimLeft($parts[$i], 1)
 			$iStr = $i
 		EndIf
