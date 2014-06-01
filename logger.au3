@@ -20,15 +20,15 @@ Global Enum $_Logger_Type_Post=0, $_Logger_Type_Action, $_Logger_Type_Command, $
 _Help_RegisterGroup("log")
 _Help_RegisterCommand("last","<search>","Find the last posts containing a phrase in the logs.")
 _Help_RegisterCommand("lastby","<user> [search]","Find the last posts by a user in the logs. Optionally, you may supply a search phrase to narrow the results.")
-_Help_RegisterCommand("aliases","<nickname>","Find possible aliases for a nickname using the logs. Note that this has possible false-positives and Username-text matches are even less reliable.")
+_Help_RegisterCommand("aliases","<nickname> [doUserMatch]","Find possible aliases for a nickname using the logs. If 'doUserMatch' argument is entered as anything, a username search is also done. (takes longer) Note that this has possible false-positives and Username-text matches are even less reliable.")
 
 _Logger_Start()
 
 ;$s="xxx12 : xxx12xxx34"
 ;_Logger_Strip($s)
 ;MsgBox(0,0,_URIEncode($s))
-Func COMMAND_aliases($nick)
-	Return _Logger_Aliases($nick)
+Func COMMAND_aliases($nick,$dousermatch='')
+	Return _Logger_Aliases($nick,$dousermatch)
 EndFunc
 
 Func COMMANDV_last($search)
@@ -127,11 +127,13 @@ EndFunc
 
 
 
-Func _Logger_Aliases($nick)
+Func _Logger_Aliases($nick,$dousermatch='')
 	Local $nicksA=_Logger_UserCrossRef($nick,$FLD_NICK,   $FLD_HOST); get all other nicknames on the basis of a matching hostname.
-	Local $nicksB=_Logger_UserCrossRef($nick,$FLD_NICK,   $FLD_USER); and by username text
-
-	Return "Nick with matching hosts: "&_ArrayToString($nicksA," ")&' | Nicks with matching usernames (less reliable): '&_ArrayToString($nicksB, " ")
+	Local $nicksB=0;
+	If StringLen($dousermatch) Then _Logger_UserCrossRef($nick,$FLD_NICK,   $FLD_USER); and by username text
+	Local $ret="Nick with matching hosts: "&_ArrayToString($nicksA," ")
+	If StringLen($dousermatch) Then  $ret&=' | Nicks with matching usernames (less reliable): '&_ArrayToString($nicksB, " ")
+	Return $ret
 EndFunc
 
 Func _Logger_UserCrossRef($value,$fieldvalue,$fieldref)
