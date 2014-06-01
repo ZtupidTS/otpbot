@@ -128,7 +128,7 @@ EndFunc
 
 
 Func _Logger_Aliases($nick)
-	Local $nicksA=0;_Logger_UserCrossRef($nick,$FLD_NICK,   $FLD_HOST); get all other nicknames on the basis of a matching hostname.
+	Local $nicksA=_Logger_UserCrossRef($nick,$FLD_NICK,   $FLD_HOST); get all other nicknames on the basis of a matching hostname.
 	Local $nicksB=_Logger_UserCrossRef($nick,$FLD_NICK,   $FLD_USER); and by username text
 
 	Return "Nick with matching hosts: "&_ArrayToString($nicksA," ")&' | Nicks with matching usernames (less reliable): '&_ArrayToString($nicksB, " ")
