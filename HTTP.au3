@@ -5,6 +5,7 @@ Global $_INETREAD_MODE=$_INETREAD_MANUAL
 Global $_HTTP_Event_Debug=''
 Global $_HTTP_Client_Name="UnknownHTTPClient"
 Global $_HTTP_Client_Version="1.0"
+Global $_HTTP_DebugRequests=1
 ;TCPStartup()
 Func _InetRead($url,$opt=0)
 	Local $ts=TimerInit()
@@ -82,7 +83,7 @@ Func __HTTP_Req($Method = 'GET', $url = 'http://example.com/', $Content = '', $e
 	$aRet[1] = $url; now a URI
 	$aRet[2] = $HTTPRequest
 	$aRet[3] = $PORT
-	ConsoleWrite($HTTPRequest&@CRLF)
+	If $_HTTP_DebugRequests Then ConsoleWrite($HTTPRequest&@CRLF)
 	Return $aRet
 EndFunc   ;==>__HTTP_Req
 Func __HTTP_Transfer(ByRef $aReq, ByRef $sRecv_Out, $limit = 0, $timeout=0)
@@ -92,7 +93,7 @@ Func __HTTP_Transfer(ByRef $aReq, ByRef $sRecv_Out, $limit = 0, $timeout=0)
 	Local $addr=_TCPNameToIP($aReq[0])
 	Local $SOCK = _TCPConnect($addr, $aReq[3])
 	If @error<>0 Or $SOCK=-1 Then _HTTP_ErrorEx($aReq,$addr,$SOCK,$error,'Connect',$sRecv_Out)
-	ConsoleWrite($addr&@CRLF)
+	If $_HTTP_DebugRequests Then ConsoleWrite($addr&@CRLF)
 	;ConsoleWrite('HTTPSock: '&$aReq[0]&'//'&$aReq[3]&'//'&$sock&'//'&@error&@CRLF)
 	_TCPSend($SOCK, $aReq[2])
 	If @error<>0 Then _HTTP_ErrorEx($aReq,$addr,$SOCK,$error,'SendRequest',$sRecv_Out)
