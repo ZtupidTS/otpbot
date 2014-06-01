@@ -128,7 +128,7 @@ EndFunc
 
 
 Func _Logger_Aliases($nick,$dousermatch='')
-	Local $ret="Nick with matching "
+	Local $ret="Nicks with matching "
 	Local $nicks=0
 	If StringLen($dousermatch)=0 Then
 		$nicks=_Logger_UserCrossRef($nick,$FLD_NICK,   $FLD_HOST)
@@ -148,7 +148,8 @@ Func _Logger_UserCrossRef($value,$fieldvalue,$fieldref)
 	Local $values[1]=['']
 	;_ArrayDisplay($refs,'crossref intermediate')
 	For $i=0 To UBound($refs)-1
-		If StringLen($refs[$i])<1 Then ContinueLoop
+		If StringLen($refs[$i])<3 Then ContinueLoop
+		If $refs[$i]='update' Then ContinueLoop
 		Local $a_tmp=_Logger_UserSearchAll($refs[$i],$fieldref,   $fieldvalue)
 		_ArrayConcatenate($values,$a_tmp)
 	Next
