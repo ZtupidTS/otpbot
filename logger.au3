@@ -147,29 +147,48 @@ Func _Logger_UserCrossRef($value,$fieldvalue,$fieldref)
 	Local $refs=_Logger_UserSearchAll($value,$fieldvalue,   $fieldref)
 	Local $values[1]=['']
 	;_ArrayDisplay($refs,'crossref intermediate')
+
+	Local $refs_str=''
 	For $i=0 To UBound($refs)-1
 		If StringLen($refs[$i])<3 Then ContinueLoop
 		If $refs[$i]='update' Then ContinueLoop
-		Local $a_tmp=_Logger_UserSearchAll($refs[$i],$fieldref,   $fieldvalue)
-		_ArrayConcatenate($values,$a_tmp)
+		If $refs[$i]='Set' Then ContinueLoop
+		If $refs[$i]='Topic' Then ContinueLoop
+		If StringLen($refs_str) Then $refs_str&=' '
+		$refs_str&=$refs[$i]
 	Next
+	$values=_Logger_UserSearchAll($refs_str,$fieldref,   $fieldvalue,  1);compound query for all refs - looped for each year.
 	$values=_ArrayUnique($values)
+
+	For $i=0 To UBound($values)-1
+		If $values[$i]='Set' Then $values[$i]=''
+		If $values[$i]='Topic' Then $values[$i]=''
+		If $values[$i]='update' Then $values[$i]=''
+		If StringRegExp($values[$i],"^Guest\d+$") Then $values[$i]=''
+	Next
+
+	;For $i=0 To UBound($refs)-1
+	;	If StringLen($refs[$i])<3 Then ContinueLoop
+	;	If $refs[$i]='update' Then ContinueLoop
+	;	Local $a_tmp=_Logger_UserSearchAll($refs[$i],$fieldref,   $fieldvalue)
+	;	_ArrayConcatenate($values,$a_tmp)
+	;Next
 	;_ArrayDisplay($values,'crossref results')
 	Return $values
 EndFunc
 
-Func _Logger_UserSearchAll($search,$fieldsearch,$fieldresult)
+Func _Logger_UserSearchAll($search,$fieldsearch,$fieldresult,$compound=0)
 	ConsoleWrite(StringFormat("QUERYALL: search=%s (%s)  results=%s",$search,FieldName($fieldsearch),FieldName($fieldresult))&@CRLF)
 	Local $results[1]=['']
 	For $year=@YEAR To 2011 Step -1; append all hostnames for nick
-		Local $a_tmp=_Logger_UserSearch($year,$search,$fieldsearch,$fieldresult,1); find fieldref results where line[fieldvalue] = value
+		Local $a_tmp=_Logger_UserSearch($year,$search,$fieldsearch,$fieldresult,1,$compound); find fieldref results where line[fieldvalue] = value
 		_ArrayConcatenate($results,$a_tmp)
 	Next
 	$results=_ArrayUnique($results)
 	If Int($results[0])=$results[0] Then _ArrayDelete($results,0)
 	Return $results
 EndFunc
-Func _Logger_UserSearch($year,$search,$fieldsearch,$fieldresult,$stripcount=0); fields:  0=>chat line 1=>nickname 2=>usernametext 3=>hostname
+Func _Logger_UserSearch($year,$search,$fieldsearch,$fieldresult,$stripcount=0,$compound=0); fields:  0=>chat line 1=>nickname 2=>usernametext 3=>hostname
 	ConsoleWrite(StringFormat("   QUERY: year=%s search=%s (%s)  results=%s",$year,$search,FieldName($fieldsearch),FieldName($fieldresult))&@CRLF)
 	If StringLen($search)<1 Then
 		Local $tmp[1]=['0 results.']
@@ -178,7 +197,7 @@ Func _Logger_UserSearch($year,$search,$fieldsearch,$fieldresult,$stripcount=0); 
 	Local $action=6
 
 	Local $url='http://mirror.otp22.com/logapi.php?APPID='&$_Logger_APPID&''
-	Local $arg=StringFormat("key=%s&action=%s&year=%s&text=%s&fieldsearch=%s&fieldresult=%s", _URIEncode($_Logger_Key), _URIEncode($action), $year,_URIEncode($search),$fieldsearch,$fieldresult)
+	Local $arg=StringFormat("key=%s&action=%s&year=%s&text=%s&fieldsearch=%s&fieldresult=%s&compound=%s", _URIEncode($_Logger_Key), _URIEncode($action), $year,_URIEncode($search),$fieldsearch,$fieldresult,$compound)
 
 	Local $headers='Content-Type: application/x-www-form-urlencoded'&@CRLF
 	Local $text=''
