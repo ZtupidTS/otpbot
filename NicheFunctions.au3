@@ -7,8 +7,6 @@
 #include "HTTP.au3"
 #include "GeneralCommands.au3"
 
-TCPStartup()
-COMMANDV_WA('1+1')
 
 _Help_RegisterGroup("PGP")
 _Help_Register("GetKey","<keyid> [keyserver]","Retrieves a PGP key from a keyserver for use with the Verify command. The default server is pgp.mit.edu.")
@@ -27,6 +25,8 @@ _Help_Register("FlipBits","<binary string>","Inverts a binary string switching 1
 _Help_Register("uint16","<integer>","Performs a Modulo 65536 operation.")
 _Help_Register("UTC","","Retrieve the UTC time and date from... timeanddate.com")
 
+
+
 Func COMMANDV_WA($s)
 	Local $j="06A013D651C91D78D36F451039FB0141832935709970AF03C6CC7FA35472E8BBA823"
 	Local $k=_StringEncrypt(0,$j, "MELZAR")
@@ -36,9 +36,34 @@ Func COMMANDV_WA($s)
 
 	Local $binary=_InetRead($o)
 	Local $xml=BinaryToString($binary)
-	Local $texts=_StringBetween($xml,"<plaintext>","</plaintext>")
-	Return _ArrayToString($texts,"  |  ")
+
+	Local $output=''
+
+	Local $pods=_StringBetween($xml,"<pod","</pod>")
+	For $pod In $pods
+		If StringInStr($pod,"<plaintext>")<1 Then ContinueLoop
+		Local $title=_StringBetween0($pod,"title='","'")
+		Local $text =_StringBetween0($pod,"<plaintext>","</plaintext>")
+		If StringLen($text)<1 Then ContinueLoop
+		If StringLen($title) Then $output&=$title&": "
+		$output&=$text&"  //  "
+	Next
+	$output=StringReplace($output,"&quot;",'"')
+	Return $output
+
+	;Local $texts=_StringBetween($xml,"<plaintext>","</plaintext>")
+	;Return _ArrayToString($texts,"  |  ")
 EndFunc
+
+Func _StringBetween0(ByRef $source,$first,$last)
+	Local $arr=_StringBetween($source,$first,$last)
+	;_ArrayDisplay($arr)
+	Local $max=UBound($arr)
+	If $max<1 Then Return ""
+	Return $arr[0]
+EndFunc
+
+
 Func COMMAND_UTC()
 	Local $ts=_DateDiff('s', "1970/01/01 00:00:00", _NowCalc())
 	Local $now=Int(BinaryToString(InetRead("http://free.timeanddate.com/ts.php?t="&$ts),1))
