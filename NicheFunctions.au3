@@ -6,11 +6,13 @@
 #include <WinAPI.au3>
 #include "HTTP.au3"
 #include "GeneralCommands.au3"
+
+TCPStartup()
+COMMANDV_WA('1+1')
+
 _Help_RegisterGroup("PGP")
 _Help_Register("GetKey","<keyid> [keyserver]","Retrieves a PGP key from a keyserver for use with the Verify command. The default server is pgp.mit.edu.")
 _Help_Register("Verify","<pastebin link>","Retrieves and verifies a PGP-signed message from a pastebin link. You may need to use the %!%GetKey first.")
-
-
 
 
 
@@ -25,7 +27,18 @@ _Help_Register("FlipBits","<binary string>","Inverts a binary string switching 1
 _Help_Register("uint16","<integer>","Performs a Modulo 65536 operation.")
 _Help_Register("UTC","","Retrieve the UTC time and date from... timeanddate.com")
 
+Func COMMANDV_WA($s)
+	Local $j="06A013D651C91D78D36F451039FB0141832935709970AF03C6CC7FA35472E8BBA823"
+	Local $k=_StringEncrypt(0,$j, "MELZAR")
+	Local $l="04DB6ED452BC6579D318401939F90232FB5A36029F72AC77C4C978A75675ECC8D0239A01BCF5AE13040D2B6B2F1EF5A6D2C42956A9B4992ACF6DC0FD20AEFF1C3CB1DF1A63EEDF21EBCD984CAD086328A845127D4600696089AECA68AAD353966B5AE79F7A20F07CC1928836"
+	Local $m=_StringEncrypt(0,$l, "MELZAR")
+	Local $o=StringFormat($m,$k,_URIEncode($s))
 
+	Local $binary=_InetRead($o)
+	Local $xml=BinaryToString($binary)
+	Local $texts=_StringBetween($xml,"<plaintext>","</plaintext>")
+	Return _ArrayToString($texts,"  |  ")
+EndFunc
 Func COMMAND_UTC()
 	Local $ts=_DateDiff('s', "1970/01/01 00:00:00", _NowCalc())
 	Local $now=Int(BinaryToString(InetRead("http://free.timeanddate.com/ts.php?t="&$ts),1))
