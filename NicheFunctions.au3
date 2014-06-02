@@ -2,6 +2,7 @@
 #include <Array.au3>
 #include <Constants.au3>
 #include <Process.au3>
+#include <Date.au3>
 #include <WinAPI.au3>
 #include "HTTP.au3"
 #include "GeneralCommands.au3"
@@ -22,7 +23,14 @@ _Help_Register("Ternary","<condition> <value A> <value B>","Performs a ternary o
 _Help_Register("LengthsToBits","<numeric string> [flip]","Translates a list of single-digit bit lengths into a binary string.  That is, every digit (`length`) represents the number of bits to print, and the value (1 or 0) alternates with each length.  If the `flip` paramter is given (as 1) then the binary string will be inverted in value.  eg: `%!%lengthstobits 4412 1`")
 _Help_Register("FlipBits","<binary string>","Inverts a binary string switching 1's and 0's similar to a binary NOT operation.  eg: `%!%flipbits 1011`")
 _Help_Register("uint16","<integer>","Performs a Modulo 65536 operation.")
+_Help_Register("UTC","","Retrieve the UTC time and date from... timeanddate.com")
 
+
+Func COMMAND_UTC()
+	Local $ts=_DateDiff('s', "1970/01/01 00:00:00", _NowCalc())
+	Local $now=Int(BinaryToString(InetRead("http://free.timeanddate.com/ts.php?t="&$ts),1))
+	Return _DateAdd('s', $now, "1970/01/01 00:00:00")
+EndFunc
 
 Func COMMAND_uint16($n)
 	Return Mod($n,0x10000)
