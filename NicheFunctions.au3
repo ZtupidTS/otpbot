@@ -8,6 +8,7 @@
 #include "GeneralCommands.au3"
 
 
+
 _Help_RegisterGroup("PGP")
 _Help_Register("GetKey","<keyid> [keyserver]","Retrieves a PGP key from a keyserver for use with the Verify command. The default server is pgp.mit.edu.")
 _Help_Register("Verify","<pastebin link>","Retrieves and verifies a PGP-signed message from a pastebin link. You may need to use the %!%GetKey first.")
@@ -40,6 +41,7 @@ Func COMMANDV_WA($s)
 	Local $output=''
 
 	Local $pods=_StringBetween($xml,"<pod","</pod>")
+	If Not IsArray($pods) Then Return "WA: No information available"
 	For $pod In $pods
 		If StringInStr($pod,"<plaintext>")<1 Then ContinueLoop
 		Local $title=_StringBetween0($pod,"title='","'")
