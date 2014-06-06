@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.8.3.172
+#AutoIt3Wrapper_Res_Fileversion=6.8.3.173
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crash_demons
 #AutoIt3Wrapper_Res_Language=1033
@@ -307,7 +307,7 @@ Func OnStateChange($oldstate, $newstate)
 			If StringLen($PASS) Then Cmd("PASS " & $PASS)
 			If StringLen($PASS) Then Cmd("PRIVMSG NICKSERV :IDENTIFY " & $NICK & " " & $PASS); this was made for Freenode, it'll fail other places - different NS services.
 			Cmd("NICK " & $NICK)
-			Cmd("USER " & $USERNAME & " X * :OTP22 Utility Bot")
+			Cmd("USER " & StringReplace($USERNAME,'~','') & " X * :OTP22 Utility Bot")
 		Case $S_ON
 			Cmd('JOIN ' & $CHANNEL)
 		Case $S_CHAT
