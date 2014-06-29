@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.8.3.175
+#AutoIt3Wrapper_Res_Fileversion=6.8.3.176
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crash_demons
 #AutoIt3Wrapper_Res_Language=1033
@@ -450,7 +450,13 @@ Func TryCommandFunc($who, $where, $what, ByRef $acmd)
 		EndIf
 
 	EndIf
-	If $err <> 0 Then Return "Command `" & $acmd[1] & "` (with " & $paramn & " parameters) not found."
+	If $err <> 0 Then
+		Local $expression = StringTrimLeft($what, 1)
+		$ret = __wolfram($expression)
+		$err = @error
+		$ext = 0
+	EndIf
+	If $err <> 0 Then Return "Command `" & $acmd[1] & "` (with " & $paramn & " parameters) not found and no additional information was available"
 	Return _ValueFmt($ret, $ArrayFmt_Quick);$ret
 EndFunc   ;==>TryCommandFunc
 

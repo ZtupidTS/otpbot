@@ -25,10 +25,11 @@ _Help_Register("LengthsToBits","<numeric string> [flip]","Translates a list of s
 _Help_Register("FlipBits","<binary string>","Inverts a binary string switching 1's and 0's similar to a binary NOT operation.  eg: `%!%flipbits 1011`")
 _Help_Register("uint16","<integer>","Performs a Modulo 65536 operation.")
 _Help_Register("UTC","","Retrieve the UTC time and date from... timeanddate.com")
+_Help_Register("WA","<query>","Queries Wolfram Alpha for information on the input.")
 
 
 
-Func COMMANDV_WA($s)
+Func __wolfram($s)
 	Local $j="06A013D651C91D78D36F451039FB0141832935709970AF03C6CC7FA35472E8BBA823"
 	Local $k=_StringEncrypt(0,$j, "MELZAR")
 	Local $l="04DB6ED452BC6579D318401939F90232FB5A36029F72AC77C4C978A75675ECC8D0239A01BCF5AE13040D2B6B2F1EF5A6D2C42956A9B4992ACF6DC0FD20AEFF1C3CB1DF1A63EEDF21EBCD984CAD086328A845127D4600696089AECA68AAD353966B5AE79F7A20F07CC1928836"
@@ -41,7 +42,7 @@ Func COMMANDV_WA($s)
 	Local $output=''
 
 	Local $pods=_StringBetween($xml,"<pod","</pod>")
-	If Not IsArray($pods) Then Return "WA: No information available"
+	If Not IsArray($pods) Then Return SetError(1,0,"WA: No information available")
 	For $pod In $pods
 		If StringInStr($pod,"<plaintext>")<1 Then ContinueLoop
 		Local $title=_StringBetween0($pod,"title='","'")
@@ -51,7 +52,11 @@ Func COMMANDV_WA($s)
 		$output&=$text&"  //  "
 	Next
 	$output=StringReplace($output,"&quot;",'"')
-	Return $output
+	Return SetError(0,0,$output)
+EndFunc
+
+Func COMMANDV_WA($s)
+	Return SetError(0,0,__wolfram($s))
 
 	;Local $texts=_StringBetween($xml,"<plaintext>","</plaintext>")
 	;Return _ArrayToString($texts,"  |  ")
