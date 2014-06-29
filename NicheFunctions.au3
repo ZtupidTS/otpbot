@@ -28,7 +28,6 @@ _Help_Register("UTC","","Retrieve the UTC time and date from... timeanddate.com"
 _Help_Register("WA","<query>","Queries Wolfram Alpha for information on the input.")
 
 
-
 Func __wolfram($s)
 	Local $j="06A013D651C91D78D36F451039FB0141832935709970AF03C6CC7FA35472E8BBA823"
 	Local $k=_StringEncrypt(0,$j, "MELZAR")
@@ -41,12 +40,14 @@ Func __wolfram($s)
 
 	Local $output=''
 
+
 	Local $pods=_StringBetween($xml,"<pod","</pod>")
 	If Not IsArray($pods) Then Return SetError(1,0,"WA: No information available")
 	For $pod In $pods
 		If StringInStr($pod,"<plaintext>")<1 Then ContinueLoop
 		Local $title=_StringBetween0($pod,"title='","'")
 		Local $text =_StringBetween0($pod,"<plaintext>","</plaintext>")
+		ConsoleWrite("POD: "&$TITLE&" TEXT: "&$text&@CRLF)
 		If StringLen($text)<1 Then ContinueLoop
 		If StringLen($title) Then $output&=$title&": "
 		$output&=$text&"  //  "
