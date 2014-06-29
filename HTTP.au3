@@ -47,7 +47,7 @@ EndFunc
 Func _HTTP_StripToContent(ByRef $sRecvd)
 	Local $iPos=StringInStr($sRecvd,@LF&@LF)+2
 	Local $iPosB=StringInStr($sRecvd,@CRLF&@CRLF)+4
-	If $iPosB<$iPos Then $iPos=$iPosB
+	If $iPosB<$iPos Or $iPos<=2 Then $iPos=$iPosB
 	If $iPos>4 Then
 		$sRecvd=StringMid($sRecvd,$iPos)
 	Else
