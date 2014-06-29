@@ -47,7 +47,7 @@ Func __wolfram($s)
 		If StringInStr($pod,"<plaintext>")<1 Then ContinueLoop
 		Local $title=_StringBetween0($pod,"title='","'")
 		Local $text =_StringBetween0($pod,"<plaintext>","</plaintext>")
-		ConsoleWrite("POD: "&$TITLE&" TEXT: "&$text&@CRLF)
+		;ConsoleWrite("POD: "&$TITLE&" TEXT: "&$text&@CRLF)
 		If StringLen($text)<1 Then ContinueLoop
 		If StringLen($title) Then $output&=$title&": "
 		$output&=$text&"  //  "
