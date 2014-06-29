@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.8.3.174
+#AutoIt3Wrapper_Res_Fileversion=6.8.3.175
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crash_demons
 #AutoIt3Wrapper_Res_Language=1033
@@ -318,9 +318,9 @@ Func OnStateChange($oldstate, $newstate)
 				;Msg(Process_Message('who', 'where', '@help AutoIt'))
 				Msg(Process_Message('who', 'where', '@convert 1 MB to KB'))
 				ConsoleWrite(@CRLF & "----------------------" & @CRLF)
-				;_Help_OutputWikiListing(0)
+				_Help_OutputWikiListing(0)
 				ConsoleWrite(@CRLF & "----------------------" & @CRLF)
-				;_Help_OutputWikiListing(1)
+				_Help_OutputWikiListing(1)
 				ConsoleWrite(@CRLF & "----------------------" & @CRLF)
 				Msg(Process_Message($NICK, 'where', "@dial 16041 202"))
 				;COMMAND_tinyurl('http://google.com/y4')
