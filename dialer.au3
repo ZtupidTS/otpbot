@@ -161,7 +161,7 @@ Func COMMANDX_dial($who, $where, $what, $acmd)
 	Switch @error
 		Case 0;userdial success
 			If StringLen($dial_event) Then Call($dial_event,$who,$where,$what)
-			Return "Queued Request for agent number "&$agent&" on line "&dialer_getShortName($iLine)&" ("&$dialer_numbers[$iLine]&") with your password."
+			Return "Queued Code "&$agent&" on line "&dialer_getShortName($iLine)&" ("&$dialer_numbers[$iLine]&")."
 		Case 1;userdial not recognized
 			Return "You must be logged in to NickServ to use this command. If you think you are logged in, you might try the IDENTIFY command to refresh your information."
 		Case 2;userdial password option not set
