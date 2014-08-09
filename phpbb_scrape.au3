@@ -17,11 +17,13 @@ Global $PHPBB_TopicPostCount=phpbb_scrape_postcount($PHPBB_TopicHTML)
 ;MsgBox(0,0,$PHPBB_TopicHTML)
 
 _Help_RegisterGroup("Forum")
-_Help_RegisterCommand("lastforumpage","","Retrieves the URL for the current last page of the forum topic.")
+_Help_RegisterCommand("lastforumpage","","ALIAS: %!%FORUM - Retrieves the URL for the current last page of the forum topic.")
 _Help_RegisterCommand("forumdebug","","forces a new-reply notification with at least the last 10 posts.")
 
 
-
+Func COMMAND_forum()
+	Return COMMAND_lastforumpage()
+EndFunc
 Func COMMAND_lastforumpage()
 	If $PHPBB_URL="" Then Return "Error: Forum not set"
 	phpbb_report_NewPostsAndLink();refresh the HTML content.
