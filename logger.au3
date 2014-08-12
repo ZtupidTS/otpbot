@@ -63,7 +63,7 @@ Func _Logger_FindPosts($search,$username="")
 	_HTTP_StripToContent($text)
 
 	$text=StringStripWS($text,1+2)
-	$text=StringReplace($text,@LF,'|')
+	$text=StringReplace($text,@LF,' | ')
 
 	Return $text
 EndFunc
