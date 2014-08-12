@@ -48,6 +48,7 @@ Func COMMANDV_lastby($input)
 EndFunc
 
 
+
 Func _Logger_FindPosts($search,$username="")
 	Local $action=1
 	If StringLen($username) Then $action=2
@@ -58,12 +59,30 @@ Func _Logger_FindPosts($search,$username="")
 	Local $headers='Content-Type: application/x-www-form-urlencoded'&@CRLF
 	Local $text=''
 	Local $aReq=__HTTP_Req('POST',$url, $arg, $headers)
-	__HTTP_Transfer($aReq,$text,5000)
+	__HTTP_Transfer($aReq,$text,50000)
 	ConsoleWrite(">>>"&$text&"<<<"&@CRLF)
 	_HTTP_StripToContent($text)
 
 	$text=StringStripWS($text,1+2)
-	$text=StringReplace($text,@LF,' | ')
+
+	$posts=StringSplit($text,@LF,2)
+	If Not IsArray($posts) Then Return "No results to display."
+
+	For $i=0 To UBound($posts)-1
+		If $i>(UBound($posts)-1) Then ExitLoop
+		If StringInStr($posts[$i], "@last") Or StringRegexp($posts[$i], ".{4,}\[\d\d:\d\d\]") Then
+			_ArrayDelete($posts,$i)
+			$i-=1
+		EndIf
+	Next
+	;_ArrayDisplay
+	$text=_ArrayToString($posts,' | ')
+
+
+
+	;$text=StringReplace($text,@LF,' | ')
+
+
 
 	Return $text
 EndFunc
