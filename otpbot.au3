@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.8.3.185
+#AutoIt3Wrapper_Res_Fileversion=6.8.3.186
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crash_demons
 #AutoIt3Wrapper_Res_Language=1033
@@ -475,14 +475,42 @@ Func PRIVMSG($where, $what)
 
 	If $lenMsg > $lenMax Then
 		Local $notifier = " [type " & $CommandChar & "more]"
-		Local $lenOver = ($lenMsg - $lenMax) + StringLen($notifier) + 1; the +1 shouldn't be necessary but for unexplained reasons the text cut off by 1 char
-		_More_Store($where, $where, StringRight($what, $lenOver))
-		$what = StringTrimRight($what, $lenOver) & $notifier
+		;Local $lenOver = ($lenMsg - $lenMax) + StringLen($notifier) + 1
+		;_More_Store($where, $where, StringRight($what, $lenOver))
+		;$what = StringTrimRight($what, $lenOver) & $notifier
+
+		$lenMax-=StringLen($notifier)+1; the +1 shouldn't be necessary but for unexplained reasons the text cut off by 1 char
+		Local $wrap=TextWrap_Word($what, $lenMax)
+		$what=$wrap[0]&$notifier
+		_More_Store($where, $where, $wrap[1])
+
 	EndIf
 
 	If $where = $_Logger_Channel Then _Logger_Append($NICK, $what);log bots own posts! derp
 	Cmd("PRIVMSG " & $where & " :" & $what)
 EndFunc   ;==>PRIVMSG
+
+
+Func TextWrap_Hard($str, $maxLen)
+	Local $arr[2]=[StringMid($str,1,$maxLen), StringTrimLeft($str,$maxLen)]
+	Return $arr
+EndFunc
+Func TextWrap_Word($str, $maxLen)
+	Local $arr=TextWrap_Hard($str, $maxLen)
+	If StringRegexp(StringRight($arr[0],1),"\S") And StringRegexp(StringLeft($arr[1],1),"\S") Then
+		;if the wrap breaks any word/sequence of symbols without spaces
+		Local $pSpace=StringInStr($arr[0],' ',2,-1)
+		If $pSpace>1 Then ;and if there is a space somewhere in the first part
+			Local $middle=StringMid($arr[0],$pSpace+1)
+			$arr[0]=StringMid($arr[0],1,$pSpace)
+			;then shunt the end of the first part (middle) into the second part
+			$arr[1]=$middle&$arr[1]
+		EndIf
+	EndIf
+	Return $arr
+EndFunc
+
+
 
 Func FilterMacros($s)
 	$s = StringReplace($s, "%NICK%", $NICK)
