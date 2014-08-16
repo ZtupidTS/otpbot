@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.8.3.186
+#AutoIt3Wrapper_Res_Fileversion=6.8.3.187
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crash_demons
 #AutoIt3Wrapper_Res_Language=1033
@@ -43,12 +43,13 @@ Opt('TrayMenuMode', 1 + 2)
 Opt('TrayOnEventMode', 1)
 
 
-#region ;------------CONFIG
+#Region ;------------CONFIG
 Global $TestMode = 0
 
 Global $SERV = Get("server", "irc.freenode.net", "config")
 Global $PORT = Get("port", 6667, "config")
 Global $CHANNEL = Get("channel", "#ARG", "config");persistant channel, will rejoin. can be invited to others (not persistant)
+Global $ALTCHANNELS = Get("altchannels", "#ARG", "config")
 Global $NICK = Get("nick", "OTPBot22", "config")
 Global $PASS = Get("password", "", "config"); If not blank, sends password both as server command and Nickserv identify; not tested though.
 Global $USERNAME = Get("username", $NICK, "config");meh
@@ -96,9 +97,9 @@ $Wiki_User = Get("wikiuser", "")
 $Wiki_Pass = Get("wikipass", "")
 
 
-#endregion ;------------CONFIG
+#EndRegion ;------------CONFIG
 
-#region ;------------------INTERNAL VARIABLES
+#Region ;------------------INTERNAL VARIABLES
 Global Enum $S_UNK = -1, $S_OFF, $S_INIT, $S_ON, $S_CHAT, $S_INVD
 Global Const $PARAM_START = 2
 
@@ -136,11 +137,11 @@ _Help_RegisterCommand("version", "", "Display version information about OtpBot."
 _Help_RegisterCommand("debug", "", "Display command debugging, otphost, and keyfile debugging and status information.")
 
 
-#endregion ;------------------INTERNAL VARIABLES
+#EndRegion ;------------------INTERNAL VARIABLES
 
 
 
-#region ;------------------BOT UI
+#Region ;------------------BOT UI
 TraySetToolTip("OtpBot v" & $VERSION)
 TrayCreateItem("OtpBot v" & $VERSION)
 TrayCreateItem("")
@@ -148,12 +149,12 @@ TrayCreateItem("")
 Global $Tray_Exit = TrayCreateItem("&Quit program")
 TrayItemSetOnEvent(-1, "Quit")
 TraySetState()
-#endregion ;------------------BOT UI
+#EndRegion ;------------------BOT UI
 
 
 
 
-#region ;------------------BOT MAIN
+#Region ;------------------BOT MAIN
 _OtpHost_flog('Starting')
 ;TCPStartup()
 _ShortUrl_Startup()
@@ -307,13 +308,14 @@ Func OnStateChange($oldstate, $newstate)
 			If StringLen($PASS) Then Cmd("PASS " & $PASS)
 			If StringLen($PASS) Then Cmd("PRIVMSG NICKSERV :IDENTIFY " & $NICK & " " & $PASS); this was made for Freenode, it'll fail other places - different NS services.
 			Cmd("NICK " & $NICK)
-			Cmd("USER " & StringReplace($USERNAME,'~','') & " X * :OTP22 Utility Bot")
+			Cmd("USER " & StringReplace($USERNAME, '~', '') & " X * :OTP22 Utility Bot")
 		Case $S_ON
 			Cmd('JOIN ' & $CHANNEL)
+			If StringLen($ALTCHANNELS) Then Cmd('JOIN ' & StringStripWS($ALTCHANNELS, 8))
 		Case $S_CHAT
 			If $TestMode Then; whatever needs debugging at the moment.
 				;otp22_getentries()
-				$NICK=$_UserInfo_TestUser
+				$NICK = $_UserInfo_TestUser
 				;Msg(Process_Message('who', 'where', '@help General'))
 				;Msg(Process_Message('who', 'where', '@help AutoIt'))
 				Msg(Process_Message('who', 'where', '@convert 1 MB to KB'))
@@ -338,10 +340,10 @@ Func OnBotConsole($s); forwarding of console log to OtpHost - disabled by defaul
 EndFunc   ;==>OnBotConsole
 
 
-#endregion ;------------------BOT MAIN
+#EndRegion ;------------------BOT MAIN
 
 
-#region ;------------------UTILITIES
+#Region ;------------------UTILITIES
 
 Func log_event($who, $where, $what)
 	If Not ($where = $CHANNEL) Then _Logger_Append($who, $what, $_Logger_Type_Post, 'to ' & $where)
@@ -383,9 +385,9 @@ Func COMMAND_botupdate()
 EndFunc   ;==>COMMAND_botupdate
 
 
-#endregion ;------------------UTILITIES
+#EndRegion ;------------------UTILITIES
 
-#region ;------------------BOT INTERNALS
+#Region ;------------------BOT INTERNALS
 
 Func COMMAND_test($a = "default", $b = "default", $c = "default")
 	Return "This is a test command function. Params: a=" & $a & " b=" & $b & " c=" & $c
@@ -479,9 +481,9 @@ Func PRIVMSG($where, $what)
 		;_More_Store($where, $where, StringRight($what, $lenOver))
 		;$what = StringTrimRight($what, $lenOver) & $notifier
 
-		$lenMax-=StringLen($notifier)+1; the +1 shouldn't be necessary but for unexplained reasons the text cut off by 1 char
-		Local $wrap=TextWrap_Word($what, $lenMax)
-		$what=$wrap[0]&$notifier
+		$lenMax -= StringLen($notifier) + 1; the +1 shouldn't be necessary but for unexplained reasons the text cut off by 1 char
+		Local $wrap = TextWrap_Word($what, $lenMax)
+		$what = $wrap[0] & $notifier
 		_More_Store($where, $where, $wrap[1])
 
 	EndIf
@@ -492,23 +494,23 @@ EndFunc   ;==>PRIVMSG
 
 
 Func TextWrap_Hard($str, $maxLen)
-	Local $arr[2]=[StringMid($str,1,$maxLen), StringTrimLeft($str,$maxLen)]
+	Local $arr[2] = [StringMid($str, 1, $maxLen), StringTrimLeft($str, $maxLen)]
 	Return $arr
-EndFunc
+EndFunc   ;==>TextWrap_Hard
 Func TextWrap_Word($str, $maxLen)
-	Local $arr=TextWrap_Hard($str, $maxLen)
-	If StringRegexp(StringRight($arr[0],1),"\S") And StringRegexp(StringLeft($arr[1],1),"\S") Then
+	Local $arr = TextWrap_Hard($str, $maxLen)
+	If StringRegExp(StringRight($arr[0], 1), "\S") And StringRegExp(StringLeft($arr[1], 1), "\S") Then
 		;if the wrap breaks any word/sequence of symbols without spaces
-		Local $pSpace=StringInStr($arr[0],' ',2,-1)
-		If $pSpace>1 Then ;and if there is a space somewhere in the first part
-			Local $middle=StringMid($arr[0],$pSpace+1)
-			$arr[0]=StringMid($arr[0],1,$pSpace)
+		Local $pSpace = StringInStr($arr[0], ' ', 2, -1)
+		If $pSpace > 1 Then ;and if there is a space somewhere in the first part
+			Local $middle = StringMid($arr[0], $pSpace + 1)
+			$arr[0] = StringMid($arr[0], 1, $pSpace)
 			;then shunt the end of the first part (middle) into the second part
-			$arr[1]=$middle&$arr[1]
+			$arr[1] = $middle & $arr[1]
 		EndIf
 	EndIf
 	Return $arr
-EndFunc
+EndFunc   ;==>TextWrap_Word
 
 
 
@@ -576,7 +578,7 @@ Func QuitNoExit($sSend = "")
 	Close()
 	_OtpHost_Destroy($_OtpHost)
 	_OtpHost_flog('Quitting OtpBot')
-	OnAutoItExitUnRegister("Quit"); no repeat events.
+	OnAutoItExitUnregister("Quit"); no repeat events.
 EndFunc   ;==>QuitNoExit
 Func Quit($sIn = "")
 	;Dim $sIn
@@ -658,7 +660,7 @@ Func Process()
 			If $cmdtype = "372" Then Return;server spamming us.
 			If Int($cmdtype) > 001 And Int($cmdtype) <> 330 Then Return;server spamming us.
 
-			_UserInfo_RememberByFingerprint($nickName,$userString&'@'&$hostString)
+			_UserInfo_RememberByFingerprint($nickName, $userString & '@' & $hostString)
 
 			Switch $STATE
 				Case $S_INIT
@@ -725,7 +727,7 @@ Func Process()
 						If $where = $_Logger_Channel Then _Logger_Append($who, $what)
 					EndIf
 
-					_UserInfo_RememberByFingerprint($nickName,$userString&'@'&$hostMask)
+					_UserInfo_RememberByFingerprint($nickName, $userString & '@' & $hostMask)
 
 
 					Global $tsLastWHOIS
@@ -909,9 +911,9 @@ Func NameSplit($name, ByRef $nickName, ByRef $userString, ByRef $hostString)
 		$userString = StringLeft($name, $pAt - 1)
 		$name = StringTrimLeft($name, $pAt)
 	Else
-		$nickName=$name;
-		$userString=""
-		$hostString=""
+		$nickName = $name;
+		$userString = ""
+		$hostString = ""
 		Return
 	EndIf
 	$hostString = $name
@@ -936,4 +938,4 @@ Func NameGetHostname($name)
 	Return ''
 EndFunc   ;==>NameGetHostname
 
-#endregion ;------------------BOT INTERNALS
+#EndRegion ;------------------BOT INTERNALS

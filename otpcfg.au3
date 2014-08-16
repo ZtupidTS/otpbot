@@ -1,9 +1,9 @@
-#region ;**** Directives created by AutoIt3Wrapper_GUI ****
-#AutoIt3Wrapper_icon=cfg.ico
+#Region ;**** Directives created by AutoIt3Wrapper_GUI ****
+#AutoIt3Wrapper_Icon=cfg.ico
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Run_Tidy=y
-#endregion ;**** Directives created by AutoIt3Wrapper_GUI ****
+#EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 #include <ButtonConstants.au3>
 #include <ComboConstants.au3>
 #include <EditConstants.au3>
@@ -31,6 +31,7 @@ Global $Settings[100][3] = [ _
 		['config', 'debuglog', 'Generate Shared Error log (1=On, 0=Off)'], _
 		['config', 'nohostmode', 'Disables OtpHost support and warnings. (1 or 0)'], _
 		['config', 'restartonerror', 'Bot restart on IRC connection error (0/1)'], _
+		['config', 'altchannels', 'Second channels to join - not logged. '], _
 		['', 'dummy', '---------------------------------------------------------------------------------------'], _
 		['utility', 'defaultkey', 'Default XOR keyfile'], _
 		['utility', 'dialerenable', 'Enable OTP22 Dialer support (1=On, 0=Off)'], _
@@ -56,7 +57,7 @@ Global $Settings[100][3] = [ _
 
 FileChangeDir(@ScriptDir)
 Opt("GUIOnEventMode", 1)
-#region ### START Koda GUI section ### Form=C:\Users\Crash\Desktop\otpbot\WC\OtpCfg.kxf
+#Region ### START Koda GUI section ### Form=C:\Users\Crash\Desktop\otpbot\WC\OtpCfg.kxf
 $Form1 = GUICreate("OtpCfg", 452, 194, 302, 171)
 GUISetOnEvent($GUI_EVENT_CLOSE, "Form1Close")
 $cmbSetting = GUICtrlCreateCombo("", 101, 10, 344, 25, BitOR($CBS_DROPDOWNLIST, $CBS_AUTOHSCROLL))
@@ -76,7 +77,7 @@ LoadSettingInfo()
 Combo1Change()
 GUICtrlSetColor($inValue, 0x000000)
 GUISetState(@SW_SHOW)
-#endregion ### END Koda GUI section ###
+#EndRegion ### END Koda GUI section ###
 
 While 1
 	PollEditColor()
