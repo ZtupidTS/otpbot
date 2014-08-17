@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.8.3.188
+#AutoIt3Wrapper_Res_Fileversion=6.8.3.189
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crash_demons
 #AutoIt3Wrapper_Res_Language=1033
@@ -311,7 +311,7 @@ Func OnStateChange($oldstate, $newstate)
 			Cmd("USER " & StringReplace($USERNAME, '~', '') & " X * :OTP22 Utility Bot")
 		Case $S_ON
 			Cmd('JOIN ' & $CHANNEL)
-			If StringLen($ALTCHANNELS) Then Cmd('JOIN ' & StringStripWS($ALTCHANNELS, 8))
+			If StringLen($ALTCHANNELS) Then Cmd('JOIN ' & StringStripWS($ALTCHANNELS, 1+2+4))
 		Case $S_CHAT
 			If $TestMode Then; whatever needs debugging at the moment.
 				;otp22_getentries()
