@@ -43,8 +43,7 @@ Func quilava_decode($hexIn)
 	Local $o=""
 	For $p=1 To StringLen($hexIn)
 		Local $c=StringMid($hexIn,$p,1)
-		Dec($c); converts hex to decimal, in this case we just care about the validation @error
-		If @error Then
+		If Not StringRegExp($c,"^[A-F0-9]$") Then
 			$f&=$c
 			$c=''
 		EndIf
