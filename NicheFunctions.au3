@@ -26,6 +26,51 @@ _Help_Register("FlipBits","<binary string>","Inverts a binary string switching 1
 _Help_Register("uint16","<integer>","Performs a Modulo 65536 operation.")
 _Help_Register("UTC","","Retrieve the UTC time and date from... timeanddate.com")
 _Help_Register("WA","<query>","Queries Wolfram Alpha for information on the input.")
+_Help_Register("QUID","<hex>","Decodes a Quilava.net string (where the first half of the hex string is a set of the Most Significant hex digits and the second half is the Least Significant) See Also: %!%HELP QUIE")
+_Help_Register("QUIE","<string>","Encodes a Quilava.net string (where the first half of the hex string is a set of the Most Significant hex digits and the second half is the Least Significant) See Also: %!%HELP QUID")
+
+
+Func COMMAND_QUID($h)
+	Return quilava_decode($h)
+EndFunc
+Func COMMAND_QUIE($s)
+	Return quilava_encode($s)
+EndFunc
+
+Func quilava_decode($hexIn)
+	Local $s=""
+	Local $f=""
+	Local $o=""
+	For $p=1 To StringLen($hexIn)
+		Local $c=StringMid($hexIn,$p,1)
+		Dec($c); converts hex to decimal, in this case we just care about the validation @error
+		If @error Then
+			$f&=$c
+			$c=''
+		EndIf
+		$s&=$c
+	Next
+	ConsoleWrite("Filtered characters: "&$f&" ("&StringLen($f)&")"&@CRLF)
+	;MsgBox(0,0,$f)
+	Local $l=Int(StringLen($s)/2)
+	For $p=1 To $l
+		$o&=Chr(Dec(StringMid($s,$p,1)&StringMid($s,$l+$p,1)))
+	Next
+	Return BinaryToString(StringToBinary($o,1),4)
+EndFunc
+
+Func quilava_encode($strIn)
+	Local $h=StringTrimLeft(StringToBinary($strIn,4),2)
+	Local $l=StringLen($h)
+	Local $oa=""
+	Local $ob=""
+	For $p=1 To $l Step 2
+		$oa&=StringMid($h,$p+0,1)
+		$ob&=StringMid($h,$p+1,1)
+	Next
+	Return $oa&$ob
+EndFunc
+
 
 
 Func __wolfram($s)
