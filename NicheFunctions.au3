@@ -30,10 +30,10 @@ _Help_Register("QUID","<hex>","Decodes a Quilava.net string (where the first hal
 _Help_Register("QUIE","<string>","Encodes a Quilava.net string (where the first half of the hex string is a set of the Most Significant hex digits and the second half is the Least Significant) See Also: %!%HELP QUID")
 
 
-Func COMMAND_QUID($h)
+Func COMMANDV_QUID($h)
 	Return quilava_decode($h)
 EndFunc
-Func COMMAND_QUIE($s)
+Func COMMANDV_QUIE($s)
 	Return quilava_encode($s)
 EndFunc
 
