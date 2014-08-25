@@ -26,12 +26,22 @@ _Help_Register("FlipBits","<binary string>","Inverts a binary string switching 1
 _Help_Register("uint16","<integer>","Performs a Modulo 65536 operation.")
 _Help_Register("UTC","","Retrieve the UTC time and date from... timeanddate.com")
 _Help_Register("WA","<query>","Queries Wolfram Alpha for information on the input.")
-_Help_Register("QUID","<hex>","Decodes a Quilava.net string (where the first half of the hex string is a set of the Most Significant hex digits and the second half is the Least Significant) See Also: %!%HELP QUIE")
+_Help_Register("QUID","<hex/pastebin>","Decodes a Quilava.net string or Pastebin (where the first half of the hex string is a set of the Most Significant hex digits and the second half is the Least Significant) See Also: %!%HELP QUIE")
 _Help_Register("QUIE","<string>","Encodes a Quilava.net string (where the first half of the hex string is a set of the Most Significant hex digits and the second half is the Least Significant) See Also: %!%HELP QUID")
 
 
+
+
 Func COMMANDV_QUID($h)
-	Return quilava_decode($h)
+	If StringInStr($h,"pastebin") Then
+		Local $id = _Niche_getpastebin($h)
+		If @error <> 0 Then Return SetError(1, 0, "")
+		Local $link = "http://pastebin.com/raw.php?i=" & $id
+		Local $data = BinaryToString(_InetRead($link))
+		Return quilava_decode($data)
+	Else
+		Return quilava_decode($h)
+	EndIf
 EndFunc
 Func COMMANDV_QUIE($s)
 	Return quilava_encode($s)
