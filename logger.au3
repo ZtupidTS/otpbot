@@ -177,8 +177,7 @@ Func _Logger_UserCrossRef($value,$fieldvalue,$fieldref)
 		$refs_str&=$refs[$i]
 	Next
 	$values=_Logger_UserSearchAll($refs_str,$fieldref,   $fieldvalue,  1);compound query for all refs - looped for each year.
-	$values=_ArrayUnique($values)
-	If Int($values[0])=$values[0] Then _ArrayDelete($values,0)
+	$values=_ArrayUnique0($values)
 
 	For $i=0 To UBound($values)-1
 		If $values[$i]='Set' Then $values[$i]=''
@@ -204,8 +203,7 @@ Func _Logger_UserSearchAll($search,$fieldsearch,$fieldresult,$compound=0)
 		Local $a_tmp=_Logger_UserSearch($year,$search,$fieldsearch,$fieldresult,1,$compound); find fieldref results where line[fieldvalue] = value
 		_ArrayConcatenate($results,$a_tmp)
 	Next
-	$results=_ArrayUnique($results)
-	If Int($results[0])=$results[0] Then _ArrayDelete($results,0)
+	$results=_ArrayUnique0($results)
 	Return $results
 EndFunc
 Func _Logger_UserSearch($year,$search,$fieldsearch,$fieldresult,$stripcount=0,$compound=0); fields:  0=>chat line 1=>nickname 2=>usernametext 3=>hostname
@@ -231,12 +229,7 @@ Func _Logger_UserSearch($year,$search,$fieldsearch,$fieldresult,$stripcount=0,$c
 	Local $b=''
 	;_ArrayDisplay($a)
 	If $fieldresult>0 Then
-		Local $b=_ArrayUnique($a)
-		If $stripcount Then
-			If Int($b[0])=$b[0] Then _ArrayDelete($b,0)
-		Else
-			$b[0]&=' Results:'
-		EndIf
+		Local $b=_ArrayUnique0($a)
 		_ArraySort($b,0,1)
 	Else
 		$b=$a
@@ -244,6 +237,18 @@ Func _Logger_UserSearch($year,$search,$fieldsearch,$fieldresult,$stripcount=0,$c
 	ConsoleWrite(_ArrayToString($b)&@CRLF)
 	Return $b
 
+EndFunc
+
+Func _ArrayUnique0(ByRef $array)
+	Local $tmp=_ArrayUnique($array)
+	Local $num=UBound($tmp)
+	If $num=1 Then
+		$tmp[0]=''
+	Else
+		_ArrayDelete($tmp,0)
+	EndIf
+	Return $tmp;
+	;$array=$tmp
 EndFunc
 
 
