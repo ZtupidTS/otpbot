@@ -178,6 +178,7 @@ Func _Logger_UserCrossRef($value,$fieldvalue,$fieldref)
 	Next
 	$values=_Logger_UserSearchAll($refs_str,$fieldref,   $fieldvalue,  1);compound query for all refs - looped for each year.
 	$values=_ArrayUnique($values)
+	If Int($values[0])=$values[0] Then _ArrayDelete($values,0)
 
 	For $i=0 To UBound($values)-1
 		If $values[$i]='Set' Then $values[$i]=''
