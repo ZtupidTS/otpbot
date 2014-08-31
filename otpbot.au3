@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.9.3.196
+#AutoIt3Wrapper_Res_Fileversion=6.9.3.197
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crash_demons
 #AutoIt3Wrapper_Res_Language=1033
@@ -44,7 +44,7 @@ Opt('TrayOnEventMode', 1)
 
 
 #Region ;------------CONFIG
-Global $TestMode = 0
+Global $TestMode = 1
 
 Global $SERV = Get("server", "irc.freenode.net", "config")
 Global $PORT = Get("port", 6667, "config")
@@ -318,19 +318,19 @@ Func OnStateChange($oldstate, $newstate)
 				$NICK = $_UserInfo_TestUser
 				;Msg(Process_Message('who', 'where', '@help General'))
 				;Msg(Process_Message('who', 'where', '@help AutoIt'))
-				Msg(Process_Message('who', 'where', '@convert 1 MB to KB'))
+				;Msg(Process_Message('who', 'where', '@convert 1 MB to KB'))
 				ConsoleWrite(@CRLF & "----------------------" & @CRLF)
-				_Help_OutputWikiListing(0)
+				;_Help_OutputWikiListing(0)
 				ConsoleWrite(@CRLF & "----------------------" & @CRLF)
-				_Help_OutputWikiListing(1)
+				;_Help_OutputWikiListing(1)
 				ConsoleWrite(@CRLF & "----------------------" & @CRLF)
-				Msg(Process_Message($NICK, 'where', "@dial 16041 202"))
+				;Msg(Process_Message($NICK, 'where', "@dial 16041 202"))
 				;COMMAND_tinyurl('http://google.com/y4')
 				;COMMAND_tinyurl('http://google.com/y5')
 				;COMMAND_tinyurl('http://google.com/y6')
-				Sleep(20000)
+				;Sleep(20000)
 				_OtpHost_flog('Quitting OtpBot Testmode')
-				Exit
+				;Exit
 			EndIf
 	EndSwitch
 EndFunc   ;==>OnStateChange
