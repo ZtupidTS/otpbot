@@ -263,7 +263,7 @@ Func Process_Message($who, $where, $what); called by Process() which parses IRC 
 			;			'Pastebin Decoder commands: bluehill elpaso littlemissouri | ' & _
 			;			'Coordinates: UTM LL coord | NATO Decoding: 5GramFind 5Gram WORM | Other: ITA2 ITA2S lengthstobits flipbits ztime calc'
 			Case 'version'
-				Return "OTPBOT v" & $VERSION & " - Crash_Demons | UTM - Nadando | DNS - Progandy | BigNum - Eukalyptus" & $VersionInfoExt
+				Return "OTPBOT v" & $VERSION & " - Crash_Demons | UTM - Nadando | DNS - Progandy | BigNum - Eukalyptus | Base32 - Stephen Podhajecki | Base64 - blindwig & Mikeytown2" & $VersionInfoExt
 			Case 'updatechan', 'update_chan'
 				Return OTP22News_Read()
 			Case 'update'
