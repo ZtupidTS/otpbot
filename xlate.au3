@@ -22,19 +22,19 @@ _Help_RegisterCommand("base2base","<from base A> <to base B> <integer in baseA>"
 ;_Help_RegisterCommand("string2base","<to base B> <integer in baseA>","Converts a string from Base256 to BaseB. Example %!%string2base 10 8 123 outputs `173` as it converted decimal to octal.  Note: only Base 2-64 supported [without encoding].")
 
 
-_Help_RegisterCommand("bind","<binary digits>","Converts binary digits to a string.  Note: If you include spaces, these are used for byte separation.  Without spaces, 8-bit encoding is assumed.  Use %!%BinE to encode.")
-_Help_RegisterCommand("bine","<string>","Converts a string to binary digits. Use %!%binD to decode.")
+_Help_RegisterCommand("BinD","<binary digits>","Converts binary digits to a string.  Note: If you include spaces, these are used for byte separation.  Without spaces, 8-bit encoding is assumed.  Use %!%BinE to encode.")
+_Help_RegisterCommand("BinE","<string>","Converts a string to binary digits. Use %!%binD to decode.")
 
-_Help_RegisterCommand("octe","<text>","Converts a string to octal data. Use %!%octD to decode")
-_Help_RegisterCommand("octd","<octal bytes>","Converts octal data to a string. Use %!%octE to encode.")
+_Help_RegisterCommand("OctE","<text>","Converts a string to octal data. Use %!%octD to decode")
+_Help_RegisterCommand("OctD","<octal bytes>","Converts octal data to a string. Use %!%octE to encode.")
 
 
 
-_Help_RegisterCommand("decd","<decimal bytes>","Converts decimal bytes to a string.   Example: %!%decd 68 82 79 80  results in `DROP` Deprecated aliases: %!%xascii, %!%xdec")
-_Help_RegisterCommand("dece","<string>","Converts a string to decimal bytes. Equivalent to perfoming %!%Asc on each character. Only supports values 0-255. Decode with %!%decd.")
+_Help_RegisterCommand("DecD","<decimal bytes>","Converts decimal bytes to a string.   Example: %!%decd 68 82 79 80  results in `DROP` Deprecated aliases: %!%xascii, %!%xdec")
+_Help_RegisterCommand("DecE","<string>","Converts a string to decimal bytes. Equivalent to perfoming %!%Asc on each character. Only supports values 0-255. Decode with %!%decd.")
 
-_Help_RegisterCommand("hexd","<hex digits>","Converts hex data to a string.  Similar to inbuilt %!%_HexToString or %!%BinaryToString but allows spacing. Deprecated aliases: %!%xhex. Encode with %!%hexe")
-_Help_RegisterCommand("hexe","<string>","Converts a string to hex data.  Alias for inbuilt command %!%_StringToHex.  Decode with %!%hexd.")
+_Help_RegisterCommand("HexD","<hex digits>","Converts hex data to a string.  Similar to inbuilt %!%_HexToString or %!%BinaryToString but allows spacing. Deprecated aliases: %!%xhex. Encode with %!%hexe")
+_Help_RegisterCommand("HexE","<string>","Converts a string to hex data.  Alias for inbuilt command %!%_StringToHex.  Decode with %!%hexd.")
 
 
 
