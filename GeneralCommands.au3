@@ -4,31 +4,32 @@
 
 
 Global Enum $_Help_ListingFormat_GoogleCode, $_Help_ListingFormat_MediaWiki
-Global $_Help_Commands[1]=['GRP:General']
-Global $_Help_Usage[1]=['']
-Global $_Help_Descriptions[1]=['']
+
+Global Const $_Help_GroupsMax=0x40
+Global Enum $_Help_Group_Name=0, $_Help_Group_Description, $_Help_Group_CommandArrayName, $_Help_Group_HelpCallback, $_Help_GroupsFields
+Global $_Help_Groups[$_Help_GroupsMax][$_Help_GroupsFields]
+
+Global Const $_Help_Fmt_iLast="Ubound($%s)-1"
+Global Const $_Help_Fmt_Element="$%s[%s][%s]"
 
 
-Global $_More_Entries=10
-Global $_More_Buffer[$_More_Entries][2]; session name[0] and buffered overflow text[1]
-Global $_More_NextEntry=0
+Global $_Help_PreviousGroup=''
 
-#include "AutoItHelp.au3"
-_Au3_Startup($_Help_Commands,$_Help_Usage,$_Help_Descriptions)
+;#include "AutoItHelp.au3"
+;_Au3_Startup($_Help_Commands,$_Help_Usage,$_Help_Descriptions)
 
 
+Global $_Help_Commands[3][3] = [ _
+	["help","[command name]",'Lists and provides help information for registered commands. '& _
+		'Use the syntax "help command" for information about the command. (eg: "%!%help more" provides information about %!%More.).  '& _
+		'The Usage information for each command displays the parameters you can use for the command. Brackets like [] incidate the parameter is optional. Nested brackets may imply that a series of optional parameters requires each previous one to be used first.'], _
+	["tokens","<string>",'Returns the tokenized version of the command string, accounting for parameters containing spaces as marked with " ".'] _
+]
+_Help_RegisterGroup('General','','_Help_Commands')
 
-_Help_Register("help","[command name]",'Lists and provides help information for registered commands. '& _
-'Use the syntax "help command" for information about the command. (eg: "%!%help more" provides information about %!%More.).  '& _
-'The Usage information for each command displays the parameters you can use for the command. Brackets like [] incidate the parameter is optional. Nested brackets may imply that a series of optional parameters requires each previous one to be used first.')
-_Help_Register("more","","Provides more text from the end of a previous post that was cut off. Using `%!%more` will not clear the original text held unless the new text is also too long or the text held is the oldest cached entry. Note: `%!%more` results are specific to PM username and channel name.")
 
-_Help_Register("tokens","<string>",'Returns the tokenized version of the command string, accounting for parameters containing spaces as marked with " ".')
-
-
-
-#include "stats.au3"; have to put this here because of initialization code using globals.
-#include "Calc.au3"
+;#include "stats.au3"; have to put this here because of initialization code using globals.
+;#include "Calc.au3"
 
 Global Enum $_CMD_TOKEN_COUNT=0,$_CMD_START=1,$_CMD_NAME=1,$_CMD_PARAM_START=2
 
@@ -118,6 +119,21 @@ Func _Help_OutputWikiListing($fmt)
 	If $fmt=$_Help_ListingFormat_GoogleCode Then ConsoleWrite("<wiki:comment>"&@CRLF&$comment&@CRLF&"</wiki:comment>"&@CRLF)
 	If $fmt=$_Help_ListingFormat_MediaWiki Then ConsoleWrite("<!-- "&$comment&" -->"&@CRLF)
 
+	ConsoleWrite("Wiki Command Output under development"&@CRLF)
+#cs
+	For $iGrp=0 To $_Help_GroupsMax
+		If $_Help_Groups[$iGrp][$_Help_Group_Name]='' Then ExitLoop
+		Local $sCommandArrayName=$_Help_Groups[$iGrp][$_Help_Group_CommandArrayName]
+		Local $iEnd=Execute(StringFormat($_Help_Fmt_iLast,$sCommandArrayName))
+		For $iCmd=0 To $iEnd
+			Local $sCommand=Execute(StringFormat($_Help_Fmt_Element,$sCommandArrayName,$iCmd,0))
+			Local $sParams=Execute(StringFormat($_Help_Fmt_Element,$sCommandArrayName,$iCmd,0))
+			Local $sDesc=Execute(StringFormat($_Help_Fmt_Element,$sCommandArrayName,$iCmd,1))
+		Next
+	Next
+#ce
+#cs
+
 	ConsoleWrite("OtpBot provides various commands useful to IRC users and ARG players alike. Commands are divided into the following topic groups: ")
 	Local $sCurGroup=""
 	For $i=0 To UBound($_Help_Commands)-1
@@ -171,89 +187,111 @@ Func _Help_OutputWikiListing($fmt)
 
 
 	ConsoleWrite(@CRLF&@CRLF)
+	#ce
 EndFunc
 
-
-
-Func _Help_RegisterGroup($group)
-	_ArrayAdd($_Help_Commands,"GRP:"&$group)
-	;_ArrayAdd($_Help_Commands,"| "&$group&":")
-	_ArrayAdd($_Help_Usage,"<none>")
-	_ArrayAdd($_Help_Descriptions,"This is a command group.")
-EndFunc
-Func _Help_Set($i,$command,$usage="[parameters unknown]",$description="No help infomation is available for this command.")
-	$_Help_Commands[$i]=$command
-	$_Help_Usage[$i]=$usage
-	$_Help_Descriptions[$i]=$description
-EndFunc
-Func _Help_Register($command,$usage="[parameters unknown]",$description="No help infomation is available for this command.")
-	_ArrayAdd($_Help_Commands,$command)
-	_ArrayAdd($_Help_Usage,$usage)
-	_ArrayAdd($_Help_Descriptions,$description)
-EndFunc
-Func _Help_RegisterCommand($command,$usage="[parameters unknown]",$description="No help infomation is available for this command.")
-	Return _Help_Register($command,$usage,$description)
-EndFunc
-Func _Help_ListGroups()
-	Local $s="Topics:"
-	For $i=0 To UBound($_Help_Commands)-1
-		Local $isGroup=(StringLeft($_Help_Commands[$i],4)='GRP:')
-		If Not $isGroup Then ContinueLoop
-		Local $sGroup=StringTrimLeft($_Help_Commands[$i],4)
-		$s&=" "&$sGroup
+Func _Help_GetEmptyGroup()
+	For $i=0 To $_Help_GroupsMax-1
+		If $_Help_Groups[$i][$_Help_Group_Name]='' Then Return SetError(0,0,$i)
 	Next
+	Return SetError(1,0,-1)
+EndFunc
+Func _Help_GetGroup($sGroup)
+	Return _ArraySearch($_Help_Groups,$sGroup,0,$_Help_GroupsMax-1,0,0,1,0); perform a search for the index of the group entry using the [0] (name) element of each entry.
+EndFunc
+
+Func _Help_RegisterGroup($sName, $sDescription, $sCommandArrayName='', $sCallback='')
+	Local $i=_Help_GetEmptyGroup()
+	If $i<0 Then Return 0
+	$_Help_Groups[$i][$_Help_Group_Name]=$sName
+	$_Help_Groups[$i][$_Help_Group_Description]=$sDescription
+	$_Help_Groups[$i][$_Help_Group_CommandArrayName]=$sCommandArrayName
+	$_Help_Groups[$i][$_Help_Group_HelpCallback]=$sCallback
+	$_Help_PreviousGroup=$sName
+EndFunc
+Func _Help_SetCurrentGroup($sGroup)
+	$_Help_PreviousGroup=$sGroup
+EndFunc
+Func _Help_AddSingleCommand($name,$usage,$desc)
+	Local $tmp[1][3]=[[$name,$usage,$desc]]
+	Local $sCommandArrayName="HELP_SINGLECMD_"&$name&Hex(Random(0,0x7FFFFFFF,1))
+	Assign($sCommandArrayName,$tmp,2)
+	_Help_RegisterGroup($_Help_PreviousGroup,'',$sCommandArrayName)
+EndFunc
+
+
+Func _Help_ListGroups()
+	Local $display[1]=["Topics:"]
+	For $i=0 To $_Help_GroupsMax-1
+		Local $sGrpName=$_Help_Groups[$i][$_Help_Group_Name]
+		If $sGrpName='' Then ExitLoop
+		If _ArraySearch($display,$sGrpName)<0 Then _ArrayAdd($display,$sGrpName)
+	Next
+	Local $s=_ArrayToString($display,' ')
 	Return $s&" ||| Use the command form `%!%help topicname` to show commands in that topic. (eg: `%!%help General`)"
 EndFunc
+
 Func _Help_IsGroup($group)
-	For $i=0 To UBound($_Help_Commands)-1
-		Local $isGroup=(StringLeft($_Help_Commands[$i],4)='GRP:')
-		Local $sGroup=StringTrimLeft($_Help_Commands[$i],4)
-		If $isGroup And $sGroup=$group Then Return True
-	Next
-	Return False
+	Return (_Help_GetGroup($group) >= 0)
 EndFunc
 Func _Help_ListCommands($group)
-	Local $s=$group&" Commands:"
-	Local $group_started=False
-	Local $group_ended=False
-	For $i=0 To UBound($_Help_Commands)-1
-		If StringLen($_Help_Commands[$i])=0 Then ContinueLoop
-		Local $isGroup=(StringLeft($_Help_Commands[$i],4)='GRP:')
-		Local $sGroup=StringTrimLeft($_Help_Commands[$i],4)
-		If $isGroup Then
-			If $sGroup=$group Then
-				$group_started=True
-			Else
-				If $group_started Then $group_ended=True
-			EndIf
-		Else
-			If StringInStr($_Help_Commands[$i],' ') Then ContinueLoop
-			If $group_started And (Not $group_ended) Then  $s&=" %!%"&$_Help_Commands[$i]
+	Local $display[1]=["Commands:"]
+
+	For $iGrp=0 To $_Help_GroupsMax
+		If $_Help_Groups[$iGrp][$_Help_Group_Name]='' Then ExitLoop
+		If $_Help_Groups[$iGrp][$_Help_Group_Name]=$group Then; there may be multiple entries for a group
+			Local $sCommandArrayName=$_Help_Groups[$iGrp][$_Help_Group_CommandArrayName]
+			Local $iEnd=Execute(StringFormat($_Help_Fmt_iLast,$sCommandArrayName))
+			For $iCmd=0 To $iEnd
+				Local $sCommandName=Execute(StringFormat($_Help_Fmt_Element,$sCommandArrayName,$iCmd,0))
+				_ArrayAdd($display,'%!%'&$sCommandName)
+			Next
 		EndIf
 	Next
+	If UBound($display)=1 Then $display[0]="No commands exist for this group/library."
+
+	Local $s=_ArrayToString($display,' ')
 	Return $s&" ||| Use the command form `%!%help commandname` for information about a specific command. (eg: `%!%help more`)"
 EndFunc
 
 Func _Help_FindCommand($command,$subcommand="")
 	If StringRegExp(StringLeft($command,1),'^\W$') Then $command=StringTrimLeft($command,1)
 	If StringLen($subcommand) Then $command&=" "&$subcommand
-	For $i=0 To UBound($_Help_Commands)-1
-		If $_Help_Commands[$i]=$command Then Return $i
+
+	Local $find[2]=[-1,-1]
+
+	For $iGrp=0 To $_Help_GroupsMax
+		If $_Help_Groups[$iGrp][$_Help_Group_Name]='' Then ExitLoop
+		Local $sCommandArrayName=$_Help_Groups[$iGrp][$_Help_Group_CommandArrayName]
+		Local $iEnd=Execute(StringFormat($_Help_Fmt_iLast,$sCommandArrayName))
+		For $iCmd=0 To $iEnd
+			Local $sCommandName=Execute(StringFormat($_Help_Fmt_Element,$sCommandArrayName,$iCmd,0))
+			If $sCommandName=$command Then
+				$find[0]=$iGrp
+				$find[1]=$iCmd
+				Return $find
+			EndIf
+		Next
 	Next
-	Return -1
+	Return 0
 EndFunc
 Func _Help_Command($command,$subcommand="")
-	Local $i=_Help_FindCommand($command,$subcommand)
+	Local $find=_Help_FindCommand($command,$subcommand)
 	If StringRegExp(StringLeft($command,1),'^\W$') Then $command=StringTrimLeft($command,1)
 	If StringLen($subcommand) Then $command&=" "&$subcommand
-	If $i=-1 Then Return 'help: No information available for the command `%!%'&$command&'`.'
+	If Not IsArray($find) Then Return 'help: No information available for the command `%!%'&$command&'`.'
 
+	Local $iGrp=$find[0]
+	Local $iCmd=$find[1]
+	Local $sCommandArrayName=$_Help_Groups[$iGrp][$_Help_Group_CommandArrayName]
+	Local $sName=Execute(StringFormat($_Help_Fmt_Element,$sCommandArrayName,$iCmd,0))
+	Local $sUsage=Execute(StringFormat($_Help_Fmt_Element,$sCommandArrayName,$iCmd,1))
+	Local $sDesc=Execute(StringFormat($_Help_Fmt_Element,$sCommandArrayName,$iCmd,2))
 
+	;If $_Help_Descriptions[$i] = "###autoit###" Then _Au3_UpdateHelpEntry($i,$command)
+	;If $_Help_Descriptions[$i] = "###udf###" Then _Au3_UpdateHelpEntryUDF($i,$command)
 
-	If $_Help_Descriptions[$i] = "###autoit###" Then _Au3_UpdateHelpEntry($i,$command)
-	If $_Help_Descriptions[$i] = "###udf###" Then _Au3_UpdateHelpEntryUDF($i,$command)
-
-	Return StringUpper('%!%'&$_Help_Commands[$i])&' '&$_Help_Usage[$i]&' - '&$_Help_Descriptions[$i]
+	Return StringUpper('%!%'&$sName)&' '&$sUsage&' - '&$sDesc
 EndFunc
 Func COMMAND_Help($command="",$subcommand="")
 	If $command="" Then Return _Help_ListGroups()
@@ -264,38 +302,5 @@ EndFunc
 
 ;--------------------------------------------------------
 
-Func _More_SessionName($who, $where)
-	Local $location=$where
-	If Not (StringLeft($location,1)="#") Then $location=$who
-	Return $location
-EndFunc
-Func _More_SessionExists($sess)
-	For $i=0 To $_More_Entries-1
-		If $_More_Buffer[$i][0]=$sess Then Return $i;case insensitive?
-	Next
-	Return -1
-EndFunc
-
-Func _More_Store($who, $where, $what)
-	Local $sess=_More_SessionName($who, $where)
-	Local $i=_More_SessionExists($sess)
-	If $i<0 Then; if i>0, the session already exists, so update its data.  If i<0, this is a new session, so add it to the FIFO.
-		$i=$_More_NextEntry
-		$_More_NextEntry=Mod($_More_NextEntry+1,$_More_Entries);0 through $_More_Entries-1 looping FIFO
-	EndIf
-
-	$_More_Buffer[$i][0]=$sess
-	$_More_Buffer[$i][1]=$what
-EndFunc
-Func _More_Retrieve($who, $where, $what)
-	Local $sess=_More_SessionName($who, $where)
-	Local $i=_More_SessionExists($sess)
-	If $i<0 Then Return "Error: I could not find any More data for a conversation with `"&$sess&"`."
-	Return $_More_Buffer[$i][1]
-EndFunc
-
-Func COMMANDX_more($who, $where, $what, $acmd)
-	Return _More_Retrieve($who, $where, $what)
-EndFunc
 
 
