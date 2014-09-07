@@ -97,6 +97,40 @@ Func _Cmd_GetParameter(ByRef $acmd,$index)
 	Return SetError(0,0,$acmd[$iWant])
 EndFunc
 
+Func CommandToString($acmd, $start = 1, $end = -1)
+	If $end = -1 Then $end = UBound($acmd) - 1
+	Local $out = ""
+	For $i = $start To $end
+		If StringLen($out) Then $out &= ' '
+		$out &= $acmd[$i]
+	Next
+	Return $out
+EndFunc   ;==>CommandToString
+
+Func Split($scmd)
+	$scmd = StringStripWS($scmd, 1 + 2)
+	Local $parts = StringSplit($scmd, ' ')
+
+	Local $iStr = 0
+
+	Local $max = UBound($parts) - 1
+	For $i = 1 To $max
+		If $i > $max Then ExitLoop
+		If $i > 1 And $iStr = 0 And StringLeft($parts[$i], 1) == ':' Then; beginning of string section, Index of StringPortion is NOT set yet, and this sectio begins with a colon (marking a string to the end of the command)
+			$parts[$i] = StringTrimLeft($parts[$i], 1)
+			$iStr = $i
+		EndIf
+		If $iStr And $i > $iStr Then; continuing string section
+			$parts[$iStr] &= ' ' & $parts[$i];append to string section
+			;$parts[$i]=''
+			_ArrayDelete($parts, $i)
+			$i -= 1;  negate the effects of the for loop's incrementing the next item will have the same index as this one (since we just deleted this one)
+			$max -= 1
+		EndIf
+	Next
+	_ArrayDelete($parts, 0)
+	Return $parts
+EndFunc   ;==>Split
 
 ;------------------------------------------------------------------------------
 

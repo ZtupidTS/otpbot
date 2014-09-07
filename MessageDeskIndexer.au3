@@ -19,11 +19,12 @@ Global $_MDI_ResponseTypes2[9]=['Hangup','Coord','Referral','location','Book','N
 
 
 
-_Help_RegisterGroup("MessageDesk")
-_Help_RegisterCommand("md","<input code> <response type> <response> [notes]","Submits an entry to the Message Desk Indexer noting the outcome of a call to Message Desk that you made"& _
+Global $_MD_Commands[2][3]=[ _
+["md","<input code> <response type> <response> [notes]","Submits an entry to the Message Desk Indexer noting the outcome of a call to Message Desk that you made"& _
 ' with an input and a response. . If you need to use spaces in any of the fields, surround the text with "double quotes".'& _
-'The Response Type can be one of the following: '&_ArrayToString($_MDI_ResponseTypes2,',')&' - However, some partial matches are accepted also.')
-_Help_RegisterCommand("MDIDebug","",'Returns internal state information about MessageDeskIndexer polling.')
+'The Response Type can be one of the following: '&_ArrayToString($_MDI_ResponseTypes2,',')&' - However, some partial matches are accepted also.'], _
+["MDIDebug","",'Returns internal state information about MessageDeskIndexer polling.'] ]
+_Help_RegisterGroup("MessageDesk","Message Desk Indexer commands","_MD_Commands")
 
 
 Func COMMAND_MDIDebug()

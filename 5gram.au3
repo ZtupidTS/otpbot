@@ -2,12 +2,12 @@
 #include "GeneralCommands.au3"
 
 ; Note to reviewers: this only lists information from a website hosting recordings.
-_Help_RegisterGroup("NATO")
-_Help_RegisterCommand("5gram","<number of keyfile> <string of 5-letter words>","Decodes a 5-gram message using OTPNato and a P#.txt file (right-to-left). "& _
+Local $_NATO_Commands[2][3]=[ _
+["5gram","<number of keyfile> <string of 5-letter words>","Decodes a 5-gram message using OTPNato and a P#.txt file (right-to-left). "& _
 "Using more than one digit for the keyfile will decode with each keyfile in sequence.  "& _
-"Using 'e' at the beginning of the number will perform reverse decoding (left-to-right).  Using '*' at the end of the number will perform a final decode using P#.txt files 1-4 separately.")
-_Help_RegisterCommand("5gramFind","<number of keyfile> <5-letter word>","Finds the lines of a P#.txt file that a particular 5gram appears on (there is always two).")
-
+"Using 'e' at the beginning of the number will perform reverse decoding (left-to-right).  Using '*' at the end of the number will perform a final decode using P#.txt files 1-4 separately."], _
+["5gramFind","<number of keyfile> <5-letter word>","Finds the lines of a P#.txt file that a particular 5gram appears on (there is always two)."] ]
+_Help_RegisterGroup("NATO","NATO 5-Letter commands","_NATO_Commands")
 
 #region ;---NATO 5gram Decoding
 

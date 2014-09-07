@@ -17,10 +17,11 @@ Global $LOG_RESULT_FIELDS[$FIELD_COUNT]=['Full log line','Nickname','Username te
 
 Global Enum $_Logger_Type_Post=0, $_Logger_Type_Action, $_Logger_Type_Command, $_Logger_Type_CommandEx
 
-_Help_RegisterGroup("log")
-_Help_RegisterCommand("last","<search>","Find the last posts containing a phrase in the logs.")
-_Help_RegisterCommand("lastby","<user> [search]","Find the last posts by a user in the logs. Optionally, you may supply a search phrase to narrow the results.")
-_Help_RegisterCommand("aliases","<nickname> [doUserMatch]","Find possible aliases for a nickname using the logs. If 'doUserMatch' argument is entered as anything, a username search is also done. (takes longer) Note that this has possible false-positives and Username-text matches are even less reliable.")
+Local $_Log_Commands[3][3]=[ _
+["last","<search>","Find the last posts containing a phrase in the logs."], _
+["lastby","<user> [search]","Find the last posts by a user in the logs. Optionally, you may supply a search phrase to narrow the results."], _
+["aliases","<nickname> [doUserMatch]","Find possible aliases for a nickname using the logs. If 'doUserMatch' argument is entered as anything, a username search is also done. (takes longer) Note that this has possible false-positives and Username-text matches are even less reliable."]  ]
+_Help_RegisterGroup("Log","Chatlog-related commands","_Log_Commands")
 
 _Logger_Start()
 

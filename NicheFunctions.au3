@@ -9,25 +9,28 @@
 
 
 
-_Help_RegisterGroup("PGP")
-_Help_Register("GetKey","<keyid> [keyserver]","Retrieves a PGP key from a keyserver for use with the Verify command. The default server is pgp.mit.edu.")
-_Help_Register("Verify","<pastebin link>","Retrieves and verifies a PGP-signed message from a pastebin link. You may need to use the %!%GetKey first.")
+Local $_PGP_Commands[2][3]=[ _
+["GetKey","<keyid> [keyserver]","Retrieves a PGP key from a keyserver for use with the Verify command. The default server is pgp.mit.edu."], _
+["Verify","<pastebin link>","Retrieves and verifies a PGP-signed message from a pastebin link. You may need to use the %!%GetKey first."] ]
+_Help_RegisterGroup("PGP","PGP-Related Commands","_PGP_Commands")
 
 
 
-_Help_RegisterGroup("Niche")
-_Help_Register("Worm","<5gram entries>","Decodes 5gram messages using the OTP22 Green Book QR-Code table.  eg: `%!%worm FNAIU YPBIE`")
-_Help_Register("ZTime","<date string>","Attempts to present PRJMLPL-style date codes in a readable format. eg: `%!%ztime 31125959Z`")
-_Help_Register("ITA2","<binary string>","Decodes ITA2 bits into a string. eg: `%!%ITA2 10100001101101110000` (see http://en.wikipedia.org/wiki/Baudot_code#ITA2 )")
-_Help_Register("ITA2S","<binary string>","Decodes ITA2 bits into strings using various bit shifts on the input. See `help ita2` for more information.")
-_Help_Register("Ternary","<condition> <value A> <value B>","Performs a ternary operation. Note: all condition strings except for 0 and empty (blank parameter) evaluate to True internally.   eg: `%!%ternary 1 a b` or `%!%ternary 0 a b`")
-_Help_Register("LengthsToBits","<numeric string> [flip]","Translates a list of single-digit bit lengths into a binary string.  That is, every digit (`length`) represents the number of bits to print, and the value (1 or 0) alternates with each length.  If the `flip` paramter is given (as 1) then the binary string will be inverted in value.  eg: `%!%lengthstobits 4412 1`")
-_Help_Register("FlipBits","<binary string>","Inverts a binary string switching 1's and 0's similar to a binary NOT operation.  eg: `%!%flipbits 1011`")
-_Help_Register("uint16","<integer>","Performs a Modulo 65536 operation.")
-_Help_Register("UTC","","Retrieve the UTC time and date from... timeanddate.com")
-_Help_Register("WA","<query>","Queries Wolfram Alpha for information on the input.")
-_Help_Register("QUID","<hex/pastebin>","Decodes a Quilava.net string or Pastebin (where the first half of the hex string is a set of the Most Significant hex digits and the second half is the Least Significant) See Also: %!%HELP QUIE")
-_Help_Register("QUIE","<string>","Encodes a Quilava.net string (where the first half of the hex string is a set of the Most Significant hex digits and the second half is the Least Significant) See Also: %!%HELP QUID")
+Local $_Misc_Commands[12][3]=[ _
+["Worm","<5gram entries>","Decodes 5gram messages using the OTP22 Green Book QR-Code table.  eg: `%!%worm FNAIU YPBIE`"], _
+["ZTime","<date string>","Attempts to present PRJMLPL-style date codes in a readable format. eg: `%!%ztime 31125959Z`"], _
+["ITA2","<binary string>","Decodes ITA2 bits into a string. eg: `%!%ITA2 10100001101101110000` (see http://en.wikipedia.org/wiki/Baudot_code#ITA2 )"], _
+["ITA2S","<binary string>","Decodes ITA2 bits into strings using various bit shifts on the input. See `help ita2` for more information."], _
+["Ternary","<condition> <value A> <value B>","Performs a ternary operation. Note: all condition strings except for 0 and empty (blank parameter) evaluate to True internally.   eg: `%!%ternary 1 a b` or `%!%ternary 0 a b`"], _
+["LengthsToBits","<numeric string> [flip]","Translates a list of single-digit bit lengths into a binary string.  That is, every digit (`length`) represents the number of bits to print, and the value (1 or 0) alternates with each length.  If the `flip` paramter is given (as 1) then the binary string will be inverted in value.  eg: `%!%lengthstobits 4412 1`"], _
+["FlipBits","<binary string>","Inverts a binary string switching 1's and 0's similar to a binary NOT operation.  eg: `%!%flipbits 1011`"], _
+["uint16","<integer>","Performs a Modulo 65536 operation."], _
+["UTC","","Retrieve the UTC time and date from... timeanddate.com"], _
+["WA","<query>","Queries Wolfram Alpha for information on the input."], _
+["QUID","<hex/pastebin>","Decodes a Quilava.net string or Pastebin (where the first half of the hex string is a set of the Most Significant hex digits and the second half is the Least Significant) See Also: %!%HELP QUIE"], _
+["QUIE","<string>","Encodes a Quilava.net string (where the first half of the hex string is a set of the Most Significant hex digits and the second half is the Least Significant) See Also: %!%HELP QUID"] ]
+
+_Help_RegisterGroup("Misc","Miscellaneous commands",'_Misc_Commands')
 
 
 

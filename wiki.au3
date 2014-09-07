@@ -21,15 +21,15 @@ Global $wiki_cookies=''
 Global $wiki_edittoken=''
 Global $wiki_login_ts=0
 
+Global $_Wiki_Commands[6][3]=[ _
+["update","","Displays News information and current events. Note: the %!%newupdate command can be used to submit an update to the wiki."], _
+["updatechan","","Displays News information and current events - sent to the channel."], _
+["newupdate","summary","Posts a news update to the wiki. (alias: %!%new_update) Bot update time may exclude this message from the %!%UPDATE command for around 5min.  This command can only be used by registered IRC users from the public channel. Your account name will be recorded."], _
+["query","<query string>","Performs a Semantic-MediaWiki query and results CSV results."], _
+["page","<page name>","Looks up a page name on the wiki and provides a link. Provides the first title search result if no exact match is found."], _
+["search","<search terms>","Performs a search of the wiki by title name. If no results are found, a Text search is done."]  ]
 
-_Help_RegisterGroup("Wiki")
-_Help_RegisterCommand("update","","Displays News information and current events. Note: the %!%newupdate command can be used to submit an update to the wiki.")
-_Help_RegisterCommand("updatechan","","Displays News information and current events - sent to the channel.")
-_Help_RegisterCommand("newupdate","summary","Posts a news update to the wiki. (alias: %!%new_update) Bot update time may exclude this message from the %!%UPDATE command for around 5min.  This command can only be used by registered IRC users from the public channel. Your account name will be recorded.")
-_Help_RegisterCommand("query","<query string>","Performs a Semantic-MediaWiki query and results CSV results.")
-_Help_RegisterCommand("page","<page name>","Looks up a page name on the wiki and provides a link. Provides the first title search result if no exact match is found.")
-_Help_RegisterCommand("search","<search terms>","Performs a search of the wiki by title name. If no results are found, a Text search is done.")
-
+_Help_RegisterGroup("Wiki","Wiki platform commands","_Wiki_Commands")
 
 ;_UserInfo_Option_Add('notifyupdate')
 

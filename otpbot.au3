@@ -22,6 +22,7 @@
 #include "Calc.au3"
 #include "Wiki.au3"
 #include "HTTP.au3"
+#include "More.au3"
 #include "xlate.au3"
 #include "5gram.au3"
 #include "Stats.au3"
@@ -49,7 +50,7 @@ Global $TestMode = 0
 Global $SERV = Get("server", "irc.freenode.net", "config")
 Global $PORT = Get("port", 6667, "config")
 Global $CHANNEL = Get("channel", "#ARG", "config");persistant channel, will rejoin. can be invited to others (not persistant)
-Global $ALTCHANNELS = Get("altchannels", "#ARG", "config")
+Global $ALTCHANNELS = Get("altchannels", "", "config")
 Global $NICK = Get("nick", "OTPBot22", "config")
 Global $PASS = Get("password", "", "config"); If not blank, sends password both as server command and Nickserv identify; not tested though.
 Global $USERNAME = Get("username", $NICK, "config");meh
@@ -129,12 +130,13 @@ $_HTTP_Client_Name = "OtpBot"
 $_HTTP_Client_Version = $VERSION
 Global $_OtpHost_Info = ""
 
-_Help_RegisterGroup("Bot")
-_Help_RegisterCommand("uptime", "", "Displays uptime information about IRC Connection, OtpBot and OtpHost.")
-_Help_RegisterCommand("botping", "", "Sends a ping message to OtpHost.  Note: OtpHost pong responses are asynchronous and arrive at the bot's primary channel.")
-_Help_RegisterCommand("botupdate", "", "Requests OtpHost to check for updates. This may result in an immediate program update.  Note: OtpHost version responses are asynchronous and arrive at the bot's primary channel.")
-_Help_RegisterCommand("version", "", "Display version information about OtpBot.")
-_Help_RegisterCommand("debug", "", "Display command debugging, otphost, and keyfile debugging and status information.")
+Global $_Bot_Commands[5][3]=[ _
+["uptime", "", "Displays uptime information about IRC Connection, OtpBot and OtpHost."], _
+["botping", "", "Sends a ping message to OtpHost.  Note: OtpHost pong responses are asynchronous and arrive at the bot's primary channel."], _
+["botupdate", "", "Requests OtpHost to check for updates. This may result in an immediate program update.  Note: OtpHost version responses are asynchronous and arrive at the bot's primary channel."], _
+["version", "", "Display version information about OtpBot."], _
+["debug", "", "Display command debugging, otphost, and keyfile debugging and status information."] ]
+_Help_RegisterGroup("Bot","IRC Bot commands","_Bot_Commands")
 
 
 #EndRegion ;------------------INTERNAL VARIABLES
@@ -864,40 +866,6 @@ Func Cmd($scmd, $debugforce = False)
 	EndIf
 EndFunc   ;==>Cmd
 
-Func CommandToString($acmd, $start = 1, $end = -1)
-	If $end = -1 Then $end = UBound($acmd) - 1
-	Local $out = ""
-	For $i = $start To $end
-		If StringLen($out) Then $out &= ' '
-		$out &= $acmd[$i]
-	Next
-	Return $out
-EndFunc   ;==>CommandToString
-
-Func Split($scmd)
-	$scmd = StringStripWS($scmd, 1 + 2)
-	Local $parts = StringSplit($scmd, ' ')
-
-	Local $iStr = 0
-
-	Local $max = UBound($parts) - 1
-	For $i = 1 To $max
-		If $i > $max Then ExitLoop
-		If $i > 1 And $iStr = 0 And StringLeft($parts[$i], 1) == ':' Then; beginning of string section, Index of StringPortion is NOT set yet, and this sectio begins with a colon (marking a string to the end of the command)
-			$parts[$i] = StringTrimLeft($parts[$i], 1)
-			$iStr = $i
-		EndIf
-		If $iStr And $i > $iStr Then; continuing string section
-			$parts[$iStr] &= ' ' & $parts[$i];append to string section
-			;$parts[$i]=''
-			_ArrayDelete($parts, $i)
-			$i -= 1;  negate the effects of the for loop's incrementing the next item will have the same index as this one (since we just deleted this one)
-			$max -= 1
-		EndIf
-	Next
-	_ArrayDelete($parts, 0)
-	Return $parts
-EndFunc   ;==>Split
 
 Func NameSplit($name, ByRef $nickName, ByRef $userString, ByRef $hostString)
 	If StringLeft($name, 1) = ':' Then $name = StringTrimLeft($name, 1)

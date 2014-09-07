@@ -10,8 +10,8 @@ Global $_ShortUrl_CreateURL='http://is.gd/create.php?format=simple&url='
 $_ShortUrl_CreateURL='http://otp22.com/l/?url='
 
 
-_Help_RegisterGroup("ShortUrl")
-_Help_RegisterCommand("tinyurl","<link>","Generates a shortened link using a preset url-shortening service. (not necessarily tinyurl) Resulting URLs are cached.")
+_Help_SetCurrentGroup("ShortUrl")
+_Help_AddSingleCommand("tinyurl","<link>","Generates a shortened link using a preset url-shortening service. (not necessarily tinyurl) Resulting URLs are cached.")
 
 
 

@@ -12,10 +12,11 @@
 
 #include "GeneralCommands.au3"
 
-_Help_RegisterGroup("Coords")
-_Help_Register("UTM","<UTM coordinate>","Returns the Latitude and Longitude for a UTM coordinate.  Usage: %!%UTM zone/easting/northing   or   UTM zone easting northing -- Courtesy: Nadando")
-_Help_Register("LL","<latitude> <longitude>","Returns the UTM conversion for the given coordinate. -- Courtesy: Nadando")
-_Help_Register("Coord","<latitude> <longitude>","Returns the Google Maps link for the given coordinate.")
+Local $_Coord_Commands[3][3]=[ _
+["UTM","<UTM coordinate>","Returns the Latitude and Longitude for a UTM coordinate.  Usage: %!%UTM zone/easting/northing   or   UTM zone easting northing -- Courtesy: Nadando"], _
+["LL","<latitude> <longitude>","Returns the UTM conversion for the given coordinate. -- Courtesy: Nadando"], _
+["Coord","<latitude> <longitude>","Returns the Google Maps link for the given coordinate."]   ]
+_Help_RegisterGroup("Coords",'Geographic Coordinate commands','_Coord_Command')
 
 Global Const $pi = 3.14159265358979323846264338327950288419716939937510
 Global Const $e = 2.71828182845904523536028747135266249775724709369995

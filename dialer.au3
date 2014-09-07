@@ -5,10 +5,11 @@
 #include "userinfo.au3"
 
 ; Note to reviewers: this only lists information from a website hosting recordings.
-_Help_RegisterGroup("Dialer")
-_Help_RegisterCommand("dial","<agentcode> [line]","Posts an agent number (DTMF extension) request to the OTP22 auto-dialer. (NOTE: %!%CALL will place a call without an agent code). Completely numeric agent codes will have `#` automatically appended to them. Use the line parameter to specify which number to dial by keyword. (See %!%LINES for a list) Note: Uses your account saved dialer password. (see %!%OPTION GET DIALERPASS )")
-_Help_RegisterCommand("call","<line>","Posts a call request to the OTP22 auto-dialer. No agent number is used for this call. Use the line parameter to specify which number to dial by keyword. (See %!%LINES for a list.  Use %!%DIAL to input an agent code/DTMF extension) Note: Uses your account saved dialer password. (see %!%OPTION GET DIALERPASS )")
-_Help_RegisterCommand("lines","","Lists the valid phone line keywords for use with the %!%DIAL and %!%CALL commands.")
+Local $_Dial_Commands[3][3]=[ _
+["dial","<agentcode> [line]","Posts an agent number (DTMF extension) request to the OTP22 auto-dialer. (NOTE: %!%CALL will place a call without an agent code). Completely numeric agent codes will have `#` automatically appended to them. Use the line parameter to specify which number to dial by keyword. (See %!%LINES for a list) Note: Uses your account saved dialer password. (see %!%OPTION GET DIALERPASS )"], _
+["call","<line>","Posts a call request to the OTP22 auto-dialer. No agent number is used for this call. Use the line parameter to specify which number to dial by keyword. (See %!%LINES for a list.  Use %!%DIAL to input an agent code/DTMF extension) Note: Uses your account saved dialer password. (see %!%OPTION GET DIALERPASS )"], _
+["lines","","Lists the valid phone line keywords for use with the %!%DIAL and %!%CALL commands."]   ]
+_Help_RegisterGroup("Dialer","OTP22 Dialer commands","_Dial_Commands")
 _UserInfo_Option_Add('dialerpass','Password to use for the OTP22 AutoDialer, This is automatically used when you use the %!%DIAL <agentnumber> or %!%CALL <line> commands.',True)
 
 

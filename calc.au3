@@ -26,9 +26,15 @@ Global $_Calc_HangLimit=60*1000
 Global $_Calc_HangExec=''
 
 ;------------------------------------
+Local $_Calc_Commands[3][3]=[ _
+["calc","<AutoIt or Numeric Expression>","Performs a calculation or executes an expression. Input strings are sanitized against a whitelist of function names."], _
+["calc_sanitize","<AutoIt or Numeric Expression>","Sanitizes an expression against a whitelist of function names and returns the sanitized version. Used to debug expressions. See `%!%help calc`"], _
+["calc_dump","<AutoIt or Numeric Expression>","Performs a calculation or executes an expression like %!%CALC, but with full type information and formatting."]  ]
+
+
 
 _Calc_Startup()
-_Calc_RegisterHelp()
+_Help_RegisterGroup('General','','_Calc_Commands')
 
 #include "convert.au3"
 ;------------------------------------
@@ -62,11 +68,6 @@ Func _Calc_StopHangTimer()
 	$_Calc_HangTimer=0
 EndFunc
 
-Func _Calc_RegisterHelp()
-	_Help_Register("calc","<AutoIt or Numeric Expression>","Performs a calculation or executes an expression. Input strings are sanitized against a whitelist of function names.")
-	_Help_Register("calc_sanitize","<AutoIt or Numeric Expression>","Sanitizes an expression against a whitelist of function names and returns the sanitized version. Used to debug expressions. See `%!%help calc`")
-	_Help_Register("calc_dump","<AutoIt or Numeric Expression>","Performs a calculation or executes an expression like %!%CALC, but with full type information and formatting.")
-EndFunc
 
 
 

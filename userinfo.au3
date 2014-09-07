@@ -36,25 +36,27 @@ For $i=0 To 0x1F
 Next
 $_UserInfo_TestUserIndex = _UserInfo_Remember($_UserInfo_TestUser,$_UserInfo_TestUser)
 
+;------------------------------------------------
+Global $_User_Commands[15][3]=[ _
+["TELL","<user> <message>","Leaves a message for a user for the next time they show up. (Must be a recognized account)"], _
+["READ","","Reads messages left for you using the %!%TELL command and clears them."], _
+["POUNCE","<user>","Adds a user to your Pounce List and notifies you when they show up next. (%!%WHOPOUNCE will display your Pounce List)"], _
+["NOPOUNCE","<user>","Removes a user to your Pounce List and stops notifying you when they show up next. (%!%WHOPOUNCE will display your Pounce List)"], _
+["WHOPOUNCE","","Lists users on your Pounce List that you receive notifications for (use %!%POUNCE to add users and %!%NOPOUNCE to remove them)"], _
+["SEEN","[nickname]","Displays information about the account name - for your nickname if none is given."], _
+["IDENTIFY","[nickname]","Refreshes the account name information for a nickname - for your nickname if none is given.  Try %!%WHOAMI after this to see updated information."], _
+["WHOAMI","","Retrieves the NickServ account-name for your nickname in the channel if you are recognized.  Try using the %!%IDENTIFY command before this if you are not recognized correctly."], _
+["WHOIS","<nickname>","Retrieves the NickServ account-name for a nickname in the channel if the user is recognized."], _
+["OPTION","<command> <values>","Retrieves or changes your personal bot settings.  You must be registered with NickServ to use this command. use %!%OPTION LIST to see all of the options, %!%OPTION GET <optionname> to get a setting value, %!%OPTION SET <optionname> <value> to change a setting.  You may use %!%HELP OPTION <command> for more information."], _
+["OPTION LIST","","Lists all of the per-user settings for the bot. Use %!%OPTION GET <optionname> for information about a specific option."], _
+["OPTION GET" ,"<optionname>","Retrieves one of your personal bot settings and describes the option. NOTE: Password-style options cannot be retrieved by using this command. Use %!%OPTION LIST for a list of possible settings."], _
+["OPTION SET" ,"<optionname> <value>","Changes one of your personal bot settings.  Use %!%OPTION LIST for a list of possible settings."], _
+["USERINFO","","Lists the current state of the userinfo file. %!%USERINFO CLEAN will audit the file for old entries and remove them. (see %!%HELP USERINFO CLEAN )"], _
+["USERINFO CLEAN","","Audits the userinfo file and removes entries older than 7 days with no options set."]]
+;------------------------------------------------
+_Help_RegisterGroup("Users",'User information commands','_User_Commands')
 
-;------------------------------------------------
-_Help_RegisterGroup("Users")
-_Help_RegisterCommand("TELL","<user> <message>","Leaves a message for a user for the next time they show up. (Must be a recognized account)")
-_Help_RegisterCommand("READ","","Reads messages left for you using the %!%TELL command and clears them.")
-_Help_RegisterCommand("POUNCE","<user>","Adds a user to your Pounce List and notifies you when they show up next. (%!%WHOPOUNCE will display your Pounce List)")
-_Help_RegisterCommand("NOPOUNCE","<user>","Removes a user to your Pounce List and stops notifying you when they show up next. (%!%WHOPOUNCE will display your Pounce List)")
-_Help_RegisterCommand("WHOPOUNCE","","Lists users on your Pounce List that you receive notifications for (use %!%POUNCE to add users and %!%NOPOUNCE to remove them)")
-_Help_RegisterCommand("SEEN","[nickname]","Displays information about the account name - for your nickname if none is given.")
-_Help_RegisterCommand("IDENTIFY","[nickname]","Refreshes the account name information for a nickname - for your nickname if none is given.  Try %!%WHOAMI after this to see updated information.")
-_Help_RegisterCommand("WHOAMI","","Retrieves the NickServ account-name for your nickname in the channel if you are recognized.  Try using the %!%IDENTIFY command before this if you are not recognized correctly.")
-_Help_RegisterCommand("WHOIS","<nickname>","Retrieves the NickServ account-name for a nickname in the channel if the user is recognized.")
-_Help_RegisterCommand("OPTION","<command> <values>","Retrieves or changes your personal bot settings.  You must be registered with NickServ to use this command. use %!%OPTION LIST to see all of the options, %!%OPTION GET <optionname> to get a setting value, %!%OPTION SET <optionname> <value> to change a setting.  You may use %!%HELP OPTION <command> for more information.")
-_Help_RegisterCommand("OPTION LIST","","Lists all of the per-user settings for the bot. Use %!%OPTION GET <optionname> for information about a specific option.")
-_Help_RegisterCommand("OPTION GET" ,"<optionname>","Retrieves one of your personal bot settings and describes the option. NOTE: Password-style options cannot be retrieved by using this command. Use %!%OPTION LIST for a list of possible settings.")
-_Help_RegisterCommand("OPTION SET" ,"<optionname> <value>","Changes one of your personal bot settings.  Use %!%OPTION LIST for a list of possible settings.")
-_Help_RegisterCommand("USERINFO","","Lists the current state of the userinfo file. %!%USERINFO CLEAN will audit the file for old entries and remove them. (see %!%HELP USERINFO CLEAN )")
-_Help_RegisterCommand("USERINFO CLEAN","","Audits the userinfo file and removes entries older than 7 days with no options set.")
-;------------------------------------------------
+
 Func __timediffstr($ts)
 	$ts=Int($ts)
 	If $ts="" Or $ts=0 Or $ts<0 Then Return "Unknown"

@@ -9,54 +9,56 @@
 Global $_Au3_Funcs[1]=['']
 Global $_Udf_Funcs[1]=['']
 
+Global $_Au3_Commands=''
+Global $_Udf_Commands=''
+
 ;TCPStartup()
-;_Au3_Startup()
+;_Au3_Startup()\
+
+;; TODO:  Updating help entries via callback
 
 
+Func _Au3_HelpCallBack($group,$command,$subcommand='',$vdata='')
+	; not implemented
+EndFunc
 
-
-Func _Au3_Startup (ByRef $commands,ByRef $usage,ByRef $desc)
+Func _Au3_Startup ()
 	$_Au3_Funcs=StringSplit(StringStripCR(FileRead(@ScriptDir&"\functions.txt")),@LF,2)
 	$_Udf_Funcs=StringSplit(StringStripCR(FileRead(@ScriptDir&"\libfunctions.txt")),@LF,2)
 	;_ArrayDisplay($_Au3_Funcs)
+	Local $tmpA[UBound($_Au3_Funcs)][3]
+	Local $tmpB[UBound($_Udf_Funcs)][3]
+	$_Au3_Commands=$tmpA
+	$_Udf_Commands=$tmpB
+
 
 	_Calc_Startup()
 
 
-	Local $size=UBound($_Au3_Funcs)+UBound($_Udf_Funcs)+5
-	Local $cmd[$size]
-	Local $usg[$size]
-	Local $dsc[$size]
-	$cmd[1]="GRP:AutoIt"
-	Local $n=2
-	Local $nStart=$n
 	For $i=0 To UBound($_Au3_Funcs)-1
-		;ConsoleWrite($i&'/'&$size&@CRLF)
-		If Not StringInStr(_Calc_Sanitize($_Au3_Funcs[$i]),'_REF_') Then
-			$cmd[$i+$nStart]=$_Au3_Funcs[$i]
-			$dsc[$i+$nStart]="###autoit###"
+		If StringInStr(_Calc_Sanitize($_Au3_Funcs[$i]),'_REF_') Then
+			$_Au3_Commands[$i][0]=''
+		Else
+			$_Au3_Commands[$i][0]=$_Au3_Funcs[$i]
+			$_Au3_Commands[$i][1]='###autoit###'
+			$_Au3_Commands[$i][2]='###autoit###'
 		EndIf
-		$n+=1
-		;_Help_Register($func,'',"###autoit###")
 	Next
-	$cmd[$n]="GRP:UDF"
-	$n+=1
-	$nStart=$n
+
 	For $i=0 To UBound($_Udf_Funcs)-1
-		;ConsoleWrite($i&'/'&($i+$nStart)&'/'&$size&@CRLF)
-		If Not StringInStr(_Calc_Sanitize($_Udf_Funcs[$i]),'_REF_') Then
-			$cmd[$i+$nStart]=$_Udf_Funcs[$i]
-			$dsc[$i+$nStart]="###udf###"
+		If StringInStr(_Calc_Sanitize($_Udf_Funcs[$i]),'_REF_') Then
+			$_Udf_Commands[$i][0]=''
+		Else
+			$_Udf_Commands[$i][0]=$_Udf_Funcs[$i]
+			$_Udf_Commands[$i][1]='###udf###'
+			$_Udf_Commands[$i][2]='###udf###'
 		EndIf
-		$n+=1
-		;_Help_Register($func,'',"###autoit###")
 	Next
-	$cmd[$n]="GRP:General"
-	$commands=$cmd
-	$usage=$usg
-	$desc=$dsc
-	_Calc_RegisterHelp();since we overwrote everything.
-	;_ArrayDisplay($commands)
+
+	_Help_RegisterGroup('AutoIt', 'Built-In AutoIt commands', '_Au3_Commands', '_Au3_HelpCallBack')
+	_Help_RegisterGroup('UDF', 'AutoIt library commands', '_Udf_Commands', '_Au3_HelpCallBack')
+
+
 EndFunc
 Func _Au3_UpdateHelpEntry($i,$sfunc)
 	;Global $_Au3_Funcs, $_Udf_Funcs
@@ -70,7 +72,7 @@ Func _Au3_UpdateHelpEntry($i,$sfunc)
 			Local $desc,$usage,$notes
 			_Au3_ScrapeInfo($url,$func, $desc, $usage,$notes)
 			$desc=$desc&' | '&$notes&' | source: '&$url
-			_Help_Set($i,$func,$usage,$desc)
+			;_Help_Set($i,$func,$usage,$desc)
 			Return True
 		EndIf
 	Next
@@ -84,7 +86,7 @@ Func _Au3_UpdateHelpEntryUDF($i,$sfunc)
 			Local $desc,$usage,$notes
 			_Au3_ScrapeInfo($url,$func, $desc, $usage,$notes)
 			$desc=$desc&' | '&$notes&' | source: '&$url
-			_Help_Set($i,$func,$usage,$desc)
+			;_Help_Set($i,$func,$usage,$desc)
 			Return True
 		EndIf
 	Next

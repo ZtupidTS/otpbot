@@ -14,11 +14,12 @@ Global $_DNS_Event_Debug=''
 
 
 
-_Help_RegisterGroup("DNS")
-_Help_Register("host","<hostname/address> [option]","Performs either a DNS Lookup or a Reverse lookup depending on the input. The option parameter is passed to the Lookup command, if used. See %!%HELP LOOKUP and %!%HELP REVERSE.")
-_Help_Register("servers","<hostname>","Produces a named list of servers available for an input hostname. This is similar to %!%lookup <hostname> A")
-_Help_Register("lookup","<hostname> [recordType]","Retrieves DNS records for a hostname. RecordType defaults to * when not supplied - using * will output all records.")
-_Help_Register("reverse","<IP Address>","Retrieves hostname records for a given IP.")
+Local $_DNS_Commands[4][3]=[ _
+["host","<hostname/address> [option]","Performs either a DNS Lookup or a Reverse lookup depending on the input. The option parameter is passed to the Lookup command, if used. See %!%HELP LOOKUP and %!%HELP REVERSE."], _
+["servers","<hostname>","Produces a named list of servers available for an input hostname. This is similar to %!%lookup <hostname> A"], _
+["lookup","<hostname> [recordType]","Retrieves DNS records for a hostname. RecordType defaults to * when not supplied - using * will output all records."], _
+["reverse","<IP Address>","Retrieves hostname records for a given IP."] ]
+_Help_RegisterGroup("DNS","Domain Name record commands","_DNS_Commands")
 
 
 

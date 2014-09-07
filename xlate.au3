@@ -16,34 +16,24 @@
 #include "Base32.au3"
 #include "Base64.au3"
 
-_Help_RegisterGroup("Xlate")
+Global $_Xlate_Commands[13][3]=[ _
+["base2base","<from base A> <to base B> <integer in baseA>","Converts an integer string from BaseA to BaseB. Note: does not accept spaces.  Example %!%base2base 10 8 123 outputs `173` as it converted decimal to octal.  Note: only Base 2-64 supported [without encoding]."], _
+["BinD","<binary digits>","Converts binary digits to a string.  Note: If you include spaces, these are used for byte separation.  Without spaces, 8-bit encoding is assumed.  Use %!%BinE to encode."], _
+["BinE","<string>","Converts a string to binary digits. Use %!%binD to decode."], _
+["OctE","<text>","Converts a string to octal data. Use %!%octD to decode"], _
+["OctD","<octal bytes>","Converts octal data to a string. Use %!%octE to encode."], _
+["DecD","<decimal bytes>","Converts decimal bytes to a string.   Example: %!%decd 68 82 79 80  results in `DROP` Deprecated aliases: %!%xascii, %!%xdec"], _
+["DecE","<string>","Converts a string to decimal bytes. Equivalent to perfoming %!%Asc on each character. Only supports values 0-255. Decode with %!%decd."], _
+["HexD","<hex digits>","Converts hex data to a string.  Similar to inbuilt %!%_HexToString or %!%BinaryToString but allows spacing. Deprecated aliases: %!%xhex. Encode with %!%hexe"], _
+["HexE","<string>","Converts a string to hex data.  Alias for inbuilt command %!%_StringToHex.  Decode with %!%hexd."], _
+["B32e","<text>","Converts a string to the base32 data encoding. Use %!%B32d to decode"], _
+["B32d","<base32string>","Converts base32 data encoding to a string. use %!%B32e to encode."], _
+["B64e","<text>","Converts a string to the base32 data encoding. Use %!%B64d to decode"], _
+["B64d","<base64string>","Converts base32 data encoding to a string. use %!%B64e to encode."]]
+_Help_RegisterGroup("Xlate","Base translation and encoding commands","_Xlate_Commands")
 
-_Help_RegisterCommand("base2base","<from base A> <to base B> <integer in baseA>","Converts an integer string from BaseA to BaseB. Note: does not accept spaces.  Example %!%base2base 10 8 123 outputs `173` as it converted decimal to octal.  Note: only Base 2-64 supported [without encoding].")
+
 ;_Help_RegisterCommand("string2base","<to base B> <integer in baseA>","Converts a string from Base256 to BaseB. Example %!%string2base 10 8 123 outputs `173` as it converted decimal to octal.  Note: only Base 2-64 supported [without encoding].")
-
-
-_Help_RegisterCommand("BinD","<binary digits>","Converts binary digits to a string.  Note: If you include spaces, these are used for byte separation.  Without spaces, 8-bit encoding is assumed.  Use %!%BinE to encode.")
-_Help_RegisterCommand("BinE","<string>","Converts a string to binary digits. Use %!%binD to decode.")
-
-_Help_RegisterCommand("OctE","<text>","Converts a string to octal data. Use %!%octD to decode")
-_Help_RegisterCommand("OctD","<octal bytes>","Converts octal data to a string. Use %!%octE to encode.")
-
-
-
-_Help_RegisterCommand("DecD","<decimal bytes>","Converts decimal bytes to a string.   Example: %!%decd 68 82 79 80  results in `DROP` Deprecated aliases: %!%xascii, %!%xdec")
-_Help_RegisterCommand("DecE","<string>","Converts a string to decimal bytes. Equivalent to perfoming %!%Asc on each character. Only supports values 0-255. Decode with %!%decd.")
-
-_Help_RegisterCommand("HexD","<hex digits>","Converts hex data to a string.  Similar to inbuilt %!%_HexToString or %!%BinaryToString but allows spacing. Deprecated aliases: %!%xhex. Encode with %!%hexe")
-_Help_RegisterCommand("HexE","<string>","Converts a string to hex data.  Alias for inbuilt command %!%_StringToHex.  Decode with %!%hexd.")
-
-
-
-_Help_RegisterCommand("B32e","<text>","Converts a string to the base32 data encoding. Use %!%B32d to decode")
-_Help_RegisterCommand("B32d","<base32string>","Converts base32 data encoding to a string. use %!%B32e to encode.")
-
-_Help_RegisterCommand("B64e","<text>","Converts a string to the base32 data encoding. Use %!%B64d to decode")
-_Help_RegisterCommand("B64d","<base64string>","Converts base32 data encoding to a string. use %!%B64e to encode.")
-
 
 
 Func COMMAND_base2base($from,$to, $integer)
