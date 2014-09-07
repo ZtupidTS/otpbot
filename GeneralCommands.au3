@@ -278,6 +278,7 @@ Func _Help_ListCommands($group)
 			Local $iEnd=Execute(StringFormat($_Help_Fmt_iLast,$sCommandArrayName))
 			For $iCmd=0 To $iEnd
 				Local $sCommandName=Execute(StringFormat($_Help_Fmt_Element,$sCommandArrayName,$iCmd,0))
+				If $sCommandName='' Then ContinueLoop
 				_ArrayAdd($display,'%!%'&$sCommandName)
 			Next
 		EndIf
