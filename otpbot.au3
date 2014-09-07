@@ -33,6 +33,7 @@
 #include "shorturl.au3"
 #include "userinfo.au3"
 #include "DNSHelper.au3"
+#include "AutoItHelp.au3"
 #include "otphostcore.au3"
 #include "phpbb_scrape.au3"
 #include "NicheFunctions.au3"
@@ -137,7 +138,28 @@ Global $_Bot_Commands[5][3]=[ _
 ["version", "", "Display version information about OtpBot."], _
 ["debug", "", "Display command debugging, otphost, and keyfile debugging and status information."] ]
 _Help_RegisterGroup("Bot","IRC Bot commands","_Bot_Commands")
-
+_Help_RegisterGroup("NATO","NATO 5-Letter commands","_NATO_Commands")
+_Help_RegisterGroup('General','','_ArrayEx_Commands')
+_Au3_Startup ()
+_Help_RegisterGroup('AutoIt', 'Built-In AutoIt commands', '_Au3_Commands', '_Au3_HelpCallBack')
+_Help_RegisterGroup('UDF', 'AutoIt library commands', '_Udf_Commands', '_Au3_HelpCallBack')
+_Help_RegisterGroup('General','','_Calc_Commands')
+_Help_RegisterGroup("General",'','_Convert_Commands')
+_Help_RegisterGroup("Coords",'Geographic Coordinate commands','_Coord_Command')
+_Help_RegisterGroup("Dialer","OTP22 Dialer commands","_Dial_Commands")
+_Help_RegisterGroup("DNS","Domain Name record commands","_DNS_Commands")
+_Help_RegisterGroup("Log","Chatlog-related commands","_Log_Commands")
+_Help_RegisterGroup("MessageDesk","Message Desk Indexer commands","_MD_Commands")
+_Help_RegisterGroup("General","","_More_Commands")
+_Help_RegisterGroup("PGP","PGP-Related Commands","_PGP_Commands")
+_Help_RegisterGroup("Misc","Miscellaneous commands",'_Misc_Commands')
+_Help_RegisterGroup("Forum","PHPBB Forum Commands","_Forum_Commands")
+_Help_RegisterGroup("ShortUrl",'URL-Shortening commands','_ShortUrl_Commands')
+_Help_RegisterGroup("General","","_Stats_Commands")
+_Help_RegisterGroup("Users",'User information commands','_User_Commands')
+_Help_RegisterGroup("Wiki","Wiki platform commands","_Wiki_Commands")
+_Help_RegisterGroup("Xlate","Base translation and encoding commands","_Xlate_Commands")
+_Help_RegisterGroup("Xor","Byte XOR (otpxor) operations","_Xor_Commands")
 
 #EndRegion ;------------------INTERNAL VARIABLES
 

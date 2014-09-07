@@ -19,7 +19,6 @@ Global $PHPBB_TopicPostCount=phpbb_scrape_postcount($PHPBB_TopicHTML)
 Local $_Forum_Commands[2][3]=[ _
 ["lastforumpage","","ALIAS: %!%FORUM - Retrieves the URL for the current last page of the forum topic."], _
 ["forumdebug","","forces a new-reply notification with at least the last 10 posts."]]
-_Help_RegisterGroup("Forum","PHPBB Forum Commands","_Forum_Commands")
 
 
 Func COMMAND_forum()

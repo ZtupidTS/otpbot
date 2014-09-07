@@ -13,8 +13,8 @@ Global $ArrayFmt_Full =_Array_CreateFmt('{','}','[',']','<' ,'>' ,', ','(',')','
 Global $ArrayFmt_Default =_Array_CreateFmt('[',']','[',']','' ,'' ,', ','(',')','"','"',True,False)
 Global $ArrayFmt_Quick=_Array_CreateFmt('' ,'' ,'(',')','' ,'' ,', ','' ,'', '' ,'' ,False,False)
 ;-------------------------------------------------------------------------------------------------
-_Help_SetCurrentGroup('General')
-_Help_AddSingleCommand("sort","<type> <items>","Sorts a list of items with a given method. The type can be `alphabetic` `value` or `length`. For example: `%!%SORT alphabetic bzz x ab` produces `ab bzz x`, `%!%SORT length bzz x ab` produces `x ab bzz`")
+Global $_ArrayEx_Commands[1][3]=[["sort","<type> <items>","Sorts a list of items with a given method. The type can be `alphabetic` `value` or `length`. For example: `%!%SORT alphabetic bzz x ab` produces `ab bzz x`, `%!%SORT length bzz x ab` produces `x ab bzz`"]]
+
 ;-------------------------------------------------------------------------------------------------
 Func COMMAND_typedebug()
 	Local $arr[3]=[1,2,3]

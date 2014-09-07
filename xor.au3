@@ -1,14 +1,14 @@
 #include <Process.au3>
 #include <String.au3>
 #include "HTTP.au3"
-#include "GeneralCommands.au3"
+;#include "GeneralCommands.au3"
 
 Global $_Xor_Commands[4][3]=[ _
 ["pastebinxor","<pastebin link> [key filename]","Performs a XOR operation on a transcribed decimal NATO message with an offset (given as a pastebin entry), with a local keyfile. eg `%!%pastebinxor http://pastebin.com/djeUWxm elpaso.bin`"], _
 ["elpaso","<pastebin link>","This command defaults the keyfile used in pastebin xor operations. See `%!%help pastebinxor`. "], _
 ["databin","<pastebin link>","This command defaults the keyfile used in pastebin xor operations. See `%!%help pastebinxor`. "], _
 ["littlemissouri","<pastebin link>","This command defaults the keyfile used in pastebin xor operations. See `%!%help pastebinxor`. "] ]
-_Help_RegisterGroup("Xor","Byte XOR (otpxor) operations","_Xor_Commands")
+
 #region ;----- autodecoder for  black OTP1
 
 Func COMMAND_pastebinxor($link,$keyfile="elpaso.bin")

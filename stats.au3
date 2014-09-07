@@ -1,9 +1,9 @@
 #include-once
-#include "GeneralCommands.au3"
+;#include "GeneralCommands.au3"
 
 
 Local $_Stats_Commands[1][3]=[["stats","","Provides otpbot host system information."]]
-_Help_RegisterGroup("General","","_Stats_Commands")
+
 
 
 Func COMMAND_stats()

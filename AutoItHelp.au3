@@ -54,11 +54,6 @@ Func _Au3_Startup ()
 			$_Udf_Commands[$i][2]='###udf###'
 		EndIf
 	Next
-
-	_Help_RegisterGroup('AutoIt', 'Built-In AutoIt commands', '_Au3_Commands', '_Au3_HelpCallBack')
-	_Help_RegisterGroup('UDF', 'AutoIt library commands', '_Udf_Commands', '_Au3_HelpCallBack')
-
-
 EndFunc
 Func _Au3_UpdateHelpEntry($i,$sfunc)
 	;Global $_Au3_Funcs, $_Udf_Funcs

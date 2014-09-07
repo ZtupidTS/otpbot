@@ -3,7 +3,7 @@
 #include "shorturl.au3"
 #include "HTTP.au3"
 #include "Wiki.au3"
-#include "GeneralCommands.au3"
+;#include "GeneralCommands.au3"
 #include-once
 
 Global $_MDI_Enable = 1
@@ -24,7 +24,7 @@ Global $_MD_Commands[2][3]=[ _
 ' with an input and a response. . If you need to use spaces in any of the fields, surround the text with "double quotes".'& _
 'The Response Type can be one of the following: '&_ArrayToString($_MDI_ResponseTypes2,',')&' - However, some partial matches are accepted also.'], _
 ["MDIDebug","",'Returns internal state information about MessageDeskIndexer polling.'] ]
-_Help_RegisterGroup("MessageDesk","Message Desk Indexer commands","_MD_Commands")
+
 
 
 Func COMMAND_MDIDebug()

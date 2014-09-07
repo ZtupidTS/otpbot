@@ -11,7 +11,7 @@
 ; Script Start - Add your code below here
 
 #include-once
-#include "GeneralCommands.au3"
+;#include "GeneralCommands.au3"
 #include "ArrayEx.au3"
 
 Global Const $srQuote = '["' & "']"
@@ -34,7 +34,6 @@ Local $_Calc_Commands[3][3]=[ _
 
 
 _Calc_Startup()
-_Help_RegisterGroup('General','','_Calc_Commands')
 
 #include "convert.au3"
 ;------------------------------------

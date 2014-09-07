@@ -2,7 +2,7 @@
 #include <String.au3>
 #include "HTTP.au3"
 #include "shorturl.au3"
-#include "GeneralCommands.au3"
+;#include "GeneralCommands.au3"
 #include "userinfo.au3"
 
 Global $NewsInterval
@@ -29,7 +29,7 @@ Global $_Wiki_Commands[6][3]=[ _
 ["page","<page name>","Looks up a page name on the wiki and provides a link. Provides the first title search result if no exact match is found."], _
 ["search","<search terms>","Performs a search of the wiki by title name. If no results are found, a Text search is done."]  ]
 
-_Help_RegisterGroup("Wiki","Wiki platform commands","_Wiki_Commands")
+
 
 ;_UserInfo_Option_Add('notifyupdate')
 

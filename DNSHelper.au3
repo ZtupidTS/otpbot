@@ -1,7 +1,7 @@
 #include-once
 #include "DNS.au3"
 #include <Inet.au3>
-#include "GeneralCommands.au3"
+;#include "GeneralCommands.au3"
 
 Local $_DNS_TYPES[62]=["A","NS","MD","MF","CNAME","SOA","MB","MG","MR","NULL","WKS","PTR","HINFO","MINFO","MX","TEXT","RP","AFSDB","X25","ISDN","RT","NSAP","NSAPPTR","SIG","KEY","PX","GPOS","AAAA","LOC","NXT","EID","NIMLOC","SRV","ATMA","NAPTR","KX","CERT","A6","DNAME","SINK","OPT","DS","RRSIG","NSEC","DNSKEY","DHCID","UINFO","UID","GID","UNSPEC","ADDRS","TKEY","TSIG","IXFR","AXFR","MAILB","MAILA","ALL","ANY","WINS","WINSR","NBSTAT"]
 Local $_DNS_LOOKUPS[20]=["A","AAAA","MX","CNAME","NS","DNAME","ALL"]
@@ -19,7 +19,7 @@ Local $_DNS_Commands[4][3]=[ _
 ["servers","<hostname>","Produces a named list of servers available for an input hostname. This is similar to %!%lookup <hostname> A"], _
 ["lookup","<hostname> [recordType]","Retrieves DNS records for a hostname. RecordType defaults to * when not supplied - using * will output all records."], _
 ["reverse","<IP Address>","Retrieves hostname records for a given IP."] ]
-_Help_RegisterGroup("DNS","Domain Name record commands","_DNS_Commands")
+
 
 
 

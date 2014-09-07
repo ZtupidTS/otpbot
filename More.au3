@@ -1,11 +1,11 @@
 #include-once
-#include "GeneralCommands.au3"
+;#include "GeneralCommands.au3"
 Global $_More_Entries=10
 Global $_More_Buffer[$_More_Entries][2]; session name[0] and buffered overflow text[1]
 Global $_More_NextEntry=0
 
 Global $_More_Commands[1][3]=[["more","","Provides more text from the end of a previous post that was cut off. Using `%!%more` will not clear the original text held unless the new text is also too long or the text held is the oldest cached entry. Note: `%!%more` results are specific to PM username and channel name."]]
-_Help_RegisterGroup("General","","_More_Commands")
+
 
 Func _More_SessionName($who, $where)
 	Local $location=$where

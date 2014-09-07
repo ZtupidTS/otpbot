@@ -54,7 +54,7 @@ Global $_User_Commands[15][3]=[ _
 ["USERINFO","","Lists the current state of the userinfo file. %!%USERINFO CLEAN will audit the file for old entries and remove them. (see %!%HELP USERINFO CLEAN )"], _
 ["USERINFO CLEAN","","Audits the userinfo file and removes entries older than 7 days with no options set."]]
 ;------------------------------------------------
-_Help_RegisterGroup("Users",'User information commands','_User_Commands')
+
 
 
 Func __timediffstr($ts)

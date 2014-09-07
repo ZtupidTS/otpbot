@@ -1,7 +1,7 @@
 #include-once
 #include <Array.au3>
 #include "BigNum.au3"
-#include "GeneralCommands.au3"
+;#include "GeneralCommands.au3"
 
 Global $_CONV_PI=3.14159265359
 Global $_CONV_RADDEG=180/$_CONV_PI
@@ -124,8 +124,7 @@ Next
 ;MsgBox(0,0, _Convert_Basic(2,'Galactic Year','year',0))
 
 ;-----------------------------------
-_Help_SetCurrentGroup("General")
-_Help_AddSingleCommand("convert","<number> <unit> [to] <unit>","Convert a value from one unit to another.")
+Global $_Convert_Commands[1][3]=[["convert","<number> <unit> [to] <unit>","Convert a value from one unit to another."]]
 
 Func COMMANDV_Convert($sInput)
 	Return _Convert_String($sInput)

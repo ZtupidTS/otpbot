@@ -7,7 +7,7 @@ Local $_NATO_Commands[2][3]=[ _
 "Using more than one digit for the keyfile will decode with each keyfile in sequence.  "& _
 "Using 'e' at the beginning of the number will perform reverse decoding (left-to-right).  Using '*' at the end of the number will perform a final decode using P#.txt files 1-4 separately."], _
 ["5gramFind","<number of keyfile> <5-letter word>","Finds the lines of a P#.txt file that a particular 5gram appears on (there is always two)."] ]
-_Help_RegisterGroup("NATO","NATO 5-Letter commands","_NATO_Commands")
+
 
 #region ;---NATO 5gram Decoding
 

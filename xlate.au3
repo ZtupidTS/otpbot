@@ -11,7 +11,7 @@
 ; Script Start - Add your code below here
 
 #include <String.au3>
-#include "GeneralCommands.au3"
+;#include "GeneralCommands.au3"
 #include "BaseToBase.au3"
 #include "Base32.au3"
 #include "Base64.au3"
@@ -30,7 +30,6 @@ Global $_Xlate_Commands[13][3]=[ _
 ["B32d","<base32string>","Converts base32 data encoding to a string. use %!%B32e to encode."], _
 ["B64e","<text>","Converts a string to the base32 data encoding. Use %!%B64d to decode"], _
 ["B64d","<base64string>","Converts base32 data encoding to a string. use %!%B64e to encode."]]
-_Help_RegisterGroup("Xlate","Base translation and encoding commands","_Xlate_Commands")
 
 
 ;_Help_RegisterCommand("string2base","<to base B> <integer in baseA>","Converts a string from Base256 to BaseB. Example %!%string2base 10 8 123 outputs `173` as it converted decimal to octal.  Note: only Base 2-64 supported [without encoding].")

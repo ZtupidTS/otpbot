@@ -5,14 +5,14 @@
 #include <Date.au3>
 #include <WinAPI.au3>
 #include "HTTP.au3"
-#include "GeneralCommands.au3"
+;#include "GeneralCommands.au3"
 
 
 
 Local $_PGP_Commands[2][3]=[ _
 ["GetKey","<keyid> [keyserver]","Retrieves a PGP key from a keyserver for use with the Verify command. The default server is pgp.mit.edu."], _
 ["Verify","<pastebin link>","Retrieves and verifies a PGP-signed message from a pastebin link. You may need to use the %!%GetKey first."] ]
-_Help_RegisterGroup("PGP","PGP-Related Commands","_PGP_Commands")
+
 
 
 
@@ -30,7 +30,7 @@ Local $_Misc_Commands[12][3]=[ _
 ["QUID","<hex/pastebin>","Decodes a Quilava.net string or Pastebin (where the first half of the hex string is a set of the Most Significant hex digits and the second half is the Least Significant) See Also: %!%HELP QUIE"], _
 ["QUIE","<string>","Encodes a Quilava.net string (where the first half of the hex string is a set of the Most Significant hex digits and the second half is the Least Significant) See Also: %!%HELP QUID"] ]
 
-_Help_RegisterGroup("Misc","Miscellaneous commands",'_Misc_Commands')
+
 
 
 
