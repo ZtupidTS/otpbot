@@ -80,8 +80,8 @@ stringlower
 stringmid
 stringregexp
 stringregexpreplace
+stringrepeat
 stringreplace
-stringreverse
 stringreverse
 stringright
 StringSplit

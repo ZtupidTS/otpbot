@@ -2,7 +2,7 @@
 ;http://www.autoitscript.com/autoit3/docs/functions/
 #include <Array.au3>
 #include "HTTP.au3"
-#include "GeneralCommands.au3"
+;#include "GeneralCommands.au3"
 #include "calc.au3"
 
 ;Opt('TrayIconDebug',1)
@@ -12,14 +12,32 @@ Global $_Udf_Funcs[1]=['']
 Global $_Au3_Commands=''
 Global $_Udf_Commands=''
 
-;TCPStartup()
-;_Au3_Startup()\
+
+
 
 ;; TODO:  Updating help entries via callback
 
 
-Func _Au3_HelpCallBack($group,$command,$subcommand='',$vdata='')
-	; not implemented
+Func _Au3_HelpCallBack($command,$subcommand='')
+	Local $iAU3=_ArraySearch($_Au3_Commands,$command,0,0,0,0,1,0)
+	Local $iUDF=_ArraySearch($_Udf_Commands,$command,0,0,0,0,1,0)
+	ConsoleWrite($command&' '&$iAU3&' '&$iUDF&@CRLF)
+	If $iAU3<0 And $iUDF<0 Then Return ''; no indexes match - Not an AutoIt command.
+	If StringLen($subcommand) Then Return "No help available for subcommand `"&$subcommand&"` available."
+	Local $fmtHelp="%s %s - %s"
+	Local $cmd, $usg, $dsc
+	If $iAU3>=0 Then; AU3 match!
+		If $_Au3_Commands[$iAU3][2]="###autoit###" Then _Au3_UpdateHelpEntry($iAU3)
+		$cmd=$_Au3_Commands[$iAU3][0]
+		$usg=$_Au3_Commands[$iAU3][1]
+		$dsc=$_Au3_Commands[$iAU3][2]
+	Else; UDF match!
+		If $_Udf_Commands[$iUDF][2]="###udf###" Then _Au3_UpdateHelpEntryUDF($iUDF)
+		$cmd=$_Udf_Commands[$iUDF][0]
+		$usg=$_Udf_Commands[$iUDF][1]
+		$dsc=$_Udf_Commands[$iUDF][2]
+	EndIf
+	Return '%!%'&StringFormat($fmtHelp,$cmd,$usg,$dsc)
 EndFunc
 
 Func _Au3_Startup ()
@@ -55,37 +73,33 @@ Func _Au3_Startup ()
 		EndIf
 	Next
 EndFunc
-Func _Au3_UpdateHelpEntry($i,$sfunc)
-	;Global $_Au3_Funcs, $_Udf_Funcs
-	;ConsoleWrite($i&' '&$sfunc&@CRLF)
-	;_ArrayDisplay($_Au3_Funcs)
-	For $func In $_Au3_Funcs
+Func _Au3_UpdateHelpEntry($i)
+	Local $sfunc=$_Au3_Commands[$i][0]
+	Local $url=_Au3_GetLink($_Au3_Funcs,$sfunc)
+	ConsoleWrite($i&' '&$sfunc&' '&$url&@CRLF)
+	If $url="" Then Return SetError(2,0,False)
 
-		If $func=$sfunc Then
-			Local $url=_Au3_GetLink($_Au3_Funcs,$func)
-			If $url="" Then Return SetError(2,0,False)
-			Local $desc,$usage,$notes
-			_Au3_ScrapeInfo($url,$func, $desc, $usage,$notes)
-			$desc=$desc&' | '&$notes&' | source: '&$url
-			;_Help_Set($i,$func,$usage,$desc)
-			Return True
-		EndIf
-	Next
-	Return SetError(3,0,False)
+	Local $desc,$usage,$notes
+	_Au3_ScrapeInfo($url,$sfunc, $desc, $usage,$notes)
+	$desc=$desc&' | '&$notes&' | source: '&$url
+
+	$_Au3_Commands[$i][1]=$usage
+	$_Au3_Commands[$i][2]=$desc
+	Return True
 EndFunc
-Func _Au3_UpdateHelpEntryUDF($i,$sfunc)
-	For $func In $_Udf_Funcs
-		If $func=$sfunc Then
-			Local $url=_Au3_GetLinkUDF($_Udf_Funcs,$func)
-			If $url="" Then Return SetError(2,0,False)
-			Local $desc,$usage,$notes
-			_Au3_ScrapeInfo($url,$func, $desc, $usage,$notes)
-			$desc=$desc&' | '&$notes&' | source: '&$url
-			;_Help_Set($i,$func,$usage,$desc)
-			Return True
-		EndIf
-	Next
-	Return SetError(3,0,False)
+Func _Au3_UpdateHelpEntryUDF($i)
+	Local $sfunc=$_Udf_Commands[$i][0]
+	Local $url=_Au3_GetLinkUDF($_Udf_Funcs,$sfunc)
+	ConsoleWrite($i&' '&$sfunc&' '&$url&@CRLF)
+	If $url="" Then Return SetError(2,0,False)
+
+	Local $desc,$usage,$notes
+	_Au3_ScrapeInfo($url,$sfunc, $desc, $usage,$notes)
+	$desc=$desc&' | '&$notes&' | source: '&$url
+
+	$_Udf_Commands[$i][1]=$usage
+	$_Udf_Commands[$i][2]=$desc
+	Return True
 EndFunc
 
 Func _Au3_GetLinkUDF(ByRef $funcs,$func)

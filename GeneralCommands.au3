@@ -329,6 +329,13 @@ Func _Help_Command($command,$subcommand="")
 	Return StringUpper('%!%'&$sName)&' '&$sUsage&' - '&$sDesc
 EndFunc
 Func COMMAND_Help($command="",$subcommand="")
+	For $iGrp=0 To $_Help_GroupsMax
+		If $_Help_Groups[$iGrp][$_Help_Group_Name]='' Then ExitLoop
+		If $_Help_Groups[$iGrp][$_Help_Group_HelpCallback]='' Then ContinueLoop
+		Local $reply=Call($_Help_Groups[$iGrp][$_Help_Group_HelpCallback],$command,$subcommand)
+		If StringLen($reply) Then Return '['&$_Help_Groups[$iGrp][$_Help_Group_Name]&'] '&$reply; if there is a HelpCallback reply, return its output - otherwise, continue checking all other sources.
+	Next
+
 	If $command="" Then Return _Help_ListGroups()
 	If _Help_IsGroup($command) Then Return _Help_ListCommands($command);where command=groupname
 	Return _Help_Command($command,$subcommand)
