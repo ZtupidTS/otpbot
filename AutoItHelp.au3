@@ -19,6 +19,7 @@ Global $_Udf_Commands=''
 
 
 Func _Au3_HelpCallBack($command,$subcommand='')
+	If $command='' Then Return ''
 	Local $iAU3=_ArraySearch($_Au3_Commands,$command,0,0,0,0,1,0)
 	Local $iUDF=_ArraySearch($_Udf_Commands,$command,0,0,0,0,1,0)
 	ConsoleWrite($command&' '&$iAU3&' '&$iUDF&@CRLF)
