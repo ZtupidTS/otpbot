@@ -32,6 +32,7 @@ Global $Settings[100][3] = [ _
 		['config', 'nohostmode', 'Disables OtpHost support and warnings. (1 or 0)'], _
 		['config', 'restartonerror', 'Bot restart on IRC connection error (0/1)'], _
 		['config', 'altchannels', 'Second channels to join - not logged. '], _
+		['config', 'logchannels', "Addt'l channels to enable logging."], _
 		['', 'dummy', '---------------------------------------------------------------------------------------'], _
 		['utility', 'defaultkey', 'Default XOR keyfile'], _
 		['utility', 'dialerenable', 'Enable OTP22 Dialer support (1=On, 0=Off)'], _

@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.9.3.198
+#AutoIt3Wrapper_Res_Fileversion=6.9.3.199
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crash_demons
 #AutoIt3Wrapper_Res_Language=1033
@@ -52,6 +52,7 @@ Global $SERV = Get("server", "irc.freenode.net", "config")
 Global $PORT = Get("port", 6667, "config")
 Global $CHANNEL = Get("channel", "#ARG", "config");persistant channel, will rejoin. can be invited to others (not persistant)
 Global $ALTCHANNELS = Get("altchannels", "", "config")
+Global $LOGCHANNELS = Get("logchannels", "", "config")
 Global $NICK = Get("nick", "OTPBot22", "config")
 Global $PASS = Get("password", "", "config"); If not blank, sends password both as server command and Nickserv identify; not tested though.
 Global $USERNAME = Get("username", $NICK, "config");meh
@@ -90,9 +91,8 @@ $_MDI_Enable = Get("mdienable", 1)
 
 $_Logger_Enable = Get("logger", 0) == "1";logger disabled by default
 $_Logger_Key = Get("logkey", "")
-;$_Logger_Channel = $CHANNEL
 $_Logger_AppID = 'OtpBot'
-_Logger_Start($CHANNEL&','&$ALTCHANNELS)
+_Logger_Start($CHANNEL&','&$LOGCHANNELS)
 
 
 $wiki_url = Get("wikiurl", 'http://otp22.referata.com')
@@ -371,7 +371,7 @@ EndFunc   ;==>OnBotConsole
 #Region ;------------------UTILITIES
 
 Func log_event($who, $where, $what)
-	If Not ($where = $CHANNEL) Then _Logger_Append($who, $what, $_Logger_Type_Post, 'to ' & $where)
+	If Not (StringLeft($where,1)<>'#') Then _Logger_Append($CHANNEL,$who, $what, $_Logger_Type_Post, 'to ' & $where)
 EndFunc   ;==>log_event
 
 Func COMMANDX_IDENTIFY($who, $where, $what, $acmd)
@@ -513,7 +513,7 @@ Func PRIVMSG($where, $what)
 
 	EndIf
 
-	If $where = $_Logger_Channel Then _Logger_Append($NICK, $what);log bots own posts! derp
+	If StringLeft($where,1) = '#' Then _Logger_Append($where,$NICK, $what);log bots own posts! derp
 	Cmd("PRIVMSG " & $where & " :" & $what)
 EndFunc   ;==>PRIVMSG
 
@@ -697,7 +697,7 @@ Func Process()
 					Msg('IN=' & $cmd)
 					Switch $cmdtype
 						Case 'JOIN';:crashdemons!crashdemons@6D6517.5668E6.7585CE.B49C62 JOIN :##hell
-							If $acmd[2] = $_Logger_Channel Then _Logger_Append($fromShort & ' (' & $hostLogDisplay & ')', "joined " & $acmd[2], 2)
+							_Logger_Append($acmd[2], $fromShort & ' (' & $hostLogDisplay & ')', "joined " & $acmd[2], 2)
 							If $fromShort = $NICK And StringLeft($acmd[2], 1) = "#" Then
 								$HOSTNAME = NameGetHostname($from)
 								State($S_CHAT)
@@ -707,14 +707,14 @@ Func Process()
 				Case $S_CHAT
 					Switch $cmdtype
 						Case 'JOIN';:crashdemons!crashdemons@6D6517.5668E6.7585CE.B49C62 JOIN :##hell
-							If $acmd[2] = $_Logger_Channel Then _Logger_Append($fromShort & ' (' & $hostLogDisplay & ')', "joined " & $acmd[2], 2)
+							_Logger_Append($acmd[2], $fromShort & ' (' & $hostLogDisplay & ')', "joined " & $acmd[2], 2)
 							If StringLeft($acmd[2], 1) = "#" Then
 								;$fromShort
 								Cmd("WHOIS " & $fromShort, True); queue a WHOIS request so we can retrieve the Accountname later.
 							EndIf
 						Case 'PART', 'QUIT';:crashdemons!~crashdemo@unaffiliated/crashdemons PART #ARG
-							If $cmdtype = 'QUIT' Then _Logger_Append($fromShort & ' (' & $hostLogDisplay & ')', "quit", 3, $acmd[2])
-							If $cmdtype = 'PART' And $acmd[2] = $_Logger_Channel Then _Logger_Append($fromShort & ' (' & $hostLogDisplay & ')', "left " & $acmd[2], 2)
+							If $cmdtype = 'QUIT' Then _Logger_Append($CHANNEL,$fromShort & ' (' & $hostLogDisplay & ')', "quit", 3, $acmd[2])
+							If $cmdtype = 'PART' Then _Logger_Append($acmd[2], $fromShort & ' (' & $hostLogDisplay & ')', "left " & $acmd[2], 2)
 							_UserInfo_Forget($fromShort)
 					EndSwitch
 			EndSwitch
@@ -744,12 +744,12 @@ Func Process()
 							$ctcpCommand = $tmp
 						EndIf
 						If $ctcpCommand = 'ACTION' Then
-							If $where = $_Logger_Channel Then _Logger_Append($who, $ctcpContent, 1)
+							If StringLeft($where,1)='#' Then _Logger_Append($where, $who, $ctcpContent, 1)
 						Else
-							If $where = $_Logger_Channel Then _Logger_Append($who, 'CTCP ' & $tmp, 2)
+							If StringLeft($where,1)='#' Then _Logger_Append($where, $who, 'CTCP ' & $tmp, 2)
 						EndIf
 					Else
-						If $where = $_Logger_Channel Then _Logger_Append($who, $what)
+						If StringLeft($where,1)='#' Then _Logger_Append($where,$who, $what)
 					EndIf
 
 					_UserInfo_RememberByFingerprint($nickName, $userString & '@' & $hostMask)
@@ -784,7 +784,7 @@ Func Process()
 						PRIVMSG($where, "I am a bot. I was invited here by: " & $who)
 					EndIf
 				Case 'KICK';:WiZ!jto@tolsun.oulu.fi KICK #Finnish John
-					If $where = $_Logger_Channel Then _Logger_Append($who, "kicked " & $what & " from " & $where, 2)
+					If StringLeft($where,1)='#' Then _Logger_Append($where,$who, "kicked " & $what & " from " & $where, 2)
 					If $where = $CHANNEL And $what = $NICK Then State($S_ON)
 			EndSwitch
 		EndIf
