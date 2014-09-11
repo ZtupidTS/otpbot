@@ -4,10 +4,10 @@
 
 Global $_Logger_Enable=False
 Global $_Logger_Key=''
-Global $_Logger_Posts=''
-Global $_Logger_Post_Count=0
-Global $_Logger_Channel=''
 Global $_Logger_AppID='Undefined_AutoIt'
+
+Global Enum $_Logger_Channel_Name=0, $_Logger_Channel_PostCount, $_Logger_Channel_Log, $_Logger_Channel_Fields
+Global $_Logger_Channels[1][3]=[['',0,'']]
 
 
 Global $_Logger_MinSize_Posts=0x10; number of bytes a log without chat posts must be to submit.
@@ -24,7 +24,15 @@ Local $_Log_Commands[3][3]=[ _
 ["aliases","<nickname> [doUserMatch]","Find possible aliases for a nickname using the logs. If 'doUserMatch' argument is entered as anything, a username search is also done. (takes longer) Note that this has possible false-positives and Username-text matches are even less reliable."]  ]
 
 
-_Logger_Start()
+#cs
+Global $_Logger_Posts=''
+Global $_Logger_Post_Count=0
+Global $_Logger_Channel=''
+#ce
+
+
+
+
 
 ;$s="xxx12 : xxx12xxx34"
 ;_Logger_Strip($s)
@@ -94,13 +102,25 @@ Func _Logger_Strip(ByRef $sIn)
 	;StringRegexp("abc d!"&Chr(1),"^[[:print:][:graph:]]+$"); rgx replace NOT group to " "
 EndFunc
 
-Func _Logger_Start()
-	$_Logger_Posts&=StringFormat("Log Session Start: %s-%s-%s %s:%s:%s"&@CRLF, @YEAR, @MON, @MDAY,  @HOUR, @MIN, @SEC)
-	$_Logger_Post_Count+=1
+
+Func _Logger_Start($channelCSV)
+	Local $channels=StringSplit($channelCSV,',',2)
+	Local $tmpArr[UBound($channels)][$_Logger_Channel_Fields]
+	$_Logger_Channels=$tmpArr
+
+	For $i=0 To UBound($channels)-1
+		$_Logger_Channels[$i][$_Logger_Channel_Name]=$channels[$i]
+		$_Logger_Channels[$i][$_Logger_Channel_PostCount]=1
+		$_Logger_Channels[$i][$_Logger_Channel_Log]=StringFormat("Log Session Start: %s-%s-%s %s:%s:%s"&@CRLF, @YEAR, @MON, @MDAY,  @HOUR, @MIN, @SEC)
+	Next
+	;$_Logger_Posts&=StringFormat("Log Session Start: %s-%s-%s %s:%s:%s"&@CRLF, @YEAR, @MON, @MDAY,  @HOUR, @MIN, @SEC)
+	;$_Logger_Post_Count+=1
 EndFunc
 
-Func _Logger_Append($sUser,$sText, $fAction=0, $sTextEx="")
+Func _Logger_Append($sChannel,$sUser,$sText, $fAction=0, $sTextEx="")
 	If Not $_Logger_Enable Then Return
+	Local $iChan=_ArraySearch($_Logger_Channels,$sChannel,0,0,0,0,1,$_Logger_Channel_Name)
+	If $iChan<0 Then Return;
 	;ConsoleWrite("logged"&@CRLF)
 	_Logger_Strip($sText)
 	Local $fmtPost="[%s:%s] <%s> %s"
@@ -108,38 +128,49 @@ Func _Logger_Append($sUser,$sText, $fAction=0, $sTextEx="")
 	If $fAction=2 Then $fmtPost="[%s:%s] %s %s"
 	If $fAction=3 Then $fmtPost="[%s:%s] %s %s";deprecated option
 
-	If $fAction>=0 And $fAction<=1 Then $_Logger_Post_Count+=1
+	If $fAction>=0 And $fAction<=1 Then $_Logger_Channels[$iChan][$_Logger_Channel_PostCount]+=1
 
 
 	Local $line=StringFormat($fmtPost,@HOUR,@MIN,$sUser,$sText)
 	If StringLen($sTextEx) Then $line&=" ("&$sTextEx&")"
-	$_Logger_Posts&=$line&@CRLF
+	$_Logger_Channels[$iChan][$_Logger_Channel_Log]&=$line&@CRLF
 EndFunc
-
-Func _Logger_SubmitLogs(); Return value: True (log submit succeeded) False (submit failed);  @error=1: Logged disabled 2:Key rejected 3:Unknown error.
+Func _Logger_SubmitLogs()
+	For $iChan=0 To UBound($_Logger_Channels)-1
+		Local $r=_Logger_SubmitLog($iChan)
+		Local $e=@error
+		Local $x=@extended
+		ConsoleWrite("Log Submit: I:"&$iChan&' R:'&$r&' E:'&$e&' X:'&$x&@CRLF)
+	Next
+EndFunc
+Func _Logger_SubmitLog($iChan); Return value: True (log submit succeeded) False (submit failed);  @error=1: Logged disabled 2:Key rejected 3:Unknown error. 4: Invalid channel index
+	If $iChan<0 Then Return SetError(4,0,False)
 	If Not $_Logger_Enable Then Return SetError(1,0,False)
+	Local $postcount=$_Logger_Channels[$iChan][$_Logger_Channel_PostCount]
+	Local $postlen=StringLen($_Logger_Channels[$iChan][$_Logger_Channel_Log])
+	ConsoleWrite($postcount&' '&$postlen&' '&$_Logger_MinSize_Posts&' '&@CRLF)
 
-	If $_Logger_Post_Count=0 And StringLen($_Logger_Posts)<$_Logger_MinSize_NoPosts Then Return SetError(0,1,True);we don't submit null logs under 256 bytes
-	If $_Logger_Post_Count>0 And StringLen($_Logger_Posts)<$_Logger_MinSize_Posts   Then Return SetError(0,2,True);we don't submit any logs under 16 bytes
+	If $postcount=0 And $postlen<$_Logger_MinSize_NoPosts Then Return SetError(0,1,True);we don't submit null logs under 256 bytes
+	If $postcount>0 And $postlen<$_Logger_MinSize_Posts   Then Return SetError(0,2,True);we don't submit any logs under 16 bytes
 
 
 	Local $headers='Content-Type: application/x-www-form-urlencoded'&@CRLF
 	Local $text=''
 	Local $aReq=__HTTP_Req('POST','http://mirror.otp22.com/logger.php?APPID='&_URIEncode($_Logger_AppID), _
-		StringFormat("key=%s&channel=%s&posts=", _URIEncode($_Logger_Key), _URIEncode($_Logger_Channel)) & _URIEncode($_Logger_Posts) _
+		StringFormat("key=%s&channel=%s&posts=", _URIEncode($_Logger_Key), _URIEncode($_Logger_Channels[$iChan][$_Logger_Channel_Name])) & _URIEncode($_Logger_Channels[$iChan][$_Logger_Channel_Log]) _
 		, $headers)
 	__HTTP_Transfer($aReq,$text,5000)
 	ConsoleWrite(">>>"&$text&"<<<"&@CRLF)
 	_HTTP_StripToContent($text)
 	$text=StringStripWS($text,8);all Whitespace stripped
 	If $text=="no"  Then
-		$_Logger_Posts=''
-		$_Logger_Post_Count=0
+		$_Logger_Channels[$iChan][$_Logger_Channel_Log]=''
+		$_Logger_Channels[$iChan][$_Logger_Channel_PostCount]=0
 		Return SetError(2,0,False)
 	EndIf
 	If $text=="yes" Then
-		$_Logger_Posts=''
-		$_Logger_Post_Count=0
+		$_Logger_Channels[$iChan][$_Logger_Channel_Log]=''
+		$_Logger_Channels[$iChan][$_Logger_Channel_PostCount]=0
 		Return SetError(0,0,True)
 	EndIf
 	Return SetError(3,0,False)
