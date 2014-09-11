@@ -109,6 +109,7 @@ Func _Logger_Start($channelCSV)
 	$_Logger_Channels=$tmpArr
 
 	For $i=0 To UBound($channels)-1
+		If $channels[$i]='' Then ContinueLoop
 		$_Logger_Channels[$i][$_Logger_Channel_Name]=$channels[$i]
 		$_Logger_Channels[$i][$_Logger_Channel_PostCount]=1
 		$_Logger_Channels[$i][$_Logger_Channel_Log]=StringFormat("Log Session Start: %s-%s-%s %s:%s:%s"&@CRLF, @YEAR, @MON, @MDAY,  @HOUR, @MIN, @SEC)
@@ -137,6 +138,7 @@ Func _Logger_Append($sChannel,$sUser,$sText, $fAction=0, $sTextEx="")
 EndFunc
 Func _Logger_SubmitLogs()
 	For $iChan=0 To UBound($_Logger_Channels)-1
+		If $_Logger_Channels[$iChan][$_Logger_Channel_Name]='' Then ContinueLoop
 		Local $r=_Logger_SubmitLog($iChan)
 		Local $e=@error
 		Local $x=@extended

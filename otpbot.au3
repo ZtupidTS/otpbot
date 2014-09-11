@@ -90,8 +90,9 @@ $_MDI_Enable = Get("mdienable", 1)
 
 $_Logger_Enable = Get("logger", 0) == "1";logger disabled by default
 $_Logger_Key = Get("logkey", "")
-$_Logger_Channel = $CHANNEL
+;$_Logger_Channel = $CHANNEL
 $_Logger_AppID = 'OtpBot'
+_Logger_Start($CHANNEL&','&$ALTCHANNELS)
 
 
 $wiki_url = Get("wikiurl", 'http://otp22.referata.com')
