@@ -3,10 +3,9 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.9.3.201
+#AutoIt3Wrapper_Res_Fileversion=6.9.3.202
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crash_demons
-#AutoIt3Wrapper_Res_Language=1033
 #AutoIt3Wrapper_Res_requestedExecutionLevel=requireAdministrator
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 
@@ -237,6 +236,8 @@ Func Process_HostCmd($cmd, $data, $socket); message from the local controlling p
 	Global $_OtpHost_Info
 	Msg($socket & ' - ' & $cmd & ' : ' & $data)
 	Switch $cmd
+		Case 'irc'
+			Cmd($data)
 		Case 'log'
 			If $data = 'start' Then
 				$_OtpHost_OnLogWrite = "OnBotConsole"
@@ -341,7 +342,7 @@ Func OnStateChange($oldstate, $newstate)
 			If $TestMode Then; whatever needs debugging at the moment.
 				;otp22_getentries()
 				$NICK = $_UserInfo_TestUser
-				;Msg(Process_Message('who', 'where', '@help General'))
+				Msg(Process_Message('who', 'where', 'http://pastebin.com/e7pbUdSi'))
 				;Msg(Process_Message('who', 'where', '@help AutoIt'))
 				;Msg(Process_Message('who', 'where', '@convert 1 MB to KB'))
 				ConsoleWrite(@CRLF & "----------------------" & @CRLF)
@@ -355,7 +356,7 @@ Func OnStateChange($oldstate, $newstate)
 				;COMMAND_tinyurl('http://google.com/y6')
 				;Sleep(20000)
 				_OtpHost_flog('Quitting OtpBot Testmode')
-				;Exit
+				Exit
 			EndIf
 	EndSwitch
 EndFunc   ;==>OnStateChange
