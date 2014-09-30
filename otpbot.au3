@@ -145,7 +145,7 @@ _Help_RegisterGroup('AutoIt', 'Built-In AutoIt commands', '_Au3_Commands', '_Au3
 _Help_RegisterGroup('UDF', 'AutoIt library commands', '_Udf_Commands', ''); we don't really need a second global callback. we can catch UDF lookups with the first one.
 _Help_RegisterGroup('General','','_Calc_Commands')
 _Help_RegisterGroup("General",'','_Convert_Commands')
-_Help_RegisterGroup("Coords",'Geographic Coordinate commands','_Coord_Command')
+_Help_RegisterGroup("Coords",'Geographic Coordinate commands','_Coord_Commands')
 _Help_RegisterGroup("Dialer","OTP22 Dialer commands","_Dial_Commands")
 _Help_RegisterGroup("DNS","Domain Name record commands","_DNS_Commands")
 _Help_RegisterGroup("Log","Chatlog-related commands","_Log_Commands")

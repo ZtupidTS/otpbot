@@ -22,7 +22,7 @@ Local $_DNS_Commands[4][3]=[ _
 
 
 
-
+#include <Array.au3>
 Func COMMAND_host($hostoraddress,$option="*")
 	ConsoleWrite('@@ (25) :(' & @MIN & ':' & @SEC & ') COMMAND_host()' & @CR) ;### Function Trace
 	If StringRegExp($hostoraddress,"[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+") Then Return COMMAND_reverse($hostoraddress)
@@ -180,7 +180,9 @@ Func _Dns_Request_Any($hostname,$doCycle=True)
 EndFunc
 Func __dnsgetfirstrecord(ByRef $response)
 	ConsoleWrite('@@ (180) :(' & @MIN & ':' & @SEC & ') __dnsgetfirstrecord()' & @CR) ;### Function Trace
-	For $i = 1 To $response[0][0]
+	Local $max=0
+	If IsArray($response) Then $max=$response[0][0]
+	For $i = 1 To $max
 		If $response[$i][1] = $DNS_TYPE_A Then Return $i-1
 	Next
 	Return -1
