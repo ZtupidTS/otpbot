@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.9.3.203
+#AutoIt3Wrapper_Res_Fileversion=6.9.4.205
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crash_demons
 #AutoIt3Wrapper_Res_requestedExecutionLevel=requireAdministrator
@@ -22,6 +22,7 @@
 #include "Wiki.au3"
 #include "HTTP.au3"
 #include "More.au3"
+#include "alias.au3"
 #include "xlate.au3"
 #include "5gram.au3"
 #include "Stats.au3"
@@ -478,6 +479,18 @@ Func TryCommandFunc($who, $where, $what, ByRef $acmd)
 		EndIf
 
 	EndIf
+
+	If $err <> 0 Then
+		Local $exec=_Alias_Read($acmd[1])
+		Local $err=@error
+		If $err=0 Then
+			$exec=_Alias_MacroReplace($exec,$paramstr,_Alias__ArrayElement($acmd,2),_Alias__ArrayElement($acmd,3),_Alias__ArrayElement($acmd,4),_Alias__ArrayElement($acmd,5))
+			If StringLeft($exec,1)<>$CommandChar Then $exec=$CommandChar&$exec
+			Return Process_Message($who, $where, $exec)
+		EndIf
+	EndIf
+
+
 	If $err <> 0 Then
 		Local $expression = StringTrimLeft($what, 1)
 		$ret = __wolfram($expression)
