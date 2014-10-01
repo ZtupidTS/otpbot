@@ -58,6 +58,7 @@ Func _Array_CreateFmt($saBegin,$saEnd,$sDimBegin,$sDimEnd,$sElBegin,$sElEnd,$sEl
 	Return $arr
 EndFunc
 Func _ValueFmt(ByRef $value, ByRef $ArrayFmt)
+	If Not IsArray($ArrayFmt) Then Return $value
 	Local $bShowTypes=$ArrayFmt[$ARRAY_FMT_SHOWTYPES]
 	Local $bForceTypes=$ArrayFmt[$ARRAY_FMT_FORCETYPES]
 	Local $bShowThisType=False

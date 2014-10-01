@@ -25,6 +25,8 @@ Global $_Calc_HangTimer=0
 Global $_Calc_HangLimit=60*1000
 Global $_Calc_HangExec=''
 
+Global $_Calc_GetCommandValue_Callback=''
+
 ;------------------------------------
 Local $_Calc_Commands[3][3]=[ _
 ["calc","<AutoIt or Numeric Expression>","Performs a calculation or executes an expression. Input strings are sanitized against a whitelist of function names."], _
@@ -37,6 +39,53 @@ _Calc_Startup()
 
 #include "convert.au3"
 ;------------------------------------
+Func _REF_Command($str)
+	Return Call($_Calc_GetCommandValue_Callback,$str)
+EndFunc
+Func _REF_Assign($name,$value)
+	Assign('_REF_'&$name,$value,2)
+EndFunc
+Func _REF_Eval($name)
+	Eval('_REF_'&$name)
+EndFunc
+Func _REF_Void($a=0,$b=0,$c=0,$d=0,$e=0,$f=0,$g=0,$h=0)
+	Return SetError(0,0,'')
+EndFunc
+Func _REF_For($varname,$start,$end,$step,$exec)
+	For $i_REF_FOR=$start To $end Step $step
+		_REF_Assign($varname,$i_REF_FOR)
+		_Calc_EvaluateValue($exec)
+	Next
+EndFunc
+Func _REF_Foreach($varname,$array,$exec)
+	For $item In $array
+		_REF_Assign($varname,$item)
+		_Calc_EvaluateValue($exec)
+	Next
+EndFunc
+Func _REF_If($condvalue,$trueexec='',$falseexec='')
+	;Local $cond=_Calc_EvaluateValue($condexec)
+	If $condvalue Then
+		If StringLen($trueexec)  Then Return _Calc_EvaluateValue($trueexec)
+	Else
+		If StringLen($falseexec) Then Return _Calc_EvaluateValue($falseexec)
+	EndIf
+	Return ''
+EndFunc
+
+
+
+
+
+
+
+
+
+
+
+
+;------------------------------------
+
 
 Func _REF_TakeTooMuchTime()
 	Sleep(10*60*1000)
@@ -116,18 +165,34 @@ Func COMMANDX_Calc_dump($who, $where, $what, $acmd)
 EndFunc   ;==>COMMANDX_Calc
 
 
-
-Func _Calc_Evaluate($s,$fmtstyle='default')
-	Local $style=$ArrayFmt_Default
-	If $fmtstyle='quick' Then $style=$ArrayFmt_Quick
-	If $fmtstyle='full' Then $style=$ArrayFmt_Full
-
+Func _Calc_EvaluateValue($s)
 	_Calc_StartHangTimer()
 	Local $san=_Calc_Sanitize($s)
 	Local $ret = Execute($san)
 	Local $err = @error
 	Local $ext = @extended
 	_Calc_StopHangTimer()
+	Return SetError($err,$ext,$ret)
+EndFunc
+Func _Calc_Evaluate($s,$fmtstyle='default')
+	Local $style=$ArrayFmt_Default
+	If $fmtstyle='quick' Then $style=$ArrayFmt_Quick
+	If $fmtstyle='full' Then $style=$ArrayFmt_Full
+	If $fmtstyle='none' Then $style=0
+#cs
+	_Calc_StartHangTimer()
+	Local $ret = Execute($san)
+	Local $err = @error
+	Local $ext = @extended
+	_Calc_StopHangTimer()
+	#ce
+
+	Local $san=_Calc_Sanitize($s)
+
+	Local $ret = _Calc_EvaluateValue($s)
+	Local $err = @error
+	Local $ext = @extended
+
 	;Local $typ = VarGetType($ret)
 	Local $fmt=_ValueFmt($ret,$style)
 

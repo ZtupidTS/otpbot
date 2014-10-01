@@ -119,6 +119,7 @@ Global $STATE = $S_OFF
 ;library configuration variables
 ReDim $otp22_waves[$otp22_wavemax][2]
 $_Calc_HangExec = 'Restart("Internal hang detected - Restarting.")'
+$_Calc_GetCommandValue_Callback='Process_Message_Internal'
 $dialer_reportfunc = 'SendPrimaryChannel'
 $dial_event = 'log_event'
 $PHPBB_ReportFunc = 'SendPrimaryChannel'
@@ -161,6 +162,7 @@ _Help_RegisterGroup("Users",'User information commands','_User_Commands')
 _Help_RegisterGroup("Wiki","Wiki platform commands","_Wiki_Commands")
 _Help_RegisterGroup("Xlate","Base translation and encoding commands","_Xlate_Commands")
 _Help_RegisterGroup("Xor","Byte XOR (otpxor) operations","_Xor_Commands")
+_Help_RegisterGroup("General","","_Alias_Commands")
 
 #EndRegion ;------------------INTERNAL VARIABLES
 
@@ -266,6 +268,9 @@ Func Process_HostCmd($cmd, $data, $socket); message from the local controlling p
 	TCPCloseSocket($socket)
 EndFunc   ;==>Process_HostCmd
 
+Func Process_Message_Internal($what)
+	Return Process_Message('', '', $what)
+EndFunc
 Func Process_Message($who, $where, $what); called by Process() which parses IRC commands; if you return a string, Process() will form a reply.
 	Local $isPM = ($where = $NICK)
 	Local $isChannel = (StringLeft($where, 1) = '#')
