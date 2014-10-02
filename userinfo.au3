@@ -2,6 +2,9 @@
 #include <String.au3>
 #include <Array.au3>
 #include "GeneralCommands.au3"
+#include "StringEncrypt_Deprecated.au3"
+
+
 
 Global $_UserInfo_Event_Pounce=""
 Global $_UserInfo_Event_Tell=""
@@ -480,6 +483,7 @@ Func _UserInfo_FingerPrint_Add($i,$fingerprint)
 		Local $next=Int(_UserInfo_GetOptValue($i, '_fingerprintn'))
 		_UserInfo_SetOptValue($i, '_fingerprint'&$next, $fingerprint)
 		_UserInfo_SetOptValue($i, '_fingerprintn', Mod($next+1,0x20));overwrite old fingerprints.
+		IniWrite($_USERINFO_INI,'fingerprints',_StringToHex($fingerprint),_UserInfo_SanitizeName)
 	EndIf
 EndFunc
 Func _UserInfo_FingerPrint_Check($i,$fingerprint)
@@ -493,22 +497,11 @@ Func _UserInfo_FingerPrint_Check($i,$fingerprint)
 EndFunc
 Func _UserInfo_FingerPrint_GetAcct($fingerprint)
 	If $fingerprint="" Or $fingerprint="@" Then Return SetError(3,0,"")
-	Local $accts=IniReadSectionNames ($_USERINFO_INI)
-	For $ia=1 To UBound($accts)-1
-		For $if=0 To 0x1F
-			Local $fp2=_UserInfo_GetOptValueByAcctRaw($accts[$ia], '_fingerprint'&$if)
-			If @error=3 Then ExitLoop
-			If $fp2=$fingerprint Then
 
-				Local $username=_UserInfo_GetOptValueByAcctRaw($accts[$ia], '_acct')
-				If @error=3 Then
-					Return SetError(1,0,$accts[$ia])
-				EndIf
-				Return $username
-			EndIf
-		Next
-	Next
-	Return SetError(2,0,"")
+	Local $acct=IniRead($_USERINFO_INI,'fingerprints',_StringToHex($fingerprint),'')
+	If $acct='' Then Return SetError(2,0,"")
+	Local $username=_UserInfo_GetOptValueByAcctRaw($acct, '_acct')
+	Return $username
 EndFunc
 ;------------------------------------------------------
 
@@ -642,7 +635,7 @@ Func _UserInfo_ObfuscatePassword($pass,$encrypt=True)
 	Else
 		$encrypt=0
 	EndIf
-	Local $ret=_StringEncrypt($encrypt, $pass, $encrypt_key)
+	Local $ret=__StringEncrypt($encrypt, $pass, $encrypt_key)
 	Local $err=@error
 	Return SetError($err,0,$ret)
 EndFunc

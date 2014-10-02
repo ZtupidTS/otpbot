@@ -39,7 +39,6 @@
 #include "NicheFunctions.au3"
 #include "GeneralCommands.au3"
 #include "MessageDeskIndexer.au3"
-
 Opt('TrayAutoPause', 0)
 Opt('TrayMenuMode', 1 + 2)
 Opt('TrayOnEventMode', 1)
@@ -47,7 +46,6 @@ Opt('TrayOnEventMode', 1)
 
 #Region ;------------CONFIG
 Global $TestMode = 0
-
 Global $SERV = Get("server", "irc.freenode.net", "config")
 Global $PORT = Get("port", 6667, "config")
 Global $CHANNEL = Get("channel", "#ARG", "config");persistant channel, will rejoin. can be invited to others (not persistant)
@@ -57,10 +55,7 @@ Global $NICK = Get("nick", "OTPBot22", "config")
 Global $PASS = Get("password", "", "config"); If not blank, sends password both as server command and Nickserv identify; not tested though.
 Global $USERNAME = Get("username", $NICK, "config");meh
 Global $restartonerror = Int(Get("restartonerror", 0, "config"))
-
 $_OtpHost_NoHostMode = Int(Get("nohostmode", 0, "config"))
-
-
 Global $ReconnectTime = Get("reconnecttime", 5 * 60 * 1000, "config")
 Global $VersionInfoExt = Get("versioncomment", "", "config")
 Global $QuitText = Get("quitmessage", "EOM", "config")
@@ -68,33 +63,22 @@ Global $CommandChar = StringLeft(Get("commandchar", "@", "config"), 1); Command 
 ;-------------------------------------------------------------
 Global $AutoDecoderKeyfile = Get("defaultkey", "elpaso.bin")
 Global $NewsInterval = Get("newsinterval", 15 * 60 * 1000); 15 minutes = 900000ms
-
 Global $otp22_sizeMin = Get("dialersizemin", 0);300;kb
 Global $otp22_wavemax = Get("dialercomparemax", 20)
 Global $otp22_timeMax = Get("dialercomparetime", 5 * 60 * 1000);5 minutes
 Global $dialer_checktime = Get("dialerchecktime", 2 * 60 * 1000);2 minutes
 Global $dialer_enable = Get("dialerenable", 1);2 minutes
-
-
 $PHPBB_URL = Get("forumurl", "http://forums.unfiction.com/forums/")
 $PHPBB_TopicID = Get("forumtopicid", 36166)
 Global $forum_checktime = Get("forumchecktime", 10 * 60 * 1000);10 minutes
-
 Global $news_url = Get("newsurl", "http://otp22.referata.com/wiki/Special:Ask/-5B-5BDisplay-20tag::News-20page-20entry-5D-5D/-3FOTP22-20NI-20full-20date/-3FSummary/format%3Dcsv/limit%3D3/sort%3DOTP22-20NI-20full-20date/order%3Ddescending/offset%3D0")
 Global $news_entries = Get("newsentries", 5);last 5 updates from News wiki page.
-
-
 Global $mdi_checktime = Get("mdichecktime", 5 * 60 * 1000);5 minutes
 $_MDI_Enable = Get("mdienable", 1)
-
-
-
 $_Logger_Enable = Get("logger", 0) == "1";logger disabled by default
 $_Logger_Key = Get("logkey", "")
 $_Logger_AppID = 'OtpBot'
 _Logger_Start($CHANNEL&','&$LOGCHANNELS)
-
-
 $wiki_url = Get("wikiurl", 'http://otp22.referata.com')
 $Wiki_User = Get("wikiuser", "")
 $Wiki_Pass = Get("wikipass", "")
@@ -105,11 +89,7 @@ $Wiki_Pass = Get("wikipass", "")
 #Region ;------------------INTERNAL VARIABLES
 Global Enum $S_UNK = -1, $S_OFF, $S_INIT, $S_ON, $S_CHAT, $S_INVD
 Global Const $PARAM_START = 2
-
 Global Const $VERSION = FileGetVersion(@ScriptFullPath); if you modify the bot, please note so here with "modified" etc
-
-
-
 Global $HOSTNAME = "xxxxxxxxxxxxxxxxxxx";in-IRC hostname. effects message length - becomes set later
 Global $ADDR = ''
 Global $SOCK = -1
@@ -132,7 +112,6 @@ $_DNS_Event_Debug = '_OtpHost_flog'
 $_HTTP_Client_Name = "OtpBot"
 $_HTTP_Client_Version = $VERSION
 Global $_OtpHost_Info = ""
-
 Global $_Bot_Commands[5][3]=[ _
 ["uptime", "", "Displays uptime information about IRC Connection, OtpBot and OtpHost."], _
 ["botping", "", "Sends a ping message to OtpHost.  Note: OtpHost pong responses are asynchronous and arrive at the bot's primary channel."], _
@@ -162,7 +141,7 @@ _Help_RegisterGroup("Users",'User information commands','_User_Commands')
 _Help_RegisterGroup("Wiki","Wiki platform commands","_Wiki_Commands")
 _Help_RegisterGroup("Xlate","Base translation and encoding commands","_Xlate_Commands")
 _Help_RegisterGroup("Xor","Byte XOR (otpxor) operations","_Xor_Commands")
-_Help_RegisterGroup("General","","_Alias_Commands")
+_Help_RegisterGroup("General","","_Alias_Commands","_Alias_HelpCallback")
 
 #EndRegion ;------------------INTERNAL VARIABLES
 
@@ -184,15 +163,16 @@ TraySetState()
 #Region ;------------------BOT MAIN
 _OtpHost_flog('Starting')
 ;TCPStartup()
+PHPBB_Startup()
 _ShortUrl_Startup()
 FileChangeDir(@ScriptDir)
-If $dialer_checktime <> 0 Then AdlibRegister("otp22_dialler_report", $dialer_checktime)
+
+If $dialer_checktime <> 0 And $dialer_enable Then AdlibRegister("otp22_dialler_report", $dialer_checktime)
 If $forum_checktime <> 0 Then AdlibRegister("phpbb_report_NewPostsAndLink", $forum_checktime)
 If $mdi_checktime <> 0 Then AdlibRegister("_MDI_Report_NewEntries", $mdi_checktime)
 If $_Logger_Enable <> 0 Then AdlibRegister("_Logger_SubmitLogs", 1 * 60 * 1000)
+
 OnAutoItExitRegister("Quit")
-
-
 $_OtpHost_OnLogWrite = ""
 Global $_OtpHost = _OtpHost_Create($_OtpHost_Instance_Bot)
 
@@ -202,17 +182,13 @@ If $_OtpHost < 1 And (Not $_OtpHost_NoHostMode) Then
 Else
 	_OtpHost_SendCompanion($_OtpHost, "info_request"); request version comparison information from OtpHost right off the bat.
 EndIf
-
-
 Global $ConnTimer = 0
 $ADDR = _TCPNameToIP_Cycle($SERV)
 Msg('START')
 Open()
 If $STATE < $S_INIT Then Msg('FAIL')
-
-
 While 1
-	_OtpHost_Listen($_OtpHost);poll the local listening socket
+	If Not $_OtpHost_NoHostMode Then _OtpHost_Listen($_OtpHost);poll the local listening socket
 	Read()
 	Process()
 	Sleep(50)
@@ -226,7 +202,6 @@ While 1
 		EndIf
 	EndIf
 WEnd
-
 AdlibUnRegister()
 _OtpHost_flog('Quitting OtpBot')
 Exit;this loop never ends, so we don't need this.
@@ -234,7 +209,6 @@ Exit;this loop never ends, so we don't need this.
 
 
 ;--------------------FUNCTIONS
-
 Func Process_HostCmd($cmd, $data, $socket); message from the local controlling process. this is mostly just used to automatic updates, etc.
 	Global $_OtpHost_Info
 	Msg($socket & ' - ' & $cmd & ' : ' & $data)
@@ -267,7 +241,6 @@ Func Process_HostCmd($cmd, $data, $socket); message from the local controlling p
 	EndSwitch
 	TCPCloseSocket($socket)
 EndFunc   ;==>Process_HostCmd
-
 Func Process_Message_Internal($what)
 	Return Process_Message('', '', $what)
 EndFunc
@@ -275,7 +248,6 @@ Func Process_Message($who, $where, $what); called by Process() which parses IRC 
 	Local $isPM = ($where = $NICK)
 	Local $isChannel = (StringLeft($where, 1) = '#')
 	Local $isCommand = (StringLeft($what, 1) = $CommandChar)
-
 	If Not $isCommand Then;automatic responses to non-commands
 		If StringInStr($what, "pastebin", 2) Then Return pastebindecode($what, $AutoDecoderKeyfile)
 		If $what = "any news?" Then
@@ -288,7 +260,6 @@ Func Process_Message($who, $where, $what); called by Process() which parses IRC 
 		Local $pfx = $what
 		If (UBound($params) - 1) >= 1 Then $pfx = $params[1]
 		$pfx = StringTrimLeft($pfx, 1); trim off the @ or whatever
-
 		Switch $pfx
 			;Case 'help'
 			;	Return 'Commands are: more help version debug uptime botping botupdate | Site commands: dial update updatechan query wiki | ' & _
@@ -329,8 +300,6 @@ Func Process_Message($who, $where, $what); called by Process() which parses IRC 
 	EndIf
 	Return ''
 EndFunc   ;==>Process_Message
-
-
 Func OnStateChange($oldstate, $newstate)
 	If $oldstate = $newstate Then Return
 	Switch $newstate
@@ -371,7 +340,6 @@ Func OnStateChange($oldstate, $newstate)
 			EndIf
 	EndSwitch
 EndFunc   ;==>OnStateChange
-
 Func OnBotConsole($s); forwarding of console log to OtpHost - disabled by default.  controlled by $_OtpHost_OnLogWrite
 	_OtpHost_SendCompanion($_OtpHost, "log_entry", $s)
 EndFunc   ;==>OnBotConsole
@@ -381,18 +349,15 @@ EndFunc   ;==>OnBotConsole
 
 
 #Region ;------------------UTILITIES
-
 Func log_event($who, $where, $what)
 	If Not (StringLeft($where,1)<>'#') Then _Logger_Append($CHANNEL,$who, $what, $_Logger_Type_Post, 'to ' & $where)
 EndFunc   ;==>log_event
-
 Func COMMANDX_IDENTIFY($who, $where, $what, $acmd)
 	Local $user = __element($acmd, 2)
 	If $user = "" Then $user = $who
 	Cmd("WHOIS " & $user, True)
 	Return "Refreshed status information for " & $user
 EndFunc   ;==>COMMANDX_IDENTIFY
-
 Func COMMAND_uptime()
 	Local $b = _OtpHost_SendCompanion($_OtpHost, "uptime", "IRC Session: " & TimerDiffString($ConnTimer))
 	If $b Then
@@ -401,7 +366,6 @@ Func COMMAND_uptime()
 		Return "Error: Could not connect to OtpHost to request uptime."
 	EndIf
 EndFunc   ;==>COMMAND_uptime
-
 Func COMMANDX_botping($who, $where, $what, $acmd)
 	If $where = $NICK Then $where = $who;reply to the sender of a PM.
 	Local $b = _OtpHost_SendCompanion($_OtpHost, "ping", $CHANNEL)
@@ -411,7 +375,6 @@ Func COMMANDX_botping($who, $where, $what, $acmd)
 		Return "Error: Could not connect to OtpHost."
 	EndIf
 EndFunc   ;==>COMMANDX_botping
-
 Func COMMAND_botupdate()
 	Local $b = _OtpHost_SendCompanion($_OtpHost, "update", 'dummydata')
 	If $b Then
@@ -425,13 +388,9 @@ EndFunc   ;==>COMMAND_botupdate
 #EndRegion ;------------------UTILITIES
 
 #Region ;------------------BOT INTERNALS
-
 Func COMMAND_test($a = "default", $b = "default", $c = "default")
 	Return "This is a test command function. Params: a=" & $a & " b=" & $b & " c=" & $c
 EndFunc   ;==>COMMAND_test
-
-
-
 Func TryCommandFunc($who, $where, $what, ByRef $acmd)
 	Local $paramn = UBound($acmd) - 2
 	Local $paramstr = StringTrimLeft($what, StringLen($acmd[1]) + 1)
@@ -480,16 +439,13 @@ Func TryCommandFunc($who, $where, $what, ByRef $acmd)
 		$ret = _Calc_Evaluate($expression)
 		$err = @error
 		$ext = @extended
-
 		If $err = 3 Then; no simple whitelisted function exists - try a sanitized Calculate expression!
 			Local $expression = StringTrimLeft($what, 1)
 			$ret = _Calc_Evaluate($expression)
 			$err = @error
 			$ext = @extended
 		EndIf
-
 	EndIf
-
 	If $err <> 0 Then
 		Local $exec=_Alias_Read($acmd[1])
 		Local $err=@error
@@ -499,8 +455,6 @@ Func TryCommandFunc($who, $where, $what, ByRef $acmd)
 			Return Process_Message($who, $where, $exec)
 		EndIf
 	EndIf
-
-
 	If $err <> 0 Then
 		Local $expression = StringTrimLeft($what, 1)
 		$ret = __wolfram($expression)
@@ -510,38 +464,28 @@ Func TryCommandFunc($who, $where, $what, ByRef $acmd)
 	If $err <> 0 Then Return "Command `" & $acmd[1] & "` (with " & $paramn & " parameters) not found and no additional information was available"
 	Return _ValueFmt($ret, $ArrayFmt_Quick);$ret
 EndFunc   ;==>TryCommandFunc
-
 Func SendPrimaryChannel($what)
 	Return PRIVMSG($CHANNEL, $what)
 EndFunc   ;==>SendPrimaryChannel
-
 Func PRIVMSG($where, $what)
 	$what = StringReplace(StringStripCR(FilterText($what)), @LF, ' ')
 	$what = StringStripWS($what, 1 + 2);leading/trailing whitespace
 	If StringLen($what) = 0 Then $what = "ERROR: I tried to send a blank message. Report this to https://code.google.com/p/otpbot/issues/entry along with the input used."
-
-
 	Local $lenMax = 496 - StringLen($NICK & $USERNAME & $HOSTNAME & $where);512 - (":" + nick + "!" + user + "@" + host + " PRIVMSG " + channel + " :" + CR + LF) == 496 - nick - user - host - channel
 	Local $lenMsg = StringLen($what)
-
 	If $lenMsg > $lenMax Then
 		Local $notifier = " [type " & $CommandChar & "more]"
 		;Local $lenOver = ($lenMsg - $lenMax) + StringLen($notifier) + 1
 		;_More_Store($where, $where, StringRight($what, $lenOver))
 		;$what = StringTrimRight($what, $lenOver) & $notifier
-
 		$lenMax -= StringLen($notifier) + 1; the +1 shouldn't be necessary but for unexplained reasons the text cut off by 1 char
 		Local $wrap = TextWrap_Word($what, $lenMax)
 		$what = $wrap[0] & $notifier
 		_More_Store($where, $where, $wrap[1])
-
 	EndIf
-
 	If StringLeft($where,1) = '#' Then _Logger_Append($where,$NICK, $what);log bots own posts! derp
 	Cmd("PRIVMSG " & $where & " :" & $what)
 EndFunc   ;==>PRIVMSG
-
-
 Func TextWrap_Hard($str, $maxLen)
 	Local $arr[2] = [StringMid($str, 1, $maxLen), StringTrimLeft($str, $maxLen)]
 	Return $arr
@@ -560,9 +504,6 @@ Func TextWrap_Word($str, $maxLen)
 	EndIf
 	Return $arr
 EndFunc   ;==>TextWrap_Word
-
-
-
 Func FilterMacros($s)
 	$s = StringReplace($s, "%NICK%", $NICK)
 	$s = StringReplace($s, "%SERVER%", $SERV)
@@ -571,11 +512,8 @@ Func FilterMacros($s)
 	$s = StringReplace($s, "%!%", $CommandChar)
 	Return $s
 EndFunc   ;==>FilterMacros
-
-
 Func FilterText($s)
 	$s = FilterMacros($s)
-
 	Local $o = ''
 	For $i = 1 To StringLen($s)
 		Local $c = StringMid($s, $i, 1)
@@ -584,22 +522,17 @@ Func FilterText($s)
 	Next
 	Return $o
 EndFunc   ;==>FilterText
-
 Func Reply_Message($who, $where, $what);called by Process() based on conditions around Process_Message() calls
 	If $where = $NICK Then $where = $who;send reply PM's to the original sender; their PM's were addressed to us.
 	If StringLen($what) = 0 Then Return; don't send blank lines, ffs.
 	PRIVMSG($where, $what)
 EndFunc   ;==>Reply_Message
-
-
 Func TCheck($tolerance)
 	Global $gl_TS
 	Local $diff = TimerDiff($gl_TS)
 	If $diff > $tolerance Then $gl_TS = TimerInit()
 	Return ($diff > $tolerance)
 EndFunc   ;==>TCheck
-
-
 Func IsNumeric($value)
 	Return (StringRegExp($value, "^-?[0-9]+(\.[0-9]+)?$") And StringLen($value) <= 10)
 EndFunc   ;==>IsNumeric
@@ -616,8 +549,6 @@ Func Get($key, $default = "", $section = "utility")
 	If $value = 'blank' Then Return "";;;
 	Return $value
 EndFunc   ;==>Get
-
-
 Func QuitNoExit($sSend = "")
 	If $sSend = "" Then $sSend = $QuitText
 	Opt('TrayIconHide', 1)
@@ -655,8 +586,6 @@ Func FilepathQuote($fp)
 	EndIf
 	Return $fp
 EndFunc   ;==>FilepathQuote
-
-
 Func Read()
 	If $TestMode Then Return True
 	If $SOCK < 0 Then Return SetError(9999, 0, "")
@@ -666,18 +595,13 @@ Func Read()
 		Close()
 	EndIf
 EndFunc   ;==>Read
-
-
 Func Process()
 	; this is a very cut-down IRC message parser, it is not RFC-compliant or even efficient, but it's much slimmer than the original bot core.
 	If $STATE < $S_INIT Then Return False
-
 	If $TestMode And $STATE < $S_CHAT Then
 		State($STATE + 1)
 		Return True
 	EndIf
-
-
 	Local $p = StringInStr($BUFF, @LF)
 	If $p Then
 		Local $cmd = StringLeft($BUFF, $p)
@@ -690,27 +614,19 @@ Func Process()
 
 		;;;;Msg('IN=' & $cmd & " | "&UBound($acmd))
 		;;ConsoleWrite(_ValueFmt($acmd,$ArrayFmt_Default)&@CRLF)
-
 		If $isBasic Then
 			If $acmd[0] = "PING" Then Return Cmd(StringReplace($cmd, 'PING ', 'PONG '));because laziness but also to prevent losing the ":"
 		EndIf
-
 		If $isRegular Then
 			Local $from = $acmd[0]
 			Local $fromShort = NameShorten($from)
 			Local $cmdtype = $acmd[1]
-
 			Local $nickName, $userString, $hostString
 			NameSplit($from, $nickName, $userString, $hostString)
 			Local $hostLogDisplay = $userString & '@' & $hostString
-
-
-
 			If $cmdtype = "372" Then Return;server spamming us.
 			If Int($cmdtype) > 001 And Int($cmdtype) <> 330 Then Return;server spamming us.
-
 			_UserInfo_RememberByFingerprint($nickName, $userString & '@' & $hostString)
-
 			Switch $STATE
 				Case $S_INIT
 					Switch $cmdtype
@@ -726,7 +642,6 @@ Func Process()
 								$HOSTNAME = NameGetHostname($from)
 								State($S_CHAT)
 							EndIf
-
 					EndSwitch
 				Case $S_CHAT
 					Switch $cmdtype
@@ -748,12 +663,11 @@ Func Process()
 			Local $cmdtype = $acmd[1]
 			Local $where = $acmd[2]
 			Local $what = $acmd[3]
-
 			Local $nickName, $userString, $hostMask
 			NameSplit($acmd[0], $nickName, $userString, $hostMask)
-
 			Switch $cmdtype
 				Case 'PRIVMSG', 'NOTICE'
+					ConsoleWrite("PRIVMSG: "&$who&' '&$where&' '&$what&@CRLF)
 					Local $isCTCP = 0
 					Local $ctcpCommand = ""
 					Local $ctcpContent = ""
@@ -775,10 +689,7 @@ Func Process()
 					Else
 						If StringLeft($where,1)='#' Then _Logger_Append($where,$who, $what)
 					EndIf
-
 					_UserInfo_RememberByFingerprint($nickName, $userString & '@' & $hostMask)
-
-
 					Global $tsLastWHOIS
 					Global $strLastWHOIS
 					Local $strAcct = _UserInfo_Whois($who)
@@ -796,7 +707,6 @@ Func Process()
 						$strLastWHOIS = $who
 						$tsLastWHOIS = TimerInit()
 					EndIf
-
 					_UserInfo_SetOptValueByNick($who, '_lastposttext', $what)
 					_UserInfo_SetOptValueByNick($who, '_lastposttime', TimerInit())
 					Reply_Message($who, $where, Process_Message($who, $where, $what))
@@ -824,19 +734,15 @@ Func Process()
 
 			;Local $nickName, $USERNAME, $hostMask
 			;NameSplit($acmd[0], $nickName, $USERNAME, $hostMask)
-
-
 			If $cmdtype = "330" Then;:hitchcock.freenode.net 330 AutoBit nickname accountname :is logged in as
 				_UserInfo_Remember($nickName, $acctname)
 			EndIf
 		EndIf
 
 		;; do something with commands
-
 	EndIf
 	Return True
 EndFunc   ;==>Process
-
 Func Open()
 	If $TestMode Then
 		$SOCK = 65536
@@ -870,8 +776,6 @@ Func Msg($s, $iserror = 0)
 		_OtpHost_hlog($s)
 	EndIf
 EndFunc   ;==>Msg
-
-
 Func State($newstate = $S_UNK)
 	If $STATE = $newstate Then Return
 	If $newstate <> $S_UNK Then
@@ -900,8 +804,6 @@ Func StateGetName($STATE)
 			Return 'S_UNK?'
 	EndSwitch
 EndFunc   ;==>StateGetName
-
-
 Func Cmd($scmd, $debugforce = False)
 	If $TestMode Then Return Msg('OT=' & $scmd)
 	If $SOCK < 0 Then Return SetError(9999, 0, "")
@@ -912,8 +814,6 @@ Func Cmd($scmd, $debugforce = False)
 		Close()
 	EndIf
 EndFunc   ;==>Cmd
-
-
 Func NameSplit($name, ByRef $nickName, ByRef $userString, ByRef $hostString)
 	If StringLeft($name, 1) = ':' Then $name = StringTrimLeft($name, 1)
 	Local $pBang = StringInStr($name, '!')
@@ -932,13 +832,10 @@ Func NameSplit($name, ByRef $nickName, ByRef $userString, ByRef $hostString)
 		Return
 	EndIf
 	$hostString = $name
-
 	If $nickName = $NICK Then
 		$USERNAME = $userString
 		$HOSTNAME = $hostString
 	EndIf
-
-
 EndFunc   ;==>NameSplit
 Func NameShorten($name)
 	If StringLeft($name, 1) = ':' Then $name = StringTrimLeft($name, 1)

@@ -209,6 +209,7 @@ EndFunc
 #region ;-----AutoDialer polling
 
 Func otp22_dialler_report()
+	If Not $dialer_enable Then Return
 	otp22_getentries()
 	Local $ret = otp22_checknew()
 	If StringLen($ret) Then Call($dialer_reportfunc, $ret)
@@ -279,7 +280,7 @@ Func otp22_getentries()
 	Next
 EndFunc   ;==>otp22_getentries
 Func _StringBetweenFirst(ByRef $sInput, $sFirst, $sLast)
-	Local $array = _StringBetween($sInput, $sFirst, $sLast)
+	Local $array = _StringBetween($sInput, $sFirst, $sLast,$STR_ENDNOTSTART )
 	If UBound($array) > 0 Then Return $array[0]
 	Return ""
 EndFunc   ;==>_StringBetweenFirst

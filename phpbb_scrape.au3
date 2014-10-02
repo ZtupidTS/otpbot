@@ -4,22 +4,25 @@
 #include "HTTP.au3"
 #include-once
 
-TCPStartup();bleh
 Global $PHPBB_URL="http://forums.unfiction.com/forums/"
 Global $PHPBB_TopicID=36166
 Global $PHPBB_PostsPerPage=15
 Global $PHPBB_ReportFunc=''
 ;----------------------------------------------------------
-Global $PHPBB_TopicURL=phpbb_url_viewtopic($PHPBB_URL,$PHPBB_TopicID)
-Global $PHPBB_TopicHTML=BinaryToString(_InetRead($PHPBB_TopicURL,1))
-Global $PHPBB_TopicPostCount=phpbb_scrape_postcount($PHPBB_TopicHTML)
+Global $PHPBB_TopicURL=''
+Global $PHPBB_TopicHTML=''
+Global $PHPBB_TopicPostCount=''
 ;----------------------------------------------------------
 ;MsgBox(0,0,$PHPBB_TopicHTML)
 
 Local $_Forum_Commands[2][3]=[ _
 ["lastforumpage","","ALIAS: %!%FORUM - Retrieves the URL for the current last page of the forum topic."], _
 ["forumdebug","","forces a new-reply notification with at least the last 10 posts."]]
-
+Func PHPBB_Startup()
+	Global $PHPBB_TopicURL=phpbb_url_viewtopic($PHPBB_URL,$PHPBB_TopicID)
+	Global $PHPBB_TopicHTML=BinaryToString(_InetRead($PHPBB_TopicURL,1))
+	Global $PHPBB_TopicPostCount=phpbb_scrape_postcount($PHPBB_TopicHTML)
+EndFunc
 
 Func COMMAND_forum()
 	Return COMMAND_lastforumpage()

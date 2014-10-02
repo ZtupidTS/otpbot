@@ -230,8 +230,9 @@ Func _ArraySort_UserDefined(ByRef $a, $cmpfunc, $iStart=0, $iEnd=-1, $bEmptyStri
 	Do
 		$swaps=0
 		For $i=$iStart To $iEnd-1; go to the next to last, since we compare two items iterated by 1 eg:  [12]34, 1[23]4, 12[34] ...
-			If Call($cmpfunc,$a[$i],$a[$i+1])=1 Then
-				_ArraySwap($a[$i],$a[$i+1]); sort A down from B, which really just swaps the items - since sorting UP leaves them in-order.
+			If Call($cmpfunc, $a[$i], $a[$i+1])=1 Then
+				_ArraySwap($a,$i,$i+1)
+				;_ArraySwap($a[$i],$a[$i+1]); sort A down from B, which really just swaps the items - since sorting UP leaves them in-order.
 				$swaps+=1
 			EndIf
 		Next

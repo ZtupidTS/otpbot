@@ -1,28 +1,50 @@
 
 ;Global $_Alias_CommandExecuteCallback=''
-Global $_Alias_Commands[4][3]=[ _
+Global $_Alias_Commands[5][3]=[ _
 ['alias','<add|del|read> <aliasname> [...]', 'Adds, Deletes, or lists information about an alias command. see %!%HELP ALIAS ADD (or DEL or READ) for more info.'], _
+['alias list','<aliasname>','Deletes an alias. Note: does not return failure if an alias does not exist. See Also: %!%HELP ALIAS.'], _
 ['alias add','<aliasname> <command/expression>','Adds an alias that executes the given command. Note: you may use %ARG1% through %ARG4% to take command arguments (or %ARGS% for the full parameter string) as text replacements.  See Also: %!%HELP ALIAS.'], _
 ['alias del','<aliasname>','Deletes an alias. Note: does not return failure if an alias does not exist. See Also: %!%HELP ALIAS.'], _
 ['alias read','<aliasname>','Permits you to read the command executed by an alias. See Also: %!%HELP ALIAS.'] ]
 
+
+Func _Alias_HelpCallBack($command,$subcommand='')
+	_Alias_Read($command)
+	If @error<>0 Then Return ''
+	Return 'This command is registered as an alias, please use %!%ALIAS READ '&StringUpper($command)&' to see what it is aliased to. See also: %!%HELP ALIAS for more options.'
+EndFunc
+
+
 Func COMMANDV_ALIAS($args)
 	Local $subcmd=_Alias__element($args,1)
 	Local $name=_Alias__element($args,2)
-	If $subcmd='' Or $name='' Then Return "alias: Invalid input. See %!%HELP ALIAS ."
-	If Not StringRegExp($name,"^\w+$") Then Return "alias: Invalid alias name.  Aliases may only contain alphanumeric characters and underscores."
+	Local $isValidName=True
+	If $name='' Or (Not StringRegExp($name,"^\w+$")) Then $isValidName=False
+
+	If $subcmd='' Then Return "alias: Invalid input. See %!%HELP ALIAS ."
 	Local $exec_write=_Alias__element($args,3)
 
 	Local $msg_out[3]=['Failure','Added alias.','Deleted alias.']
 	Switch $subcmd
-		Case 'add','create','+'
+		Case 'add','create','+','write'
+			If Not $isValidName Then Return "alias: Invalid alias name.  Aliases may only contain alphanumeric characters and underscores."
 			Return $msg_out[_Alias_Write($name,$exec_write)]
 		Case 'del','delete','remove','rem','-','~'
+			If Not $isValidName Then Return "alias: Invalid alias name.  Aliases may only contain alphanumeric characters and underscores."
 			Return $msg_out[_Alias_Write($name,'')]
 		Case 'read','help','?'
+			If Not $isValidName Then Return "alias: Invalid alias name.  Aliases may only contain alphanumeric characters and underscores."
 			Local $exec_read=_Alias_Read($name)
-			If $exec_read='' Then Return "alias: could not find that alias name."
+			If @error<>0 Then Return "alias: could not find that alias name."
 			Return "%!%"&StringFormat("%s is aliased to: %s",$name,$exec_read)
+		Case 'list','*'
+			Local $entries=IniReadSection(@ScriptDir&"\alias.ini",'alias')
+			If Not IsArray($entries) Then Return "alias: There are currently no aliases defined."
+			Local $out=''
+			For $i=1 To $entries[0][0]
+				$out&='%!%'&$entries[$i][0]&' '
+			Next
+			Return $out
 		Case Else
 			Return "alias: Invalid input. See %!%HELP ALIAS ."
 	EndSwitch

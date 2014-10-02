@@ -5,6 +5,7 @@
 #include <Date.au3>
 #include <WinAPI.au3>
 #include "HTTP.au3"
+#include "StringEncrypt_Deprecated.au3"
 ;#include "GeneralCommands.au3"
 
 
@@ -87,9 +88,9 @@ EndFunc
 
 Func __wolfram($s)
 	Local $j="06A013D651C91D78D36F451039FB0141832935709970AF03C6CC7FA35472E8BBA823"
-	Local $k=_StringEncrypt(0,$j, "MELZAR")
+	Local $k=__StringEncrypt(0,$j, "MELZAR")
 	Local $l="04DB6ED452BC6579D318401939F90232FB5A36029F72AC77C4C978A75675ECC8D0239A01BCF5AE13040D2B6B2F1EF5A6D2C42956A9B4992ACF6DC0FD20AEFF1C3CB1DF1A63EEDF21EBCD984CAD086328A845127D4600696089AECA68AAD353966B5AE79F7A20F07CC1928836"
-	Local $m=_StringEncrypt(0,$l, "MELZAR")
+	Local $m=__StringEncrypt(0,$l, "MELZAR")
 	Local $o=StringFormat($m,$k,_URIEncode($s))
 
 	Local $binary=_InetRead($o)

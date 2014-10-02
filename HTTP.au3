@@ -169,7 +169,7 @@ Func _HTTP_Error($aReq,$address,$sock,$error,$state)
 	Local $buffer=""
 	_HTTP_ErrorEx($aReq,$address,$sock,$error,$state,$buffer)
 EndFunc
-Func _HTTP_ErrorEx($aReq,$address,$sock,$error,$state,ByRef $buffer)
+Func _HTTP_ErrorEx($aReq,$address,$sock,$error,$state, ByRef $buffer)
 	 Call($_HTTP_Event_Debug,StringFormat("HTTP: Error %s (%s) during %s on host %s (%s) socket %s. Buffer size: %s. Inetreadmode: %s", _
 	 $error, Hex($error), $state, $aReq[0], $address, $sock, StringLen($buffer),$_INETREAD_MODE))
 EndFunc
