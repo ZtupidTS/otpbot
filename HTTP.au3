@@ -6,8 +6,13 @@ Global $_HTTP_Event_Debug=''
 Global $_HTTP_Client_Name="UnknownHTTPClient"
 Global $_HTTP_Client_Version="1.0"
 Global $_HTTP_DebugRequests=1
+
+Global $_HTTP_hWinsock=DllOpen("WS2_32.dll")
+
+
 ;TCPStartup()
 Func _InetRead($url,$opt=0)
+	ConsoleWrite("Read: "&$url&@CRLF)
 	Local $ts=TimerInit()
 	Local $ret,$err,$ext
 	Switch $_INETREAD_MODE
@@ -55,6 +60,7 @@ Func _HTTP_StripToContent(ByRef $sRecvd)
 	EndIf
 EndFunc
 Func __HTTP_Req($Method = 'GET', $url = 'http://example.com/', $Content = '', $extraHeaders = '')
+	;ConsoleWrite($Method&' '&$url&@CRLF)
 	Local $aRet[4]
 	$url = StringTrimLeft($url, StringInStr($url, '://') + 2)
 	Local $pos = StringInStr($url, '/')
@@ -115,12 +121,16 @@ Func __HTTP_Transfer(ByRef $aReq, ByRef $sRecv_Out, $limit = 0, $timeout=0)
 			;$SOCK = -1
 			ExitLoop
 		EndIf
+
+
 		;Sleep(50)
-	WEnd
+WEnd
+;ConsoleWrite($sRecv_Out&@CRLF)
 	If $SOCK<>-1 Then TCPCloseSocket($SOCK)
 	;ConsoleWrite('HTTPSockError: '&$error&@CRLF)
 EndFunc   ;==>__HTTP_Transfer
 Func _TCPNameToIP($hostname)
+	ConsoleWrite("NameToIP: "&$hostname&@CRLF)
 	Local $r=TCPNameToIP($hostname)
 	Local $e=@error
 	Local $x=@extended
@@ -135,9 +145,11 @@ Func _TCPNameToIP($hostname)
 	Return SetError($e,$x,$r)
 EndFunc
 Func _TCPConnect($addr,$port)
+	;ConsoleWrite("conn"&@CRLF)
 	Local $r=TCPConnect($addr,$port)
 	Local $e=@error
 	Local $x=@extended
+	;ConsoleWrite("retu"&@CRLF)
 	If $e<>0 Then _TCP_Error($e,"Connect",$addr,$port,$r,0,0)
 	Return SetError($e,$x,$r)
 EndFunc
@@ -146,8 +158,10 @@ Func _TCPRecv(ByRef $sock,$len,$flag=0)
 	Local $r=TCPRecv($sock,$len,$flag)
 	Local $e=@error
 	Local $x=@extended
-	If $e<>0 And $e<>-1 Then _TCP_Error($e,"Recv",'','',$sock,StringLen($r)&'/'&$len,$flag)
-	If $e=-1 Then
+	;ConsoleWrite("recv "&$sock&' '&StringLen($r)&'/'&$len&' '&$flag&' Err:'&$e&' Ext:'&$x&@CRLF)
+	If $e=0 And $x<>0 Then $e=0xBAD00000+$x
+	If $e<>0 Then _TCP_Error($e,"Recv",'','',$sock,StringLen($r)&'/'&$len,$flag)
+	If $e=-1 Or $e=-2 Then;socket invalid or not connected
 		TCPCloseSocket($sock)
 		$sock=-1
 	EndIf
@@ -158,6 +172,7 @@ Func _TCPSend($sock,$data)
 	Local $r=TCPSend($sock,$data)
 	Local $e=@error
 	Local $x=@extended
+	If StringLen($data)=0 And BinaryLen($data)=0 Then $e=0xBADF00D
 	If $e<>0 Then _TCP_Error($e,"Send",'','',$sock,$r&'/'&StringLen($data),0)
 	Return SetError($e,$x,$r)
 EndFunc
@@ -192,3 +207,4 @@ Func _URIEncode($sData)
 	Next
 	Return $sData
 EndFunc   ;==>_URIEncode
+

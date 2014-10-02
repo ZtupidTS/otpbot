@@ -134,7 +134,7 @@ Func _Au3_ScrapeInfo($url, $func, ByRef $desc, ByRef $usage, ByRef $notes)
 EndFunc   ;==>_Au3_ScrapeInfo
 
 Func __SB0(ByRef $in, $begin, $end)
-	Local $arr = _StringBetween($in, $begin, $end)
+	Local $arr = _StringBetween($in, $begin, $end,$STR_ENDNOTSTART)
 	If IsArray($arr) Then Return SetError(0, 0, $arr[0])
 	Return SetError(1, 0, '')
 EndFunc   ;==>__SB0

@@ -158,7 +158,7 @@ Func Wiki_URL_API()
 	Return $wiki_url&'/w/api.php'
 EndFunc
 Func Wiki_AddCookies($text)
-	Local $cookies=_StringBetween($text,'Set-Cookie:',';')
+	Local $cookies=_StringBetween($text,'Set-Cookie:',';',$STR_ENDNOTSTART)
 	For $i=0 To UBound($cookies)-1
 		$wiki_cookies&=$cookies[$i]&'; '
 	Next
@@ -178,7 +178,7 @@ Func Wiki_Login($user,$pass)
 	Local $arg=StringFormat("format=xml&action=login&lgname=%s&lgpassword=%s", _URIEncode($user), _URIEncode($pass))
 	Wiki_API_Request($text,$arg)
 
-	Local $tokens=_StringBetween($text,'token="','"')
+	Local $tokens=_StringBetween($text,'token="','"',$STR_ENDNOTSTART )
 	Local $token=''
 	If IsArray($tokens) Then $token=$tokens[0]
 
@@ -195,7 +195,7 @@ Func Wiki_Login($user,$pass)
 		Local $textb
 		$arg&='format=xml&action=tokens&type=edit'
 		Wiki_API_Request($textb,$arg)
-		$tokens=_StringBetween($textb,'edittoken="','"')
+		$tokens=_StringBetween($textb,'edittoken="','"',$STR_ENDNOTSTART )
 		If IsArray($tokens) Then $wiki_edittoken=$tokens[0]
 
 		If StringInStr($text,"Success") Then Return SetError(0,0,1)
@@ -216,7 +216,7 @@ Func Wiki_Search($terms,$mode="title");text?
 		Return ""
 	EndIf
 	$data=BinaryToString($data)
-	Return _StringBetween($data,'title="','"')
+	Return _StringBetween($data,'title="','"',$STR_ENDNOTSTART)
 EndFunc
 
 Func COMMANDX_page($who, $where, $what, $acmd)
@@ -227,7 +227,7 @@ Func COMMANDX_page($who, $where, $what, $acmd)
 		Return "I couldn't check the page name at this time. Try this: "&_Wiki_Link('/wiki/'&_Wiki_Name($page))
 	EndIf
 	$data=BinaryToString($data)
-	Local $a=_StringBetween($data,'class="selected"><a href="','"')
+	Local $a=_StringBetween($data,'class="selected"><a href="','"',$STR_ENDNOTSTART )
 	Local $result=0
 	If IsArray($a) Then
 		If Not (StringInStr($a[0],"Special:Search") Or StringInStr($a[0],"Special%3ASearch")) Then $result=1

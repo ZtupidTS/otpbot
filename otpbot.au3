@@ -42,6 +42,7 @@
 Opt('TrayAutoPause', 0)
 Opt('TrayMenuMode', 1 + 2)
 Opt('TrayOnEventMode', 1)
+Opt('TrayIconDebug',1)
 
 
 #Region ;------------CONFIG
@@ -162,6 +163,9 @@ TraySetState()
 
 #Region ;------------------BOT MAIN
 _OtpHost_flog('Starting')
+OnAutoItExitRegister("Quit")
+$_OtpHost_OnLogWrite = ""
+Global $_OtpHost = _OtpHost_Create($_OtpHost_Instance_Bot)
 ;TCPStartup()
 PHPBB_Startup()
 _ShortUrl_Startup()
@@ -172,9 +176,7 @@ If $forum_checktime <> 0 Then AdlibRegister("phpbb_report_NewPostsAndLink", $for
 If $mdi_checktime <> 0 Then AdlibRegister("_MDI_Report_NewEntries", $mdi_checktime)
 If $_Logger_Enable <> 0 Then AdlibRegister("_Logger_SubmitLogs", 1 * 60 * 1000)
 
-OnAutoItExitRegister("Quit")
-$_OtpHost_OnLogWrite = ""
-Global $_OtpHost = _OtpHost_Create($_OtpHost_Instance_Bot)
+
 
 ;$nohostmode
 If $_OtpHost < 1 And (Not $_OtpHost_NoHostMode) Then
@@ -320,11 +322,9 @@ Func OnStateChange($oldstate, $newstate)
 				;Msg(Process_Message('who', 'where', 'http://pastebin.com/e7pbUdSi'))
 				;Msg(Process_Message('who', 'where', '@help AutoIt'))
 				;Msg(Process_Message('who', 'where', '@convert 1 MB to KB'))
-				Msg(Process_Message('who', 'where', '@calc command("@debug")'))
-				Local $r= _REF_Command('@debug')
-				Local $e=@error
-				Local $x=@extended
-				Msg($r&' '&$e&' '&$x)
+				;TCPStartup()
+				Msg(Process_Message('who', 'where', '~wa test'))
+
 				ConsoleWrite(@CRLF & "----------------------" & @CRLF)
 				;_Help_OutputWikiListing(0)
 				ConsoleWrite(@CRLF & "----------------------" & @CRLF)

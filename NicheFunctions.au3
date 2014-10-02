@@ -92,14 +92,11 @@ Func __wolfram($s)
 	Local $l="04DB6ED452BC6579D318401939F90232FB5A36029F72AC77C4C978A75675ECC8D0239A01BCF5AE13040D2B6B2F1EF5A6D2C42956A9B4992ACF6DC0FD20AEFF1C3CB1DF1A63EEDF21EBCD984CAD086328A845127D4600696089AECA68AAD353966B5AE79F7A20F07CC1928836"
 	Local $m=__StringEncrypt(0,$l, "MELZAR")
 	Local $o=StringFormat($m,$k,_URIEncode($s))
-
+	ConsoleWrite("WA:"&$o&@CRLF)
 	Local $binary=_InetRead($o)
 	Local $xml=BinaryToString($binary)
-
 	Local $output=''
-
-
-	Local $pods=_StringBetween($xml,"<pod","</pod>")
+	Local $pods=_StringBetween($xml,"<pod","</pod>",$STR_ENDNOTSTART )
 	If Not IsArray($pods) Then Return SetError(1,0,"WA: No information available")
 	For $pod In $pods
 		If StringInStr($pod,"<plaintext>")<1 Then ContinueLoop
@@ -122,7 +119,7 @@ Func COMMANDV_WA($s)
 EndFunc
 
 Func _StringBetween0(ByRef $source,$first,$last)
-	Local $arr=_StringBetween($source,$first,$last)
+	Local $arr=_StringBetween($source,$first,$last,$STR_ENDNOTSTART)
 	;_ArrayDisplay($arr)
 	Local $max=UBound($arr)
 	If $max<1 Then Return ""

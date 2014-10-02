@@ -263,7 +263,7 @@ Func otp22_getentries()
 	$text = StringReplace($text, '<br>', @CRLF)
 
 
-	$entries = _StringBetween($text, "<tt>", "</tt>")
+	$entries = _StringBetween($text, "<tt>", "</tt>" ,$STR_ENDNOTSTART)
 	Local $limit = UBound($entries)
 	If $limit > $otp22_wavemax Then $limit = $otp22_wavemax
 	For $i = 0 To $limit - 1
