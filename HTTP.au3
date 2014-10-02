@@ -7,7 +7,6 @@ Global $_HTTP_Client_Name="UnknownHTTPClient"
 Global $_HTTP_Client_Version="1.0"
 Global $_HTTP_DebugRequests=1
 
-Global $_HTTP_hWinsock=DllOpen("WS2_32.dll")
 
 
 ;TCPStartup()
@@ -146,6 +145,7 @@ Func _TCPNameToIP($hostname)
 EndFunc
 Func _TCPConnect($addr,$port)
 	;ConsoleWrite("conn"&@CRLF)
+	Opt('TCPTimeout',1000)
 	Local $r=TCPConnect($addr,$port)
 	Local $e=@error
 	Local $x=@extended
@@ -159,7 +159,7 @@ Func _TCPRecv(ByRef $sock,$len,$flag=0)
 	Local $e=@error
 	Local $x=@extended
 	;ConsoleWrite("recv "&$sock&' '&StringLen($r)&'/'&$len&' '&$flag&' Err:'&$e&' Ext:'&$x&@CRLF)
-	If $e=0 And $x<>0 Then $e=0xBAD00000+$x
+	If $e=0 And $x<>0 Then $e=0xBAD000+$x
 	If $e<>0 Then _TCP_Error($e,"Recv",'','',$sock,StringLen($r)&'/'&$len,$flag)
 	If $e=-1 Or $e=-2 Then;socket invalid or not connected
 		TCPCloseSocket($sock)

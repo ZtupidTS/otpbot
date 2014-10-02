@@ -55,7 +55,7 @@ Func _Au3_Startup()
 
 
 	For $i = 0 To UBound($_Au3_Funcs) - 1
-		If StringInStr(_Calc_Sanitize($_Au3_Funcs[$i]), '_REF_') Then
+		If Not _Calc_IsWhitelisted($_Au3_Funcs[$i]) Then
 			$_Au3_Commands[$i][0] = ''
 		Else
 			$_Au3_Commands[$i][0] = $_Au3_Funcs[$i]
@@ -65,7 +65,7 @@ Func _Au3_Startup()
 	Next
 
 	For $i = 0 To UBound($_Udf_Funcs) - 1
-		If StringInStr(_Calc_Sanitize($_Udf_Funcs[$i]), '_REF_') Then
+		If Not _Calc_IsWhitelisted($_Udf_Funcs[$i]) Then
 			$_Udf_Commands[$i][0] = ''
 		Else
 			$_Udf_Commands[$i][0] = $_Udf_Funcs[$i]

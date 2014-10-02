@@ -166,7 +166,7 @@ _OtpHost_flog('Starting')
 OnAutoItExitRegister("Quit")
 $_OtpHost_OnLogWrite = ""
 Global $_OtpHost = _OtpHost_Create($_OtpHost_Instance_Bot)
-;TCPStartup()
+TCPStartup()
 PHPBB_Startup()
 _ShortUrl_Startup()
 FileChangeDir(@ScriptDir)

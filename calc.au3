@@ -272,6 +272,11 @@ Func _Calc_Whitelist($sRef)
 	Next
 	Return "_REF_" & $sRef; prefixing with _REF_ invalidates functions and variables unless we actually define it.
 EndFunc   ;==>_Calc_Whitelist
+Func _Calc_IsWhitelisted($sRef)
+	Return _ArraySearch($_Calc_Whitelist,$sRef)>=0
+EndFunc
+
+
 Func _Calc_IsMacroChr(ByRef $c)
 	Return StringRegExp($c, '^[@a-zA-Z0-9_]$')
 EndFunc   ;==>_Calc_IsRefChr
