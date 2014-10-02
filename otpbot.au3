@@ -3,12 +3,11 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.9.5.207
+#AutoIt3Wrapper_Res_Fileversion=6.9.5.210
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crash_demons
 #AutoIt3Wrapper_Res_requestedExecutionLevel=requireAdministrator
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
-
 ;Standard user Libraries
 #include <Array.au3>
 #include <String.au3>
@@ -170,7 +169,6 @@ TCPStartup()
 PHPBB_Startup()
 _ShortUrl_Startup()
 FileChangeDir(@ScriptDir)
-
 If $dialer_checktime <> 0 And $dialer_enable Then AdlibRegister("otp22_dialler_report", $dialer_checktime)
 If $forum_checktime <> 0 Then AdlibRegister("phpbb_report_NewPostsAndLink", $forum_checktime)
 If $mdi_checktime <> 0 Then AdlibRegister("_MDI_Report_NewEntries", $mdi_checktime)
@@ -325,7 +323,6 @@ Func OnStateChange($oldstate, $newstate)
 				;TCPStartup()
 				;_ArrayDisplay($_USERINFO_OPTIONS)
 				;Msg(Process_Message('who', 'where', '~wa test'))
-
 				ConsoleWrite(@CRLF & "----------------------" & @CRLF)
 				;_Help_OutputWikiListing(0)
 				ConsoleWrite(@CRLF & "----------------------" & @CRLF)

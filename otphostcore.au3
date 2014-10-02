@@ -49,6 +49,7 @@ Func _OtpHost_Listen($hOtphost, $closeSocket = True)
 	If Not IsArray($hOtphost) Then Return -1
 	Local $skListener=$hOtphost[1]
 	Local $buffer = ""
+	Opt('TCPTimeout',50)
 	$skIncoming = TCPAccept($skListener)
 	If $skIncoming >= 0 Then
 		_OtpHost_hlog("Host Conn: " & $skIncoming)

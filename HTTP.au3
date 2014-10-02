@@ -145,7 +145,7 @@ Func _TCPNameToIP($hostname)
 EndFunc
 Func _TCPConnect($addr,$port)
 	;ConsoleWrite("conn"&@CRLF)
-	Opt('TCPTimeout',1000)
+	Opt('TCPTimeout',250)
 	Local $r=TCPConnect($addr,$port)
 	Local $e=@error
 	Local $x=@extended
@@ -155,6 +155,7 @@ Func _TCPConnect($addr,$port)
 EndFunc
 Func _TCPRecv(ByRef $sock,$len,$flag=0)
 	If $sock=-1 Then Return
+	Opt('TCPTimeout',250)
 	Local $r=TCPRecv($sock,$len,$flag)
 	Local $e=@error
 	Local $x=@extended
