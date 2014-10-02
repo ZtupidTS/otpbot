@@ -483,7 +483,7 @@ Func _UserInfo_FingerPrint_Add($i,$fingerprint)
 		Local $next=Int(_UserInfo_GetOptValue($i, '_fingerprintn'))
 		_UserInfo_SetOptValue($i, '_fingerprint'&$next, $fingerprint)
 		_UserInfo_SetOptValue($i, '_fingerprintn', Mod($next+1,0x20));overwrite old fingerprints.
-		IniWrite($_USERINFO_INI,'fingerprints',_StringToHex($fingerprint),_UserInfo_SanitizeName)
+		IniWrite($_USERINFO_INI,'fingerprints',_StringToHex($fingerprint),_UserInfo_SanitizeName($_USERINFO_ACCTS[$i]))
 	EndIf
 EndFunc
 Func _UserInfo_FingerPrint_Check($i,$fingerprint)
