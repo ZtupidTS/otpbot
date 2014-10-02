@@ -100,5 +100,3 @@ true
 UBound
 var_dump
 vargettype
-void
-while

@@ -348,9 +348,14 @@ Func OnStateChange($oldstate, $newstate)
 			If $TestMode Then; whatever needs debugging at the moment.
 				;otp22_getentries()
 				$NICK = $_UserInfo_TestUser
-				Msg(Process_Message('who', 'where', 'http://pastebin.com/e7pbUdSi'))
+				;Msg(Process_Message('who', 'where', 'http://pastebin.com/e7pbUdSi'))
 				;Msg(Process_Message('who', 'where', '@help AutoIt'))
 				;Msg(Process_Message('who', 'where', '@convert 1 MB to KB'))
+				Msg(Process_Message('who', 'where', '@calc command("@debug")'))
+				Local $r= _REF_Command('@debug')
+				Local $e=@error
+				Local $x=@extended
+				Msg($r&' '&$e&' '&$x)
 				ConsoleWrite(@CRLF & "----------------------" & @CRLF)
 				;_Help_OutputWikiListing(0)
 				ConsoleWrite(@CRLF & "----------------------" & @CRLF)

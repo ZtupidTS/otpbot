@@ -40,7 +40,10 @@ _Calc_Startup()
 #include "convert.au3"
 ;------------------------------------
 Func _REF_Command($str)
-	Return Call($_Calc_GetCommandValue_Callback,$str)
+	Local $r=Call($_Calc_GetCommandValue_Callback,$str)
+	Local $e=@error
+	Local $x=@extended
+	Return SetError($e,$x,$r)
 EndFunc
 Func _REF_Assign($name,$value)
 	Assign('_REF_'&$name,$value,2)
@@ -71,6 +74,16 @@ Func _REF_If($condvalue,$trueexec='',$falseexec='')
 		If StringLen($falseexec) Then Return _Calc_EvaluateValue($falseexec)
 	EndIf
 	Return ''
+EndFunc
+Func _REF_While($condexec,$trueexec)
+	While _Calc_EvaluateValue($condexec)
+		_Calc_EvaluateValue($trueexec)
+	WEnd
+EndFunc
+Func _REF_Until($condexec,$trueexec)
+	Do
+		_Calc_EvaluateValue($trueexec)
+	Until _Calc_EvaluateValue($condexec)
 EndFunc
 
 
