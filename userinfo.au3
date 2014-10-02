@@ -372,7 +372,7 @@ Func _UserInfo_Option_List()
 EndFunc
 Func _UserInfo_Option_Add($name,$description="No description available",$isPassword=False)
 	Local $opt[3]=[$name,$description,$isPassword]
-	Return _ArrayAdd($_USERINFO_OPTIONS,$opt)
+	Return _ArrayAdd($_USERINFO_OPTIONS,$opt,0,'','',$ARRAYFILL_FORCE_SINGLEITEM)
 EndFunc
 Func _UserInfo_Option_GetIndex($name)
 	For $i=0 To UBound($_USERINFO_OPTIONS)-1

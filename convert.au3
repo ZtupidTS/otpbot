@@ -353,14 +353,14 @@ Func _Convert__ArrSplitPrefix(ByRef $aMatches, ByRef $arr, $iCheck,$iResult,$sUn
 	For $i=0 To UBound($arr)-1
 		If $arr[$i][$iCheck]==StringLeft($sUnit,StringLen($arr[$i][$iCheck])) Then
 			Local $aPair[2]=[ $arr[$i][$iResult],  StringTrimLeft($sUnit,StringLen($arr[$i][$iCheck])) ]
-			_ArrayAdd($aMatches, $aPair)
+			_ArrayAdd($aMatches, $aPair,0,'','',$ARRAYFILL_FORCE_SINGLEITEM)
 			;Return True
 		EndIf
 	Next
 		For $i=0 To UBound($arr)-1
 		If $arr[$i][$iCheck]=StringLeft($sUnit,StringLen($arr[$i][$iCheck])) Then
 			Local $aPair[2]=[ $arr[$i][$iResult],  StringTrimLeft($sUnit,StringLen($arr[$i][$iCheck])) ]
-			_ArrayAdd($aMatches, $aPair)
+			_ArrayAdd($aMatches, $aPair,0,'','',$ARRAYFILL_FORCE_SINGLEITEM)
 			;Return True
 		EndIf
 	Next
