@@ -51,7 +51,7 @@ Func pastebindecode($message, $keyfile = "elpaso.bin")
 	$data=StringReplace($data,"file start","")
 	$data=StringReplace($data,"black otp","")
 
-	Local $autocorrect=StringInStr($message,'correct')
+	Local $autocorrect=StringInStr($message,'nocorrect')<1
 	Return decodebin($data, $keyfile,$autocorrect)
 EndFunc   ;==>pastebindecode
 
