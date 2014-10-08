@@ -1,12 +1,12 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
+#AutoIt3Wrapper_Version=beta
 #AutoIt3Wrapper_icon=bot.ico
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.9.5.211
+#AutoIt3Wrapper_Res_Fileversion=6.9.5.214
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
-#AutoIt3Wrapper_Res_LegalCopyright=Crash_demons
-#AutoIt3Wrapper_Res_requestedExecutionLevel=requireAdministrator
+#AutoIt3Wrapper_Res_LegalCopyright=Crashdemons
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 ;Standard user Libraries
 #include <Array.au3>

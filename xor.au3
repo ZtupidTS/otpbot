@@ -11,6 +11,7 @@ Global $_Xor_Commands[4][3]=[ _
 
 #region ;----- autodecoder for  black OTP1
 
+
 Func COMMAND_pastebinxor($link,$keyfile="elpaso.bin")
 	If (Not StringRegExp($keyfile,'^[a-zA-Z0-9_\-\.]+$')) Or StringInStr($keyfile,'..')>0 Then Return "Invalid keyfile name"
 	Return pastebindecode($link, $keyfile)
@@ -24,9 +25,10 @@ Func Trans2Bytes($trans)
 		If StringLen($key) = 0 Then ContinueLoop
 		If $key = "salt" Then ExitLoop
 		If $key = "offset" Then ExitLoop
+		;ConsoleWrite("["&$key&"]"&@CRLF)
 		If StringRegExp($key,"^[0-9]+$") Then $bytes &= Chr(Int($key))
 	Next
-	Return $bytes
+	Return StringToBinary($bytes)
 EndFunc   ;==>Trans2Bytes
 
 Func getpastebin($message)
@@ -43,6 +45,11 @@ Func pastebindecode($message, $keyfile = "elpaso.bin")
 	Local $link = "http://pastebin.com/raw.php?i=" & $id
 	Local $data = BinaryToString(_InetRead($link))
 	If Not StringRegExp($data, "(?s)[\d\s]+offset[\d\s]+") Then Return SetError(1, 0, "")
+
+	$data=StringReplace($data,"black otp1 file start","")
+	$data=StringReplace($data,"black otp 1 file start","")
+	$data=StringReplace($data,"file start","")
+	$data=StringReplace($data,"black otp","")
 
 	Local $autocorrect=StringInStr($message,'correct')
 	Return decodebin($data, $keyfile,$autocorrect)
