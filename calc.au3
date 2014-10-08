@@ -49,7 +49,7 @@ Func _REF_Assign($name,$value)
 	Assign('_REF_'&$name,$value,2)
 EndFunc
 Func _REF_Eval($name)
-	Eval('_REF_'&$name)
+	Return Eval('_REF_'&$name)
 EndFunc
 Func _REF_Void($a=0,$b=0,$c=0,$d=0,$e=0,$f=0,$g=0,$h=0)
 	Return SetError(0,0,'')
