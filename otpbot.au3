@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.9.5.210
+#AutoIt3Wrapper_Res_Fileversion=6.9.5.211
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crash_demons
 #AutoIt3Wrapper_Res_requestedExecutionLevel=requireAdministrator
@@ -41,7 +41,7 @@
 Opt('TrayAutoPause', 0)
 Opt('TrayMenuMode', 1 + 2)
 Opt('TrayOnEventMode', 1)
-Opt('TrayIconDebug',1)
+;Opt('TrayIconDebug',1)
 
 
 #Region ;------------CONFIG

@@ -77,7 +77,9 @@ Func decodebin($message, $key = "elpaso.bin", $autocorrect=1)
 	;ConsoleWrite("CWD: "&@WorkingDir&@CRLF))
 	;_RunDos($run)
 	RunWait($run, @WorkingDir, @SW_HIDE)
-	Return FileRead($out)
+	Local $sout=FileRead($out)
+	If IsBinary($sout) Then $sout=BinaryToString($sout)
+	Return $sout
 EndFunc   ;==>decodebin
 
 
