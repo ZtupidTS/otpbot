@@ -97,14 +97,15 @@ Func COMMAND_lines()
 	For $i=0 To UBound($dialer_keywords)-1
 		Local $sNum=$dialer_numbers[$i]
 		Local $kws=StringSplit($dialer_keywords[$i],"|")
-		If $i>0 Then $out&=" | "
-		$out&=$sNum&": "
+		If $i>0 Then $out&=@LF
+		$out&=$sNum&" (keywords: "
 		For $j=1 To UBound($kws)-1
 			If Not (StringLeft($kws[$j],1)="*") Then
 				If $j>1 Then $out&=", "
 				$out&=$kws[$j]
 			EndIf
 		Next
+		$out&=")"
 	Next
 	Return $out
 EndFunc
@@ -239,10 +240,10 @@ Func otp22_checknew()
 		If $iLine>-1 Then $phone=dialer_getShortName($iLine)
 
 
-		$sNew &= StringFormat("%dkb (%s on %s) %s | ", $otp22_waves[$i][0], $agent,$phone, _ShortUrl_Retrieve($url,0)); 0->do not cache shorturl
+		$sNew &= StringFormat("%dkb (%s on %s) %s"&@LF, $otp22_waves[$i][0], $agent,$phone, _ShortUrl_Retrieve($url,0)); 0->do not cache shorturl
 	Next
 	If $bNew = False Then Return ""
-	ConsoleWrite($sNew & @CRLF)
+	;ConsoleWrite($sNew & @CRLF)
 	Return $sNew
 EndFunc   ;==>otp22_checknew
 

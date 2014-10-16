@@ -102,14 +102,40 @@ Func __wolfram($s)
 		If StringInStr($pod,"<plaintext>")<1 Then ContinueLoop
 		Local $title=_StringBetween0($pod,"title='","'")
 		Local $text =_StringBetween0($pod,"<plaintext>","</plaintext>")
+		$text = StringReplace($text,"&apos;","'")
+		$text = StringReplace($text,"&quot;",'"')
+		$text = StringReplace($text,"&amp;","&")
 		;ConsoleWrite("POD: "&$TITLE&" TEXT: "&$text&@CRLF)
 		If StringLen($text)<1 Then ContinueLoop
+		$text=_wa_tableformat_text($text)
 		If StringLen($title) Then $output&=$title&": "
-		$output&=$text&"  //  "
+		$output&=$text&@LF
 	Next
-	$output=StringReplace($output,"&quot;",'"')
 	Return SetError(0,0,$output)
 EndFunc
+Func _wa_tableformat_text($text)
+	Return $text; impleentation does not have a good appearance.
+	#cs
+	Local $arr=StringSplit($text,@LF)
+	For $i=1 To $arr[0]
+		$arr[$i]=_wa_tableformat_line($arr[$i])
+	Next
+	Return _ArrayToString($arr,@LF)
+	#ce
+EndFunc
+Func _wa_tableformat_line($text)
+	Local $arr=StringSplit($text,"|")
+	If $arr[0]<2 Then Return $text
+	Local $len=Int(50/$arr[0])
+	Local $fmt='%'&$len&'s'
+	Local $out=''
+	For $i=1 To $arr[0]
+		If $i>1 Then $out&='|'
+		$out&=StringFormat($fmt,$arr[$i])
+	Next
+	Return $out
+EndFunc
+
 
 Func COMMANDV_WA($s)
 	Return SetError(0,0,__wolfram($s))

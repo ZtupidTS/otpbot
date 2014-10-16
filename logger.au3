@@ -86,7 +86,7 @@ Func _Logger_FindPosts($search,$username="")
 		EndIf
 	Next
 	;_ArrayDisplay
-	$text=_ArrayToString($posts,' | ')
+	$text=_ArrayToString($posts,@LF)
 
 
 
