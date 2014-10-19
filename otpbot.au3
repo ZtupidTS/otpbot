@@ -4,7 +4,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.9.5.218
+#AutoIt3Wrapper_Res_Fileversion=6.9.5.220
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crashdemons
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
@@ -480,16 +480,18 @@ Func PRIVMSG($where, $what)
 	Local $notifier = "[type " & $CommandChar & "more]"
 	;$lenMax -= StringLen($notifier) + 1
 
-	Local $wrap=TextWrap_Line($what, $lenMax, 5)
+	Local $wrap=TextWrap_Line($what, $lenMax, 29)
 	Local $iswrapped=@extended
 	Local $lines=StringSplit($wrap[0],@LF,2)
 	For $i=0 To UBound($lines)-1
 		If $lines[$i]='' Then ContinueLoop
 		PRIVMSGRAW($where,$lines[$i])
+		Sleep(300)
 	Next
 	If $iswrapped Then
 		PRIVMSGRAW($where,"[type " & $CommandChar & "more]")
 		_More_Store($where, $where, $wrap[1])
+		Sleep(300)
 	EndIf
 EndFunc   ;==>PRIVMSG
 
