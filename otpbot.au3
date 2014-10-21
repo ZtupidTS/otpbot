@@ -190,6 +190,7 @@ Open()
 If $STATE < $S_INIT Then Msg('FAIL')
 While 1
 	If Not $_OtpHost_NoHostMode Then _OtpHost_Listen($_OtpHost);poll the local listening socket
+	DailyTasks()
 	Read()
 	Process()
 	Sleep(50)
@@ -210,6 +211,20 @@ Exit;this loop never ends, so we don't need this.
 
 
 ;--------------------FUNCTIONS
+
+Func DailyTasks()
+	Global $oldday
+	Local $newday=@MDAY
+	If $oldday<>$newday Then
+		If $oldday<>'' Then DoDaily()
+		$oldday=$newday
+	EndIf
+EndFunc
+Func DoDaily()
+	If $dialer_enable Then Reply_Message($NICK, $CHANNEL, 'Daily Task: '&Process_Message($NICK, $CHANNEL, $CommandChar&'call AS27'))
+EndFunc
+
+
 Func Process_HostCmd($cmd, $data, $socket); message from the local controlling process. this is mostly just used to automatic updates, etc.
 	Global $_OtpHost_Info
 	Msg($socket & ' - ' & $cmd & ' : ' & $data)

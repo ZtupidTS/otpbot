@@ -111,6 +111,8 @@ Func COMMAND_lines()
 EndFunc
 
 
+
+
 ;Func COMMAND_dial($agent, $number=1)
 Func COMMANDX_call($who, $where, $what, $acmd)
 	If Not $dialer_enable Then Return "Error: dialer support not enabled"
