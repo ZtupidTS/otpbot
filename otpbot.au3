@@ -4,7 +4,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.9.5.221
+#AutoIt3Wrapper_Res_Fileversion=6.9.5.223
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crashdemons
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
@@ -503,12 +503,12 @@ Func PRIVMSG($where, $what)
 	For $i=0 To UBound($lines)-1
 		If $lines[$i]='' Then ContinueLoop
 		PRIVMSGRAW($where,$lines[$i])
-		Sleep(300)
+		Sleep(500+$i*25)
 	Next
 	If $iswrapped Then
 		PRIVMSGRAW($where,"[type " & $CommandChar & "more]")
 		_More_Store($where, $where, $wrap[1])
-		Sleep(300)
+		Sleep(500)
 	EndIf
 EndFunc   ;==>PRIVMSG
 
