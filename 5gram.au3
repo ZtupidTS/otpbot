@@ -48,7 +48,7 @@ Func COMMANDX_5gram($who, $where, $what, $acmd);;;;$num,$message)
 			$ret=""
 			For $i=1 To 4
 				$acmd=StringSplit("5gram "&$mode&$i&" "&$message, ' ')
-				$ret&=$i&": "&COMMANDX_5gram($who, $where, $what, $acmd)&" | "
+				$ret&=$i&": "&COMMANDX_5gram($who, $where, $what, $acmd)&@LF
 			Next
 			Return $ret
 		Else
