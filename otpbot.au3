@@ -4,7 +4,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.9.5.220
+#AutoIt3Wrapper_Res_Fileversion=6.9.5.221
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crashdemons
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
@@ -193,7 +193,7 @@ While 1
 	DailyTasks()
 	Read()
 	Process()
-	Sleep(50)
+	Sleep(5)
 	If $STATE < $S_INIT Then
 		If TCheck($ReconnectTime) Then
 			If $restartonerror Then
@@ -216,12 +216,14 @@ Func DailyTasks()
 	Global $oldday
 	Local $newday=@MDAY
 	If $oldday<>$newday Then
+		Msg('Debug: Date changed '&($oldday<>'')&' '&$oldday&' '&$newday)
 		If $oldday<>'' Then DoDaily()
 		$oldday=$newday
 	EndIf
 EndFunc
 Func DoDaily()
-	If $dialer_enable Then Reply_Message($NICK, $CHANNEL, 'Daily Task: '&Process_Message($NICK, $CHANNEL, $CommandChar&'call AS27'))
+	Msg('Debug: Daily event firing '&$dialer_enable&' '&$NICK&' '&$CHANNEL&' '&$CommandChar)
+	If $dialer_enable Then SendPrimaryChannel('Daily Task: '&Process_Message($NICK, $CHANNEL, $CommandChar&'call AS27'))
 EndFunc
 
 
