@@ -78,7 +78,7 @@ Func _Logger_FindPosts($channel,$search,$username="")
 	ConsoleWrite(">>>"&$text&"<<<"&@CRLF)
 	_HTTP_StripToContent($text)
 
-	$text=StringStripWS($text,1+2)
+	$text=StringReplace(StringStripWS($text,1+2),@CR,'')
 
 	$posts=StringSplit($text,@LF,2)
 	If Not IsArray($posts) Then Return "No results to display."

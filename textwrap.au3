@@ -2,7 +2,7 @@
 #include <Array.au3>
 
 #cs
-$text=StringReplace("x\ny\n01234567890\ny\nx","\n",@LF)
+$text=StringReplace("[00:59] <crashdemons> I wish I could test this locally :-/ | [12:27] crashdemons (cd@unaffiliated/crashdemons) quit (Quit: \nQUIT :test\n) | [19:25] <drawbars> and the latest messages about the gough islands | [17:51] <sashah> I transcribed the numbers on the latest 4# here http://pastebin.com/mapdjzW5 | [17:23] <sashah> morningcoffee: trying to keep track of when people do these surveys for what is a mirror of as36 etc. am I correct to x | x | y |","\n",@LF)
 $wrap=TextWrap_LINE($text, 5,4)
 $wrap[0]=StringReplace($wrap[0],@LF,"X")
 $wrap[1]=StringReplace($wrap[1],@LF,"X")
@@ -41,7 +41,7 @@ Func TextWrap_Line($str, $maxLineLen, $maxLines=3)
 	;TextWrap_Word($str,$maxLineLen)
 
 	;If $lines[0]<2 Then Return TextWrap_Word($str,$maxLineLen)
-
+	;MsgBox(0,0,$str)
 	Local $wrap[2]=['','']
 	Local $n=1
 	While $n<=(UBound($lines)-1); for each word, append as much as we can to the output (char count resets per-line) - not using $lines[0] because this changes
@@ -50,8 +50,8 @@ Func TextWrap_Line($str, $maxLineLen, $maxLines=3)
 		If StringLen($lines[$n])>$maxLineLen Then; if we reach the char limit for this line
 			Local $lwrap=TextWrap_Word($lines[$n],$maxLineLen); wordwrap the line
 			$wrap[0]&=$lwrap[0]&@LF;append the first part to the output as accepted
-			_ArrayInsert($lines,$n+1,$lwrap[1]);process the remainder (wrapped) part as a new line
-			If @error=5 Then _ArrayAdd($lines,$lwrap[1])
+			_ArrayInsert($lines,$n+1,$lwrap[1],0,'','',$ARRAYFILL_FORCE_SINGLEITEM);process the remainder (wrapped) part as a new line
+			If @error=5 Then _ArrayAdd($lines,$lwrap[1],0,'','',$ARRAYFILL_FORCE_SINGLEITEM)
 			;_ArrayDisplay($lines,$n+1)
 			$n+=1
 			ExitLoop
@@ -63,7 +63,6 @@ Func TextWrap_Line($str, $maxLineLen, $maxLines=3)
 	For $n=$n To UBound($lines)-1; append any remaining lines to the remainder (wrapped) part.
 		$wrap[1]&=@LF&$lines[$n]
 	Next
-
 	Return SetError(0,StringLen($wrap[1]),$wrap)
 
 	;Return TextWrap_Word($str, $out)

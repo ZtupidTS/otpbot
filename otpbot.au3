@@ -4,7 +4,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.9.5.229
+#AutoIt3Wrapper_Res_Fileversion=6.9.5.230
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crashdemons
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
@@ -46,6 +46,7 @@ Opt('TrayOnEventMode', 1)
 
 
 #Region ;------------CONFIG
+Global $LocalTestINI=0
 Global $TestMode = 0
 Global $SERV = Get("server", "irc.freenode.net", "config")
 Global $PORT = Get("port", 6667, "config")
@@ -340,7 +341,9 @@ Func OnStateChange($oldstate, $newstate)
 				;Msg(Process_Message('who', 'where', '@convert 1 MB to KB'))
 				;TCPStartup()
 				;_ArrayDisplay($_USERINFO_OPTIONS)
-				Msg(Process_Message('who', 'where', '~wa test'))
+				Local $resp=Process_Message('who', '#ARG', '@last test')
+				Local $arr=TextWrap_Line($resp, 200, 29)
+				;_ArrayDisplay($arr)
 				ConsoleWrite(@CRLF & "----------------------" & @CRLF)
 				;_Help_OutputWikiListing(0)
 				ConsoleWrite(@CRLF & "----------------------" & @CRLF)
@@ -549,7 +552,9 @@ Func Set($key, $value = "", $section = "utility")
 	Return IniWrite(@ScriptDir & '\otpbot.ini', $section, $key, $value)
 EndFunc   ;==>Set
 Func Get($key, $default = "", $section = "utility")
-	Local $value = IniRead(@ScriptDir & '\otpbot.ini', $section, $key, $default)
+	Local $inipath=@ScriptDir & '\otpbot.ini'
+	If $TestMode Or $LocalTestINI Then $inipath=@ScriptDir & '\~otpbot-localtest.ini'
+	Local $value = IniRead($inipath, $section, $key, $default)
 	If IsNumeric($value) Then Return Number($value);base type conversion
 	If StringLen($value) = 0 Then Return $default
 	If $value = '""' Then Return ""

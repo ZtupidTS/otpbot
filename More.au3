@@ -26,7 +26,7 @@ Func _More_Store($who, $where, $what)
 		$i=$_More_NextEntry
 		$_More_NextEntry=Mod($_More_NextEntry+1,$_More_Entries);0 through $_More_Entries-1 looping FIFO
 	EndIf
-
+;MsgBox(0,$sess,$what)
 	$_More_Buffer[$i][0]=$sess
 	$_More_Buffer[$i][1]=$what
 EndFunc
