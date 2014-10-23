@@ -223,7 +223,7 @@ Func DailyTasks()
 EndFunc
 Func DoDaily()
 	Msg('Debug: Daily event firing '&$dialer_enable&' '&$NICK&' '&$CHANNEL&' '&$CommandChar)
-	If $dialer_enable Then SendPrimaryChannel('Daily Task: '&Process_Message($NICK, $CHANNEL, $CommandChar&'call AS27'))
+	;If $dialer_enable Then SendPrimaryChannel('Daily Task: '&Process_Message($NICK, $CHANNEL, $CommandChar&'call AS27'))
 EndFunc
 
 
@@ -417,7 +417,6 @@ Func TryCommandFunc($who, $where, $what, ByRef $acmd)
 	Local $ext = 0xBEEF
 	Local $info = ""
 	$acmd[1] = StringTrimLeft($acmd[1], 1)
-	;_ArrayDisplay($acmd)
 	Switch $paramn; this way sucks, but there's no way to... (what was I thinking?)
 		Case 0
 			$ret = Call('COMMAND_' & $acmd[1])

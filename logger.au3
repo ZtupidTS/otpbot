@@ -55,10 +55,11 @@ Func COMMANDX_last($who, $where, $what, $acmd)
 EndFunc
 Func COMMANDX_lastby($who, $where, $what, $acmd)
 	;3 last user test
-	If _Logger_GetChanIndex($where)<0 Then Return "last: this command must be used from a channel which is logged."
-	If $acmd[0]<3 Then Return "last: not enough arguments"
+	If _Logger_GetChanIndex($where)<0 Then Return "lastby: this command must be used from a channel which is logged."
+	If $acmd[0]<2 Then Return "lastby: not enough arguments"
 	Local $user=$acmd[2]
-	Local $search=StringMid($what,StringInStr($what,' ',0,2)+1)
+	Local $search=""
+	If $acmd[0]>2 Then $search=StringMid($what,StringInStr($what,' ',0,2)+1)
 	Return _Logger_FindPosts($where,$search,$user)
 EndFunc
 
