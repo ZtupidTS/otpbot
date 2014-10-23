@@ -4,7 +4,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.9.5.224
+#AutoIt3Wrapper_Res_Fileversion=6.9.5.225
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crashdemons
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
@@ -340,7 +340,7 @@ Func OnStateChange($oldstate, $newstate)
 				;Msg(Process_Message('who', 'where', '@convert 1 MB to KB'))
 				;TCPStartup()
 				;_ArrayDisplay($_USERINFO_OPTIONS)
-				;Msg(Process_Message('who', 'where', '~wa test'))
+				Msg(Process_Message('who', 'where', '~wa test'))
 				ConsoleWrite(@CRLF & "----------------------" & @CRLF)
 				;_Help_OutputWikiListing(0)
 				ConsoleWrite(@CRLF & "----------------------" & @CRLF)
@@ -417,6 +417,7 @@ Func TryCommandFunc($who, $where, $what, ByRef $acmd)
 	Local $ext = 0xBEEF
 	Local $info = ""
 	$acmd[1] = StringTrimLeft($acmd[1], 1)
+	_ArrayDisplay($acmd)
 	Switch $paramn; this way sucks, but there's no way to... (what was I thinking?)
 		Case 0
 			$ret = Call('COMMAND_' & $acmd[1])

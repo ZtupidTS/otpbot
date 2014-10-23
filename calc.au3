@@ -45,6 +45,9 @@ Func _REF_Command($str)
 	Local $x=@extended
 	Return SetError($e,$x,$r)
 EndFunc
+Func _REF_Set(ByRef $var,$value)
+	$var=$value
+EndFunc
 Func _REF_Assign($name,$value)
 	Assign('_REF_'&$name,$value,2)
 EndFunc

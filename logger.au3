@@ -18,53 +18,57 @@ Global $LOG_RESULT_FIELDS[$FIELD_COUNT]=['Full log line','Nickname','Username te
 
 Global Enum $_Logger_Type_Post=0, $_Logger_Type_Action, $_Logger_Type_Command, $_Logger_Type_CommandEx
 
-Local $_Log_Commands[3][3]=[ _
+Local $_Log_Commands[4][3]=[ _
 ["last","<search>","Find the last posts containing a phrase in the logs."], _
 ["lastby","<user> [search]","Find the last posts by a user in the logs. Optionally, you may supply a search phrase to narrow the results."], _
+["hostmasks","<user>","List the hostmasks associated with a given nickname in the logs."], _
 ["aliases","<nickname> [doUserMatch]","Find possible aliases for a nickname using the logs. If 'doUserMatch' argument is entered as anything, a username search is also done. (takes longer) Note that this has possible false-positives and Username-text matches are even less reliable."]  ]
 
 
-#cs
-Global $_Logger_Posts=''
-Global $_Logger_Post_Count=0
-Global $_Logger_Channel=''
-#ce
 
 
-
-
-
-;$s="xxx12 : xxx12xxx34"
-;_Logger_Strip($s)
-;MsgBox(0,0,_URIEncode($s))
-Func COMMAND_aliases($nick,$dousermatch='')
-	Return _Logger_Aliases($nick,$dousermatch)
+Func COMMANDX_hostmasks($who, $where, $what, $acmd)
+	;2 aliases nick
+	If _Logger_GetChanIndex($where)<0 Then Return "hostmasks: this command must be used from a channel which is logged."
+	If $acmd[0]<>2 Then Return "hostmasks: wrong number of arguments"
+	Local $nick=$acmd[2]
+	Local $masks=_Logger_UserSearchAll($where,$nick,$FLD_NICK,$FLD_HOST,0)
+	Return _ArrayToString($masks,' | ')
 EndFunc
 
-Func COMMANDV_last($search)
-	Return _Logger_FindPosts($search)
+Func COMMANDX_aliases($who, $where, $what, $acmd)
+	;2 aliases nick
+	;3 aliases nick dousermatch
+	If _Logger_GetChanIndex($where)<0 Then Return "aliases: this command must be used from a channel which is logged."
+	If $acmd[0]<2 Then Return "aliases: not enough arguments"
+	Local $dousermatch=''
+	If $acmd[0]=3 Then $dousermatch='yes'
+	Local $nick=$acmd[2]
+	Return _Logger_Aliases($where,$nick,$dousermatch)
 EndFunc
-Func COMMANDV_lastby($input)
-	Local $p=StringInStr($input,' ')
-	Local $search=""
-	Local $user=""
-	If $p Then
-		$user=StringLeft($input,$p-1)
-		$search=StringMid($input,$p+1)
-	Else
-		$user=$input
-	EndIf
-	Return _Logger_FindPosts($search,$user)
+Func COMMANDX_last($who, $where, $what, $acmd)
+	;2 last test
+	If _Logger_GetChanIndex($where)<0 Then Return "last: this command must be used from a channel which is logged."
+	If $acmd[0]<2 Then Return "last: not enough arguments"
+	Local $search=StringTrimLeft($what,StringLen('@last '))
+	Return _Logger_FindPosts($where,$search)
+EndFunc
+Func COMMANDX_lastby($who, $where, $what, $acmd)
+	;3 last user test
+	If _Logger_GetChanIndex($where)<0 Then Return "last: this command must be used from a channel which is logged."
+	If $acmd[0]<3 Then Return "last: not enough arguments"
+	Local $user=$acmd[2]
+	Local $search=StringMid($what,StringInStr($what,' ',0,2)+1)
+	Return _Logger_FindPosts($where,$search,$user)
 EndFunc
 
 
-
-Func _Logger_FindPosts($search,$username="")
+Func _Logger_FindPosts($channel,$search,$username="")
 	Local $action=1
 	If StringLen($username) Then $action=2
 
-	Local $url='http://mirror.otp22.com/logapi.php?APPID='&_URIEncode($_Logger_AppID)
-	Local $arg=StringFormat("key=%s&action=%s&year=%s&text=%s&nick=%s", _URIEncode($_Logger_Key), _URIEncode($action), @YEAR, _URIEncode($search), _URIEncode($username))
+	Local $url='http://mirror.otp22.com/logs/api.php?APPID='&_URIEncode($_Logger_AppID)
+	Local $arg=StringFormat("channel=%s&key=%s&action=%s&year=%s&text=%s&nick=%s", $channel, _URIEncode($_Logger_Key), _URIEncode($action), @YEAR, _URIEncode($search), _URIEncode($username))
 
 	Local $headers='Content-Type: application/x-www-form-urlencoded'&@CRLF
 	Local $text=''
@@ -86,7 +90,7 @@ Func _Logger_FindPosts($search,$username="")
 		EndIf
 	Next
 	;_ArrayDisplay
-	$text=_ArrayToString($posts,@LF)
+	$text=_ArrayToString($posts," | ")
 
 
 
@@ -102,7 +106,9 @@ Func _Logger_Strip(ByRef $sIn)
 	;StringRegexp("abc d!"&Chr(1),"^[[:print:][:graph:]]+$"); rgx replace NOT group to " "
 EndFunc
 
-
+Func _Logger_GetChanIndex($sChannel)
+	Return _ArraySearch($_Logger_Channels,$sChannel,0,0,0,0,1,$_Logger_Channel_Name)
+EndFunc
 Func _Logger_Start($channelCSV)
 	Local $channels=StringSplit($channelCSV,',',2)
 	Local $tmpArr[UBound($channels)][$_Logger_Channel_Fields]
@@ -158,7 +164,7 @@ Func _Logger_SubmitLog($iChan); Return value: True (log submit succeeded) False 
 
 	Local $headers='Content-Type: application/x-www-form-urlencoded'&@CRLF
 	Local $text=''
-	Local $aReq=__HTTP_Req('POST','http://mirror.otp22.com/logger.php?APPID='&_URIEncode($_Logger_AppID), _
+	Local $aReq=__HTTP_Req('POST','http://mirror.otp22.com/logs/post.php?APPID='&_URIEncode($_Logger_AppID), _
 		StringFormat("key=%s&channel=%s&posts=", _URIEncode($_Logger_Key), _URIEncode($_Logger_Channels[$iChan][$_Logger_Channel_Name])) & _URIEncode($_Logger_Channels[$iChan][$_Logger_Channel_Log]) _
 		, $headers)
 	__HTTP_Transfer($aReq,$text,5000)
@@ -181,24 +187,24 @@ EndFunc
 
 
 
-Func _Logger_Aliases($nick,$dousermatch='')
+Func _Logger_Aliases($channel,$nick,$dousermatch='')
 	Local $ret="Nicks with matching "
 	Local $nicks=0
 	If StringLen($dousermatch)=0 Then
-		$nicks=_Logger_UserCrossRef($nick,$FLD_NICK,   $FLD_HOST)
+		$nicks=_Logger_UserCrossRef($channel, $nick,$FLD_NICK,   $FLD_HOST)
 		$ret&="hosts: "
 	Else
-		$nicks=_Logger_UserCrossRef($nick,$FLD_NICK,   $FLD_USER)
+		$nicks=_Logger_UserCrossRef($channel, $nick,$FLD_NICK,   $FLD_USER)
 		$ret&="usernames (less reliable): "
 	EndIf
 	$ret&=_ArrayToString($nicks, " ")
 	Return $ret
 EndFunc
 
-Func _Logger_UserCrossRef($value,$fieldvalue,$fieldref)
+Func _Logger_UserCrossRef($channel,$value,$fieldvalue,$fieldref)
 	; finds entries of line[fieldref]  where  line[fieldvalue]=value   (return results of Y where we match a given property X)
 	; then for each ref, find the associated line[fieldref]s and return an array - the results will be equal to or more than the input.
-	Local $refs=_Logger_UserSearchAll($value,$fieldvalue,   $fieldref)
+	Local $refs=_Logger_UserSearchAll($channel,$value,$fieldvalue,   $fieldref)
 	Local $values[1]=['']
 	;_ArrayDisplay($refs,'crossref intermediate')
 
@@ -211,7 +217,7 @@ Func _Logger_UserCrossRef($value,$fieldvalue,$fieldref)
 		If StringLen($refs_str) Then $refs_str&=' '
 		$refs_str&=$refs[$i]
 	Next
-	$values=_Logger_UserSearchAll($refs_str,$fieldref,   $fieldvalue,  1);compound query for all refs - looped for each year.
+	$values=_Logger_UserSearchAll($channel,$refs_str,$fieldref,   $fieldvalue,  1);compound query for all refs - looped for each year.
 	$values=_ArrayUnique0($values)
 
 	For $i=0 To UBound($values)-1
@@ -231,17 +237,17 @@ Func _Logger_UserCrossRef($value,$fieldvalue,$fieldref)
 	Return $values
 EndFunc
 
-Func _Logger_UserSearchAll($search,$fieldsearch,$fieldresult,$compound=0)
+Func _Logger_UserSearchAll($channel,$search,$fieldsearch,$fieldresult,$compound=0)
 	ConsoleWrite(StringFormat("QUERYALL: search=%s (%s)  results=%s",$search,FieldName($fieldsearch),FieldName($fieldresult))&@CRLF)
 	Local $results[1]=['']
 	For $year=@YEAR To 2011 Step -1; append all hostnames for nick
-		Local $a_tmp=_Logger_UserSearch($year,$search,$fieldsearch,$fieldresult,1,$compound); find fieldref results where line[fieldvalue] = value
+		Local $a_tmp=_Logger_UserSearch($channel,$year,$search,$fieldsearch,$fieldresult,1,$compound); find fieldref results where line[fieldvalue] = value
 		_ArrayConcatenate($results,$a_tmp)
 	Next
 	$results=_ArrayUnique0($results)
 	Return $results
 EndFunc
-Func _Logger_UserSearch($year,$search,$fieldsearch,$fieldresult,$stripcount=0,$compound=0); fields:  0=>chat line 1=>nickname 2=>usernametext 3=>hostname
+Func _Logger_UserSearch($channel,$year,$search,$fieldsearch,$fieldresult,$stripcount=0,$compound=0); fields:  0=>chat line 1=>nickname 2=>usernametext 3=>hostname
 	ConsoleWrite(StringFormat("   QUERY: year=%s search=%s (%s)  results=%s",$year,$search,FieldName($fieldsearch),FieldName($fieldresult))&@CRLF)
 	If StringLen($search)<1 Then
 		Local $tmp[1]=['0 results.']
@@ -249,8 +255,8 @@ Func _Logger_UserSearch($year,$search,$fieldsearch,$fieldresult,$stripcount=0,$c
 	EndIf
 	Local $action=6
 
-	Local $url='http://mirror.otp22.com/logapi.php?APPID='&$_Logger_APPID&''
-	Local $arg=StringFormat("key=%s&action=%s&year=%s&text=%s&fieldsearch=%s&fieldresult=%s&compound=%s", _URIEncode($_Logger_Key), _URIEncode($action), $year,_URIEncode($search),$fieldsearch,$fieldresult,$compound)
+	Local $url='http://mirror.otp22.com/logs/api.php?APPID='&$_Logger_APPID&''
+	Local $arg=StringFormat("channel=%s&key=%s&action=%s&year=%s&text=%s&fieldsearch=%s&fieldresult=%s&compound=%s", _URIEncode($channel), _URIEncode($_Logger_Key), _URIEncode($action), $year,_URIEncode($search),$fieldsearch,$fieldresult,$compound)
 
 	Local $headers='Content-Type: application/x-www-form-urlencoded'&@CRLF
 	Local $text=''
