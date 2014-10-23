@@ -1,14 +1,15 @@
 ;#include <Math.au3>
 #include <Array.au3>
+
 #cs
-$text=StringReplace("this\n\nis\na\n12345678901\nthis\nis\na\ntest\n","\n",@LF)
-$wrap=TextWrap_LINE($text, 10,4)
+$text=StringReplace("x\ny\n01234567890\ny\nx","\n",@LF)
+$wrap=TextWrap_LINE($text, 5,4)
 $wrap[0]=StringReplace($wrap[0],@LF,"X")
 $wrap[1]=StringReplace($wrap[1],@LF,"X")
 _ArrayDisplay($wrap)
-$wrap=TextWrap_LINE($wrap[1], 11,2)
-_ArrayDisplay($wrap)
 #ce
+
+
 
 Func TextWrap_Hard($str, $maxLen); wraps the text by letter according to a maximum length
 	Local $arr[2] = [StringMid($str, 1, $maxLen), StringTrimLeft($str, $maxLen)]
@@ -50,6 +51,8 @@ Func TextWrap_Line($str, $maxLineLen, $maxLines=3)
 			Local $lwrap=TextWrap_Word($lines[$n],$maxLineLen); wordwrap the line
 			$wrap[0]&=$lwrap[0]&@LF;append the first part to the output as accepted
 			_ArrayInsert($lines,$n+1,$lwrap[1]);process the remainder (wrapped) part as a new line
+			If @error=5 Then _ArrayAdd($lines,$lwrap[1])
+			;_ArrayDisplay($lines,$n+1)
 			$n+=1
 			ExitLoop
 		Else
