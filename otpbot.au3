@@ -4,7 +4,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.9.5.225
+#AutoIt3Wrapper_Res_Fileversion=6.9.5.226
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crashdemons
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
@@ -417,7 +417,7 @@ Func TryCommandFunc($who, $where, $what, ByRef $acmd)
 	Local $ext = 0xBEEF
 	Local $info = ""
 	$acmd[1] = StringTrimLeft($acmd[1], 1)
-	_ArrayDisplay($acmd)
+	;_ArrayDisplay($acmd)
 	Switch $paramn; this way sucks, but there's no way to... (what was I thinking?)
 		Case 0
 			$ret = Call('COMMAND_' & $acmd[1])
