@@ -36,6 +36,9 @@ Func TextWrap_Line($str, $maxLineLen, $maxLines=3)
 	$str=StringStripWS(StringStripCR($str),1+2);removing CR's, leading and trailing spaces/newlines
 	$str=StringRegExpReplace($str,"(?s)\n+",@LF);remove any duplicate newlines
 	$lines=StringSplit($str,@LF)
+
+	;TextWrap_Word($str,$maxLineLen)
+
 	;If $lines[0]<2 Then Return TextWrap_Word($str,$maxLineLen)
 
 	Local $wrap[2]=['','']
@@ -47,6 +50,7 @@ Func TextWrap_Line($str, $maxLineLen, $maxLines=3)
 			Local $lwrap=TextWrap_Word($lines[$n],$maxLineLen); wordwrap the line
 			$wrap[0]&=$lwrap[0]&@LF;append the first part to the output as accepted
 			_ArrayInsert($lines,$n+1,$lwrap[1]);process the remainder (wrapped) part as a new line
+			$n+=1
 			ExitLoop
 		Else
 			$wrap[0]&=$lines[$n]&@LF
