@@ -4,7 +4,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.9.5.230
+#AutoIt3Wrapper_Res_Fileversion=6.9.5.231
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crashdemons
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
@@ -46,7 +46,7 @@ Opt('TrayOnEventMode', 1)
 
 
 #Region ;------------CONFIG
-Global $LocalTestINI=0
+Global $LocalTestINI=1
 Global $TestMode = 0
 Global $SERV = Get("server", "irc.freenode.net", "config")
 Global $PORT = Get("port", 6667, "config")
@@ -500,7 +500,7 @@ Func PRIVMSG($where, $what)
 	Local $notifier = "[type " & $CommandChar & "more]"
 	;$lenMax -= StringLen($notifier) + 1
 
-	Local $wrap=TextWrap_Line($what, $lenMax, 29)
+	Local $wrap=TextWrap_Line($what, $lenMax, 18)
 	Local $iswrapped=@extended
 	Local $lines=StringSplit($wrap[0],@LF,2)
 	For $i=0 To UBound($lines)-1
