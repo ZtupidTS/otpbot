@@ -17,7 +17,8 @@ Local $_PGP_Commands[2][3]=[ _
 
 
 
-Local $_Misc_Commands[12][3]=[ _
+Local $_Misc_Commands[13][3]=[ _
+["Fib","<number>","Calculate the Nth fibonacci sequence number. (Limit: 30)"], _
 ["Worm","<5gram entries>","Decodes 5gram messages using the OTP22 Green Book QR-Code table.  eg: `%!%worm FNAIU YPBIE`"], _
 ["ZTime","<date string>","Attempts to present PRJMLPL-style date codes in a readable format. eg: `%!%ztime 31125959Z`"], _
 ["ITA2","<binary string>","Decodes ITA2 bits into a string. eg: `%!%ITA2 10100001101101110000` (see http://en.wikipedia.org/wiki/Baudot_code#ITA2 )"], _
@@ -34,7 +35,11 @@ Local $_Misc_Commands[12][3]=[ _
 
 
 
-
+Func COMMAND_fib($n)
+	If $n>30 Then Return "Only the first 30 fibonacci numbers are available in this implementation. Sorry."
+	If $n<=1 Then Return 1
+	Return COMMAND_fib($n-1)+COMMAND_fib($n-2)
+EndFunc
 
 Func COMMANDV_QUID($h)
 	If StringInStr($h,"pastebin") Then
