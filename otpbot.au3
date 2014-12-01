@@ -4,7 +4,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.9.5.234
+#AutoIt3Wrapper_Res_Fileversion=6.9.5.235
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crashdemons
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
@@ -474,12 +474,14 @@ Func TryCommandFunc($who, $where, $what, ByRef $acmd)
 			Return Process_Message($who, $where, $exec)
 		EndIf
 	EndIf
+#cs
 	If $err <> 0 Then
 		Local $expression = StringTrimLeft($what, 1)
 		$ret = __wolfram($expression)
 		$err = @error
 		$ext = 0
 	EndIf
+#ce
 	If $err <> 0 Then Return "Command `" & $acmd[1] & "` (with " & $paramn & " parameters) not found and no additional information was available"
 	Return _ValueFmt($ret, $ArrayFmt_Quick);$ret
 EndFunc   ;==>TryCommandFunc
