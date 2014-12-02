@@ -239,12 +239,26 @@ Func _ArraySort_UserDefined(ByRef $a, $cmpfunc, $iStart=0, $iEnd=-1, $bEmptyStri
 	Until $swaps=0
 
 EndFunc
+
+;MsgBox(0,0,__cmp_value('2y','2x'))
 Func __cmp_value($a,$b)
-	If String($a)>String($b) Then Return +1
+	If StringLen($a)>StringLen($b) Then Return +1;longer strings have a higher MSB
+	If StringLen($a)<StringLen($b) Then Return -1
+
+	For $p=1 To StringLen($a)
+		Local $asca=Asc(StringMid($a,$p,1))
+		Local $ascb=Asc(StringMid($b,$p,1))
+		If $asca>$ascb Then Return +1
+		If $asca<$ascb Then Return -1
+	Next
+
+
+
 	Return -1
 EndFunc
 Func __cmp_alphabetic($a,$b)
-	Return __cmp_value($a,$b)
+	If String($a)>String($b) Then Return +1
+	Return -1
 EndFunc
 Func __cmp_length($a,$b)
 	If StringLen($a)>StringLen($b) Then Return +1
