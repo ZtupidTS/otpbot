@@ -140,6 +140,7 @@ Func COMMANDX_dial($who, $where, $what, $acmd)
 	If Not $dialer_enable Then Return "Error: dialer support not enabled"
 	Local $agent=__element($acmd,2)
 	If $agent="" Then Return "dial: not eneough parameters.  Usage: %!%DIAL <agentnumber> [line]"
+	If Stringregexp($agent,"^[0-9ABCDabcdw*#]*$")=0 Then Return "dial: invalid agent# - the agent number must be the following characters: 0-9ABCDabcdw*#"
 	Local $sInLine=__element($acmd,3)
 	Local $iLine=dialer_getIndexFromInput($sInLine)
 	If $iLine=-1 Then Return "dial: unknown line to call. Try using a keyword listed in %!%LINES"
