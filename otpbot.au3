@@ -4,7 +4,7 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.9.5.236
+#AutoIt3Wrapper_Res_Fileversion=6.9.5.237
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crashdemons
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
@@ -369,7 +369,7 @@ EndFunc   ;==>OnBotConsole
 
 #Region ;------------------UTILITIES
 Func log_event($who, $where, $what)
-	If Not (StringLeft($where,1)<>'#') Then _Logger_Append($CHANNEL,$who, $what, $_Logger_Type_Post, 'to ' & $where)
+	If Not (StringLeft($where,1)=='#') Then _Logger_Append($CHANNEL,$who, $what, $_Logger_Type_Post, 'to ' & $where)
 EndFunc   ;==>log_event
 Func COMMANDX_IDENTIFY($who, $where, $what, $acmd)
 	Local $user = __element($acmd, 2)
