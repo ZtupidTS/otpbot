@@ -26,6 +26,7 @@ Global $_Calc_HangLimit=60*1000
 Global $_Calc_HangExec=''
 
 Global $_Calc_GetCommandValue_Callback=''
+Global $_REF_lastexpr=Default
 
 ;------------------------------------
 Local $_Calc_Commands[3][3]=[ _
@@ -202,6 +203,18 @@ Func _Calc_Evaluate($s,$fmtstyle='default')
 	Local $ext = @extended
 	_Calc_StopHangTimer()
 	#ce
+	If StringInStr($s,";;")>0 Then
+		Local $a=StringSplit($s,";;")
+		Local $last=UBound($a)-1
+		For $i=1 To $last
+			$_REF_lastexpr=_Calc_Evaluate($a[$i],$fmtstyle)
+			If $i=$last Then Return $_REF_lastexpr
+		Next
+		Return Default
+	EndIf
+
+
+
 
 	Local $san=_Calc_Sanitize($s)
 
