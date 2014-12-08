@@ -4,11 +4,12 @@
 #AutoIt3Wrapper_UseUpx=n
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=OTP22 Utility Bot
-#AutoIt3Wrapper_Res_Fileversion=6.9.5.240
+#AutoIt3Wrapper_Res_Fileversion=6.9.5.242
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_LegalCopyright=Crashdemons
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 ;Standard user Libraries
+#pragma compile(AutoItExecuteAllowed, True)
 #include <Array.au3>
 #include <String.au3>
 #include <Process.au3>

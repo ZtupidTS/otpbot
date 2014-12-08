@@ -30,6 +30,7 @@ EndIf
 
 
 Func _Calc_External_Write()
+	ConsoleWrite($_Calc_External_Outfile&@CRLF)
 	FileWrite($_Calc_External_Outfile,VarGetType($_Calc_External_Retval)&"<!CALC!>"&$_Calc_External_Retval)
 EndFunc
 Func _Calc_External_Read()
