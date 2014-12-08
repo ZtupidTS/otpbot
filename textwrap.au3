@@ -9,6 +9,12 @@ $wrap[1]=StringReplace($wrap[1],@LF,"X")
 _ArrayDisplay($wrap)
 #ce
 
+Func TextWrap_InsertHardBreak($str,$line)
+	Local $a=StringSplit($str,@CRLF,2)
+	_ArrayInsert($a,$line,'%BREAK%',"|",@CRLF,$ARRAYFILL_FORCE_SINGLEITEM)
+	Return _ArrayToString($a,@CRLF)
+EndFunc
+
 
 
 Func TextWrap_Hard($str, $maxLen); wraps the text by letter according to a maximum length
@@ -46,6 +52,10 @@ Func TextWrap_Line($str, $maxLineLen, $maxLines=3)
 	Local $n=1
 	While $n<=(UBound($lines)-1); for each word, append as much as we can to the output (char count resets per-line) - not using $lines[0] because this changes
 		;;ConsoleWrite($n&'/'&(UBound($lines)-1)&' limit:'&$maxLines&@CRLF)
+		If $lines[$n]=="%BREAK%" Then
+			$lines[$n]=""
+			ExitLoop
+		EndIf
 		If $n>$maxLines Then ExitLoop; if we reach the max line limit, shove the rest to the wrap[1] buffer
 		If StringLen($lines[$n])>$maxLineLen Then; if we reach the char limit for this line
 			Local $lwrap=TextWrap_Word($lines[$n],$maxLineLen); wordwrap the line

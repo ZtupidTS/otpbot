@@ -336,24 +336,23 @@ Func OnStateChange($oldstate, $newstate)
 			If $TestMode Then; whatever needs debugging at the moment.
 				;otp22_getentries()
 				$NICK = $_UserInfo_TestUser
+				ConsoleWrite(@CRLF & "----------------------" & @CRLF)
 				;Msg(Process_Message('who', 'where', 'http://pastebin.com/e7pbUdSi'))
 				;Msg(Process_Message('who', 'where', '@help AutoIt'))
 				;Msg(Process_Message('who', 'where', '@convert 1 MB to KB'))
 				;TCPStartup()
 				;_ArrayDisplay($_USERINFO_OPTIONS)
-				Local $resp=Process_Message('who', '#ARG', '@last test')
-				Local $arr=TextWrap_Line($resp, 200, 29)
+				Local $resp=Process_Message('who', '#ARG', '@calc $test="xyz";;Print($test)')
+				Msg($resp)
 				;_ArrayDisplay($arr)
-				ConsoleWrite(@CRLF & "----------------------" & @CRLF)
 				;_Help_OutputWikiListing(0)
-				ConsoleWrite(@CRLF & "----------------------" & @CRLF)
 				;_Help_OutputWikiListing(1)
-				ConsoleWrite(@CRLF & "----------------------" & @CRLF)
 				;Msg(Process_Message($NICK, 'where', "@dial 16041 202"))
 				;COMMAND_tinyurl('http://google.com/y4')
 				;COMMAND_tinyurl('http://google.com/y5')
 				;COMMAND_tinyurl('http://google.com/y6')
 				;Sleep(20000)
+				ConsoleWrite(@CRLF & "----------------------" & @CRLF)
 				_OtpHost_flog('Quitting OtpBot Testmode')
 				Exit
 			EndIf
@@ -482,8 +481,8 @@ Func TryCommandFunc($who, $where, $what, ByRef $acmd)
 		$ext = 0
 	EndIf
 #ce
-	If $err <> 0 Then Return "Command `" & $acmd[1] & "` (with " & $paramn & " parameters) not found and no additional information was available"
-	Return _ValueFmt($ret, $ArrayFmt_Quick);$ret
+	If $err <> 0 Then Return "Command `" & $acmd[1] & "` (with " & $paramn & " parameters) not found."
+	Return TextWrap_InsertHardBreak(_ValueFmt($ret, $ArrayFmt_Quick),5);$ret
 EndFunc   ;==>TryCommandFunc
 Func SendPrimaryChannel($what)
 	Return PRIVMSG($CHANNEL, $what)

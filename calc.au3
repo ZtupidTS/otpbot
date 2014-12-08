@@ -21,12 +21,15 @@ Global Const $srNSlash = '[^\\/]'
 
 Global $_Calc_Whitelist[1]=[''];whitelist nothing by default if nothing gets loaded - prevent array errors.
 
-Global $_Calc_HangTimer=0
-Global $_Calc_HangLimit=60*1000
-Global $_Calc_HangExec=''
 
 Global $_Calc_GetCommandValue_Callback=''
-Global $_REF_lastexpr=Default
+Global $_Calc_Host=True
+
+#include "CalcExternal.au3"
+
+$_Calc_HangTimer=0
+$_Calc_HangLimit=60*1000
+$_Calc_HangExec=''
 
 ;------------------------------------
 Local $_Calc_Commands[3][3]=[ _
@@ -40,24 +43,7 @@ _Calc_Startup()
 
 #include "convert.au3"
 ;------------------------------------
-Func _REF_Command($str)
-	Local $r=Call($_Calc_GetCommandValue_Callback,$str)
-	Local $e=@error
-	Local $x=@extended
-	Return SetError($e,$x,$r)
-EndFunc
-Func _REF_Set(ByRef $var,$value)
-	$var=$value
-EndFunc
-Func _REF_Assign($name,$value)
-	Assign('_REF_'&$name,$value,2)
-EndFunc
-Func _REF_Eval($name)
-	Return Eval('_REF_'&$name)
-EndFunc
-Func _REF_Void($a=0,$b=0,$c=0,$d=0,$e=0,$f=0,$g=0,$h=0)
-	Return SetError(0,0,'')
-EndFunc
+;user-accessible functions
 Func _REF_For($varname,$start,$end,$step,$exec)
 	For $i_REF_FOR=$start To $end Step $step
 		_REF_Assign($varname,$i_REF_FOR)
@@ -91,23 +77,7 @@ Func _REF_Until($condexec,$trueexec)
 EndFunc
 
 
-
-
-
-
-
-
-
-
-
-
 ;------------------------------------
-
-
-Func _REF_TakeTooMuchTime()
-	Sleep(10*60*1000)
-EndFunc
-
 
 Func _Calc_Startup()
 	If IsDeclared('CALC_STARTUP') Then Return
@@ -120,18 +90,9 @@ Func _Calc_Startup()
 	_Calc_SaveWhitelist($_Calc_Whitelist, "calc_whitelist.txt");save alphabetically sorted version
 EndFunc
 
-Func _Calc_HangDetector()
-	If $_Calc_HangTimer<>0 And TimerDiff($_Calc_HangTimer)>$_Calc_HangLimit Then
-		Execute($_Calc_HangExec)
-		Exit
-	EndIf
-EndFunc
-Func _Calc_StartHangTimer()
-	$_Calc_HangTimer=TimerInit()
-EndFunc
-Func _Calc_StopHangTimer()
-	$_Calc_HangTimer=0
-EndFunc
+
+
+
 
 
 
@@ -191,6 +152,27 @@ Func _Calc_EvaluateValue($s)
 	_Calc_StopHangTimer()
 	Return SetError($err,$ext,$ret)
 EndFunc
+
+Func _Calc_EvaluateScript($s)
+	_Calc_StartHangTimer()
+	Local $san=_Calc_Sanitize($s)
+	_Calc_External_Run($san)
+	Local $err=_Calc_External_Monitor()
+	Local $ret="An unhandled exception has occurred in output retrieval."
+	Switch $err
+		Case 1
+			$ret="Error - command time limit exceeded"
+		Case 2
+			$ret="Error - command memory limit exceeded"
+		Case Else
+			Sleep(250)
+			Local $tmp=_Calc_External_Check()
+			If UBound($tmp)>=2 Then $ret=$tmp[1]
+	EndSwitch
+	_Calc_StopHangTimer()
+	Return SetError(0,0,$ret)
+EndFunc
+
 Func _Calc_Evaluate($s,$fmtstyle='default')
 	Local $style=$ArrayFmt_Default
 	If $fmtstyle='quick' Then $style=$ArrayFmt_Quick
@@ -203,22 +185,15 @@ Func _Calc_Evaluate($s,$fmtstyle='default')
 	Local $ext = @extended
 	_Calc_StopHangTimer()
 	#ce
-	If StringInStr($s,";;")>0 Then
-		Local $a=StringSplit($s,";;")
-		Local $last=UBound($a)-1
-		For $i=1 To $last
-			$_REF_lastexpr=_Calc_Evaluate($a[$i],$fmtstyle)
-			If $i=$last Then Return $_REF_lastexpr
-		Next
-		Return Default
-	EndIf
-
-
-
-
 	Local $san=_Calc_Sanitize($s)
 
-	Local $ret = _Calc_EvaluateValue($s)
+
+	Local $ret=""
+	If StringInStr($san,";;")>0 Then
+		$ret = _Calc_EvaluateScript(StringReplace($s,';;',@CRLF))
+	Else
+		$ret = _Calc_EvaluateValue($s)
+	EndIf
 	Local $err = @error
 	Local $ext = @extended
 
@@ -230,6 +205,8 @@ Func _Calc_Evaluate($s,$fmtstyle='default')
 	;Return SetError(0, 0, StringFormat("(%s) %s", $typ, $ret))
 	Return SetError(0,0,$fmt)
 EndFunc   ;==>_Calc_Evaluate
+
+
 
 
 Func _Calc_Sanitize($s)
