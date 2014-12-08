@@ -1,5 +1,4 @@
-#include <Array.au3>
-#include <String.au3>
+
 Global $_Calc_External_Retval=""
 Global $_Calc_External_Outfile=@TempDir&'\calcret.tmp'
 Global $_Calc_External_Memory=100;MB

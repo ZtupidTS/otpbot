@@ -422,6 +422,7 @@ Func update()
 	updatefile('otpcfg.exe')
 	updatefile('OtpXor.exe')
 	updatefile('OtpNato.exe')
+	updatefile('CalcExternal.au3')
 
 	FileDelete("Release.ver")
 	FileWrite("Release.ver", $RemoteVer)
