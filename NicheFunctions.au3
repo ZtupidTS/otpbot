@@ -109,6 +109,8 @@ Func __wolfram($s)
 		Local $text =_StringBetween0($pod,"<plaintext>","</plaintext>")
 		$text = StringReplace($text,"&apos;","'")
 		$text = StringReplace($text,"&quot;",'"')
+		$text = StringReplace($text,"&lt;","<")
+		$text = StringReplace($text,"&gt;",">")
 		$text = StringReplace($text,"&amp;","&")
 		;ConsoleWrite("POD: "&$TITLE&" TEXT: "&$text&@CRLF)
 		If StringLen($text)<1 Then ContinueLoop
