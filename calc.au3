@@ -32,8 +32,9 @@ $_Calc_HangLimit=60*1000
 $_Calc_HangExec=''
 
 ;------------------------------------
-Local $_Calc_Commands[3][3]=[ _
+Local $_Calc_Commands[4][3]=[ _
 ["calc","<AutoIt or Numeric Expression>","Performs a calculation or executes an expression. Input strings are sanitized against a whitelist of function names."], _
+["calcnf","<AutoIt or Numeric Expression>","Performs an expression without value formatting.  See %!%HELP CALC"], _
 ["calc_sanitize","<AutoIt or Numeric Expression>","Sanitizes an expression against a whitelist of function names and returns the sanitized version. Used to debug expressions. See `%!%help calc`"], _
 ["calc_dump","<AutoIt or Numeric Expression>","Performs a calculation or executes an expression like %!%CALC, but with full type information and formatting."]  ]
 
