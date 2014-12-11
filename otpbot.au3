@@ -371,6 +371,9 @@ EndFunc   ;==>OnBotConsole
 Func log_event($who, $where, $what)
 	If Not (StringLeft($where,1)=='#') Then _Logger_Append($CHANNEL,$who, $what, $_Logger_Type_Post, 'to ' & $where)
 EndFunc   ;==>log_event
+Func COMMANDV_SAY($s)
+	Return $s
+EndFunc
 Func COMMANDX_IDENTIFY($who, $where, $what, $acmd)
 	Local $user = __element($acmd, 2)
 	If $user = "" Then $user = $who

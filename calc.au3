@@ -127,7 +127,10 @@ Func _Calc_SaveWhitelist(ByRef $arr, $filename); copy $arr to local scope.
 EndFunc
 
 
-
+Func COMMANDX_CalcNF($who, $where, $what, $acmd)
+	$s = StringTrimLeft($what, StringInStr($what, " "))
+	Return _Calc_Evaluate($s,'none')
+EndFunc   ;==>COMMANDX_Calc
 
 Func COMMANDX_Calc($who, $where, $what, $acmd)
 	$s = StringTrimLeft($what, StringInStr($what, " "))
